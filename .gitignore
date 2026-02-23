@@ -37,25 +37,6 @@ out/
 ### VS Code ###
 .vscode/
 
-
-### custom files ###
-*.yml
-*.yaml
-*.properties
-.env
-.env.*
-!src/main/resources/application.yml
-!src/main/resources/application.properties
-
-### custom files ###
-*.yml
-*.yaml
-*.properties
-.env
-.env.*
-!src/main/resources/application.yml
-!src/main/resources/application.properties
-
 ### Google Antigravity ###
 .agent/
 .antigravity/
@@ -65,3 +46,12 @@ antigravity.db
 **/artifacts/
 **/recordings/
 **/walkthroughs/
+
+### custom files ###
+*.yml
+*.yaml
+*.properties
+.env
+.env.*
+!src/main/resources/application.yml
+!src/main/resources/application.properties
