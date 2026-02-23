@@ -22,3 +22,58 @@
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 replay_pid*
+
+# final project custom file #
+
+1. OS 및 IDE 관련 (Windows, Mac, IntelliJ, VS Code)
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+2. 이클립스(Eclipse / STS) 전용
+.metadata
+.project
+.classpath
+.factorypath
+.settings/
+bin/
+*.launch
+
+3. 빌드 및 배포 결과물 (Gradle 기반)
+.gradle/
+build/
+out/
+bin/
+*.jar
+*.war
+*.zip
+*.tar.gz
+
+4. 스프링 부트 설정 및 민감 정보 보호 (가장 중요)
+HELP.md
+.env
+.env.local
+src/main/resources/application-secret.yml
+src/main/resources/application-local.yml
+
+모든 yml/properties 파일을 일단 무시 (보안 우선)
+*.yml
+*.properties
+
+하지만 프로젝트 구조가 담긴 기본 설정 파일은 예외적으로 허용 (설계도 공유)
+!src/main/resources/application.yml
+
+5. 프론트엔드 및 정적 자산
+node_modules/
+.eslintcache
+dist/
+
+6. 로그 및 임시 파일
+logs/
+*.log
+.temp/
+.tmp/
