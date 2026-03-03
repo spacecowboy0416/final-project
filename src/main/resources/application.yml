@@ -1,0 +1,101 @@
+server:
+  port: 8080
+  servlet:
+    encoding:
+      charset: UTF-8
+      force: true
+
+spring:
+  application:
+    name: coordi
+
+  profiles:
+    include: secret
+
+  # 1. Database (RDS/MySQL)
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${RDS_HOSTNAME}:${RDS_PORT}/${RDS_DB_NAME}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul
+    username: ${RDS_USERNAME}
+    password: ${RDS_PASSWORD}
+
+  # 2. Thymeleaf (FE)
+  thymeleaf:
+    cache: false # 개발 단계에서는 false 권장
+    prefix: classpath:/templates/
+    suffix: .html
+
+  # 3. Security & OAuth 2.0 (Google, Kakao)
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            scope:
+              - email
+              - profile
+              - https://www.googleapis.com/auth/calendar # 캘린더 권한 추가
+          kakao:
+            client-id: ${KAKAO_CLIENT_ID}
+            client-secret: ${KAKAO_CLIENT_SECRET}
+            client-authentication-method: client_secret_post
+            authorization-grant-type: authorization_code
+            redirect-uri: "{baseUrl}/login/oauth2/code/kakao"
+            scope: profile_nickname, account_email
+            client-name: Kakao
+        provider:
+          kakao:
+            authorization-uri: https://kauth.kakao.com/oauth/authorize
+            token-uri: https://kauth.kakao.com/oauth/token
+            user-info-uri: https://kapi.kakao.com/v2/user/me
+            user-name-attribute: id
+
+  # 4. File Upload (S3)
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+# 5. MyBatis 설정
+mybatis:
+  mapper-locations: classpath:mappers/**/*.xml
+  configuration:
+    map-underscore-to-camel-case: true # DB의 snake_case를 Java의 camelCase로 매핑
+    jdbc-type-for-null: 'NULL'
+  type-aliases-package: com.finalproject.coordi # 실제 도메인 패키지 경로 (com.finalproject.coordi.domain 등)
+
+# 6. AWS S3 (Cloud AWS)
+cloud:
+  aws:
+    credentials:
+      access-key: ${AWS_ACCESS_KEY}
+      secret-key: ${AWS_SECRET_KEY}
+    region:
+      static: ap-northeast-2
+      auto: false
+    s3:
+      bucket: ${AWS_S3_BUCKET}
+
+# 7. Swagger (SpringDoc)
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    groups-order: ASC
+    operations-sorter: method
+
+# 8. 커스텀 API 키 관리 (Gemini, OpenWeatherMap)
+external:
+  api:
+    gemini:
+      key: ${GEMINI_API_KEY}
+    weather:
+      key: ${WEATHER_API_KEY}
+
+# 9. Sentry (Monitoring)
+sentry:
+  dsn: ${SENTRY_DSN}
+  traces-sample-rate: 1.0
