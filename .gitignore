@@ -56,3 +56,6 @@ antigravity.db
 .env.*
 !src/main/resources/application.yml
 !src/main/resources/application.properties
+
+### local workspace notes ###
+local-notes/
