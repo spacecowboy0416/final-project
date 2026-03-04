@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+
+<!-- 헤드 공통 설정 조각 (configFragment) -->
+<th:block th:fragment="configFragment">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    
+    <!-- 공통 CSS (있을 경우 여기에 추가) -->
+    
+    <!-- jQuery (WebJars) -->
+    <script th:src="@{/webjars/jquery/jquery.min.js}"></script>
+</th:block>
+
+<!-- 헤더 공통 조각 (bodyHeaderFragment) -->
+<nav th:fragment="headerFragment">
+    <h1 style="text-align: center; padding: 20px 0;">COORDI</h1>
+</nav>
+
+<!-- 푸터 공통 조각 (footerFragment) -->
+<footer th:fragment="footerFragment" style="text-align: center; padding: 20px 0; color: #888;">
+    <p>&copy; 2026 COORDI - All Rights Reserved.</p>
+</footer>
+
+</html>
