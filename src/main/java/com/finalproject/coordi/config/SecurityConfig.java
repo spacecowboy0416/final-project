@@ -21,7 +21,7 @@ public class SecurityConfig {
             )
             // 기본 로그인 페이지 비활성화
             .formLogin(form -> form.disable())
-            // HTTP Basic 인증 비활성화
+            // HTTP Basic 인증 비활성화(이거 없애면 로그인 창 뜸)
             .httpBasic(basic -> basic.disable());
 
         return http.build();
