@@ -1,32 +1,16 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <!--  -->
-    <th:block th:replace="~{fragments/common :: configFragment}"></th:block>
-    <title>COORDI - Home</title>
+    <th:block th:replace="~{common :: configFragment}"></th:block>
+    <title>HOME</title>
 </head>
 <body>
-    <!-- 공통 내비게이션 바/헤더 -->
-    <div th:replace="~{fragments/common :: headerFragment}"></div>
 
-    <div id="app" style="max-width: 800px; margin: 0 auto; padding: 50px 20px;">
-        <h2>메인 콘텐츠 영역</h2>
-        <p>Thymeleaf Layout Fragments를 사용하여 jQuery가 자동으로 로드되었습니다.</p>
-        <button id="test-btn" style="padding: 10px 20px; font-weight: bold; cursor: pointer;">jQuery 작동 확인</button>
-        <div id="status" style="margin-top: 20px;"></div>
-    </div>
+    <div th:replace="~{common :: headerFragment}"></div>
 
-    <!-- 공통 푸터 -->
-    <footer th:replace="~{fragments/common :: footerFragment}"></footer>
+    <main class="main-content">
+    </main>
+    <footer th:replace="~{common :: footerFragment}"></footer>
 
-    <script>
-        $(document).ready(function() {
-            $('#test-btn').on('click', function() {
-                $('#status').html('<h3 style="color: green;">성공: jQuery가 잘 작동하고 있습니다!</h3>');
-                $(this).fadeOut(500).fadeIn(500);
-            });
-            console.log("jQuery " + $().jquery + " is ready via fragments!");
-        });
-    </script>
 </body>
 </html>
