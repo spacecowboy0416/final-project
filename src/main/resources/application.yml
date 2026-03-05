@@ -63,8 +63,13 @@ mybatis:
   mapper-locations: classpath:mappers/**/*.xml
   configuration:
     map-underscore-to-camel-case: true # DB의 snake_case를 Java의 camelCase로 매핑
+<<<<<<< HEAD
     jdbc-type-for-null: "NULL"
   type-aliases-package: com.finalproject.coordi # 실제 도메인 패키지 경로 (com.finalproject.coordi.domain 등)
+=======
+    jdbc-type-for-null: 'NULL'
+  type-aliases-package: com.finalproject.coordi
+>>>>>>> develop
 
 # 6. AWS S3 (Cloud AWS)
 cloud:
