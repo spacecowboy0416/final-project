@@ -92,6 +92,10 @@ external:
   api:
     gemini:
       key: ${GEMINI_API_KEY}
+    shopping:
+      endpoint: ${SHOPPING_API_ENDPOINT:https://openapi.naver.com/v1/search/shop.json}
+      client-id: ${NAVER_CLIENT_ID:}
+      client-secret: ${NAVER_CLIENT_SECRET:}
     weather:
       key: ${WEATHER_API_KEY}
 

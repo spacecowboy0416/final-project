@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.finalproject.coordi.recommendation.persistence.RecommendationMapper">
+
+    <insert id="insertRecommendation" parameterType="com.finalproject.coordi.recommendation.persistence.RecommendationRecord"
+            useGeneratedKeys="true" keyProperty="recId">
+        INSERT INTO recommendation
+        (
+            user_id,
+            input_mode,
+            input_text,
+            product_option,
+            is_saved,
+            ai_blueprint,
+            ai_explanation
+        )
+        VALUES
+        (
+            #{userId},
+            #{inputMode},
+            #{inputText},
+            #{productOption},
+            #{isSaved},
+            CAST(#{aiBlueprint} AS JSON),
+            #{aiExplanation}
+        )
+    </insert>
+
+    <insert id="insertRecommendationItem" parameterType="com.finalproject.coordi.recommendation.persistence.RecommendationItemRecord"
+            useGeneratedKeys="true" keyProperty="recItemId">
+        INSERT INTO recommendation_item
+        (
+            rec_id,
+            slot_key,
+            source_type,
+            product_id,
+            category_id,
+            item_name,
+            search_query,
+            attributes_json,
+            temp_min,
+            temp_max,
+            priority,
+            selection_stage,
+            match_score,
+            style_score,
+            color_score,
+            temp_score,
+            scoring_details_json,
+            reason
+        )
+        VALUES
+        (
+            #{recId},
+            #{slotKey},
+            #{sourceType},
+            #{productId},
+            #{categoryId},
+            #{itemName},
+            #{searchQuery},
+            CAST(#{attributesJson} AS JSON),
+            #{tempMin},
+            #{tempMax},
+            #{priority},
+            #{selectionStage},
+            #{matchScore},
+            #{styleScore},
+            #{colorScore},
+            #{tempScore},
+            CAST(#{scoringDetailsJson} AS JSON),
+            #{reason}
+        )
+    </insert>
+
+    <insert id="upsertProduct" parameterType="com.finalproject.coordi.recommendation.persistence.ProductRecord">
+        INSERT INTO product
+        (
+            source,
+            external_id,
+            category_id,
+            name,
+            brand,
+            price,
+            image_url,
+            link
+        )
+        VALUES
+        (
+            #{source},
+            #{externalId},
+            #{categoryId},
+            #{name},
+            #{brand},
+            #{price},
+            #{imageUrl},
+            #{link}
+        )
+        ON DUPLICATE KEY UPDATE
+            name = VALUES(name),
+            brand = VALUES(brand),
+            price = VALUES(price),
+            image_url = VALUES(image_url),
+            link = VALUES(link),
+            fetched_at = CURRENT_TIMESTAMP
+    </insert>
+
+    <select id="findProductIdBySourceAndExternalId" resultType="long">
+        SELECT product_id
+        FROM product
+        WHERE source = #{source}
+          AND external_id = #{externalId}
+        LIMIT 1
+    </select>
+</mapper>
