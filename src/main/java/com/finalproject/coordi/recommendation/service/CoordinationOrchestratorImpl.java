@@ -8,7 +8,6 @@ import com.finalproject.coordi.recommendation.domain.enums.ContextEnums.TpoType;
 import com.finalproject.coordi.recommendation.dto.CoordinationOutput;
 import com.finalproject.coordi.recommendation.dto.CoordinationRequest;
 import com.finalproject.coordi.recommendation.dto.CoordinationResponse;
-import com.finalproject.coordi.recommendation.service.component.AttributeNormalizer;
 import com.finalproject.coordi.recommendation.service.component.BlueprintSlotExtractor;
 import com.finalproject.coordi.recommendation.service.component.CoordinationValidator;
 import com.finalproject.coordi.recommendation.service.outboundport.AiPort;
@@ -31,7 +30,6 @@ public class CoordinationOrchestratorImpl implements CoordinationOrchestrator {
     private final AiPort aiPort;
     private final ShoppingPort shoppingPort;
     private final CoordinationValidator coordinationValidator;
-    private final AttributeNormalizer normalizer;
     private final BlueprintSlotExtractor blueprintSlotExtractor;
 
     @Override
@@ -42,8 +40,8 @@ public class CoordinationOrchestratorImpl implements CoordinationOrchestrator {
         var constrained = coordinationValidator.validate(aiRaw);
         var slotDrafts = blueprintSlotExtractor.extract(constrained);
 
-        TpoType tpo = normalizer.normalizeTpo(request.styleContext().tpo());
-        StyleMode mode = normalizer.normalizeStyle(request.styleContext().mood());
+        TpoType tpo = TpoType.CASUAL;
+        StyleMode mode = StyleMode.COMFORTABLE;
 
         List<CoordinationOutput> coordination = new ArrayList<>();
         List<CoordinationResponse.ItemResult> finalItems = new ArrayList<>();
