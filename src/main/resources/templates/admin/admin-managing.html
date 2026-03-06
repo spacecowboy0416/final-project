@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <th:block th:replace="~{common :: configFragment}"></th:block>
+    <link rel="stylesheet" th:href="@{/css/admin.css}" />
+    <title>관리자 페이지</title>
+  </head>
+  <body>
+    <div th:replace="~{common :: headerFragment}"></div>
+
+    <main class="admin-main">
+      <!-- Sidebar -->
+      <aside class="admin-sidebar">
+        <h2 class="admin-sidebar-title">관리자 메뉴</h2>
+        <nav class="admin-nav">
+          <ul>
+            <li>
+              <a href="#user-management"><span>회원 관리</span></a>
+            </li>
+            <li>
+              <a href="#item-management"><span>의류 아이템 관리</span></a>
+            </li>
+            <li>
+              <a href="#community-management"><span>커뮤니티 관리</span></a>
+            </li>
+            <li>
+              <a href="#system-stats"><span>시스템 통계</span></a>
+            </li>
+          </ul>
+        </nav>
+      </aside>
+
+      <!-- Main Content -->
+      <section class="admin-content">
+        <div class="glass-panel">
+          <h1 class="glass-panel-title">관리자 대시보드</h1>
+          <p class="glass-panel-text">
+            좌측 메뉴를 선택하여 기능을 관리하세요.
+          </p>
+
+          <!-- TODO: 각 메뉴에 해당하는 컨텐츠가 동적으로 이 영역에 로드될 예정 -->
+          <div id="admin-content-area"></div>
+        </div>
+      </section>
+    </main>
+    <footer th:replace="~{common :: footerFragment}"></footer>
+  </body>
+</html>

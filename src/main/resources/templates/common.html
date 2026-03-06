@@ -1,44 +1,63 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+    <th:block th:fragment="configFragment">
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
 
-<th:block th:fragment="configFragment">
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <link rel="stylesheet" th:href="@{/css/common.css}">
-    <script th:src="@{/webjars/jquery/jquery.min.js}"></script>
-</th:block>
+        <script src="https://js.sentry-cdn.com/16e116e54eb3eed9180e71a232925041.min.js"
+            crossorigin="anonymous"></script>
 
-<header th:fragment="headerFragment" class="site-header">
-    <div class="header-container">
-        <h1 class="logo">
-            <a th:href="@{/}">로고</a>
-        </h1>
-        
-        <ul class="nav-menu">
-            <li><a th:href="@{/recommend}">코디추천</a></li>
-            <li><a th:href="@{/closet}">나의옷장</a></li>
-            <li><a th:href="@{/board}">커뮤니티</a></li>
-            <li sec:authorize="hasRole('ADMIN')">
-                <a th:href="@{/admin}" style="color: #dc3545; font-weight: 800;">관리자 메뉴</a>
-            </li>
-            <li sec:authorize="isAnonymous()">
-                <a th:href="@{/login}" class="btn login-btn">로그인 / 회원가입</a>
-            </li>
-            <li sec:authorize="isAuthenticated()">
-                <form th:action="@{/logout}" method="post" style="margin: 0;">
-                    <button type="submit" class="btn login-btn" style="background-color: #6c757d;">로그아웃</button>
-                </form>
-            </li>
-        </ul>
-    </div>
-</header>
+        <script th:inline="javascript">
 
-<footer th:fragment="footerFragment" class="site-footer">
-    <div class="footer-container">
-        <p>&copy; 2026 COORDI - All Rights Reserved. | AI 기반 맞춤형 코디 추천 서비스</p>
-    </div>
-</footer>
+            const sentryDsn = /*[[${@environment.getProperty('sentry.dsn.frontend')}]]*/ '';
+            Sentry.init({
+                dsn: sentryDsn,
+                integrations: [
+                    Sentry.browserTracingIntegration(),
+                    Sentry.replayIntegration(),
+                ],
+                // Performance Monitoring
+                tracesSampleRate: 1.0,
+                // Session Replay
+                replaysSessionSampleRate: 0.1,
+                replaysOnErrorSampleRate: 1.0,
+            });
+        </script>
+
+        <link rel="stylesheet" th:href="@{/css/common.css}">
+        <script th:src="@{/webjars/jquery/jquery.min.js}"></script>
+    </th:block>
+
+    <header th:fragment="headerFragment" class="site-header">
+        <div class="header-container">
+            <h1 class="logo">
+                <a th:href="@{/}">로고</a>
+            </h1>
+
+            <ul class="nav-menu">
+                <li><a th:href="@{/recommend}">코디추천</a></li>
+                <li><a th:href="@{/closet}">나의옷장</a></li>
+                <li><a th:href="@{/board}">커뮤니티</a></li>
+                <li sec:authorize="hasRole('ADMIN')">
+                    <a th:href="@{/admin}" style="color: #dc3545; font-weight: 800;">관리자 메뉴</a>
+                </li>
+                <li sec:authorize="isAnonymous()">
+                    <a th:href="@{/login}" class="btn login-btn">로그인 / 회원가입</a>
+                </li>
+                <li sec:authorize="isAuthenticated()">
+                    <form th:action="@{/logout}" method="post" style="margin: 0;">
+                        <button type="submit" class="btn login-btn" style="background-color: #6c757d;">로그아웃</button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+    </header>
+
+    <footer th:fragment="footerFragment" class="site-footer">
+        <div class="footer-container">
+            <p>&copy; 2026 COORDI - All Rights Reserved. | AI 기반 맞춤형 코디 추천 서비스</p>
+        </div>
+    </footer>
 
 </html>
