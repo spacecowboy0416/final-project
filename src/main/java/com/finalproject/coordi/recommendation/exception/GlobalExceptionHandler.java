@@ -38,6 +38,10 @@ public class GlobalExceptionHandler {
     ) {
         HttpStatus status = switch (ex.getErrorCode()) {
             case INVALID_REQUEST -> HttpStatus.BAD_REQUEST;
+            case INVALID_LOCATION -> HttpStatus.BAD_REQUEST;
+            case INVALID_TIME -> HttpStatus.BAD_REQUEST;
+            case WEATHER_FETCH_FAILED -> HttpStatus.BAD_GATEWAY;
+            case LLM_PARSE_FAILED -> HttpStatus.BAD_GATEWAY;
             case EXTERNAL_API_ERROR -> HttpStatus.BAD_GATEWAY;
             case DB_ERROR -> HttpStatus.INTERNAL_SERVER_ERROR;
             case INTERNAL_ERROR -> HttpStatus.INTERNAL_SERVER_ERROR;

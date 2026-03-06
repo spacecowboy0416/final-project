@@ -3,9 +3,9 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.finalproject.coordi.recommendation.persistence.RecommendationMapper">
+<mapper namespace="com.finalproject.coordi.recommendation.dao.RecommendationMapper">
 
-    <insert id="insertRecommendation" parameterType="com.finalproject.coordi.recommendation.persistence.RecommendationRecord"
+    <insert id="insertRecommendation" parameterType="com.finalproject.coordi.recommendation.dao.RecommendationDao"
             useGeneratedKeys="true" keyProperty="recId">
         INSERT INTO recommendation
         (
@@ -29,7 +29,7 @@
         )
     </insert>
 
-    <insert id="insertRecommendationItem" parameterType="com.finalproject.coordi.recommendation.persistence.RecommendationItemRecord"
+    <insert id="insertRecommendationItem" parameterType="com.finalproject.coordi.recommendation.dao.RecommendationItemDao"
             useGeneratedKeys="true" keyProperty="recItemId">
         INSERT INTO recommendation_item
         (
@@ -75,7 +75,7 @@
         )
     </insert>
 
-    <insert id="upsertProduct" parameterType="com.finalproject.coordi.recommendation.persistence.ProductRecord">
+    <insert id="upsertProduct" parameterType="com.finalproject.coordi.recommendation.dao.ProductDao">
         INSERT INTO product
         (
             source,

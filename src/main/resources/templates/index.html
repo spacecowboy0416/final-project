@@ -2,15 +2,161 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <th:block th:replace="~{common :: configFragment}"></th:block>
-    <title>HOME</title>
+    <title>Coordination Input</title>
+    <style>
+        .panel { max-width: 980px; margin: 24px auto; background: #fff; border: 1px solid #ddd; border-radius: 12px; padding: 20px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+        input, textarea { border: 1px solid #ccc; border-radius: 8px; padding: 10px; font-size: 14px; }
+        button { border: 0; border-radius: 8px; background: #0f4c81; color: #fff; padding: 10px 16px; font-weight: 700; cursor: pointer; }
+        pre { background: #101820; color: #d0e0f0; border-radius: 8px; padding: 12px; white-space: pre-wrap; }
+        @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+    </style>
 </head>
 <body>
 
     <div th:replace="~{common :: headerFragment}"></div>
 
     <main class="main-content">
+        <section class="panel">
+            <h2>CoordinationRequest 입력</h2>
+            <div class="field">
+                <label for="naturalText">자연어 요청</label>
+                <textarea id="naturalText" rows="3">오늘 저녁 데이트 코디 추천해줘. 깔끔하고 세련된 무드로.</textarea>
+            </div>
+
+            <div class="grid">
+                <div class="field">
+                    <label for="scheduleTime">요청 시간(ISO-8601)</label>
+                    <input id="scheduleTime" type="text">
+                </div>
+                <div class="field">
+                    <label for="weatherTemp">기온</label>
+                    <input id="weatherTemp" type="number" step="0.1" value="21.5">
+                </div>
+                <div class="field">
+                    <label for="weatherStatus">날씨 상태</label>
+                    <input id="weatherStatus" type="text" value="맑음">
+                </div>
+                <div class="field">
+                    <label for="weatherHumidity">습도</label>
+                    <input id="weatherHumidity" type="text" value="45%">
+                </div>
+                <div class="field">
+                    <label for="tpo">TPO</label>
+                    <input id="tpo" type="text" value="데이트">
+                </div>
+                <div class="field">
+                    <label for="mood">Mood</label>
+                    <input id="mood" type="text" value="미니멀">
+                </div>
+                <div class="field">
+                    <label for="preferences">선호(콤마 구분)</label>
+                    <input id="preferences" type="text" value="무채색 선호,오버핏 제외">
+                </div>
+                <div class="field">
+                    <label for="placeName">장소명</label>
+                    <input id="placeName" type="text" value="강남역">
+                </div>
+                <div class="field">
+                    <label for="addressName">주소</label>
+                    <input id="addressName" type="text" value="서울특별시 강남구">
+                </div>
+                <div class="field">
+                    <label for="latitude">위도</label>
+                    <input id="latitude" type="number" step="0.000001" value="37.497952">
+                </div>
+                <div class="field">
+                    <label for="longitude">경도</label>
+                    <input id="longitude" type="number" step="0.000001" value="127.027619">
+                </div>
+                <div class="field">
+                    <label for="photoFile">사진 파일</label>
+                    <input id="photoFile" type="file" accept="image/*">
+                </div>
+            </div>
+
+            <button id="submitBtn" type="button">AI 코디 요청</button>
+            <p id="statusText"></p>
+            <h3>응답</h3>
+            <pre id="resultBox">응답 없음</pre>
+        </section>
     </main>
     <footer th:replace="~{common :: footerFragment}"></footer>
 
+<script>
+    const scheduleInput = document.getElementById("scheduleTime");
+    scheduleInput.value = new Date().toISOString();
+
+    const statusText = document.getElementById("statusText");
+    const resultBox = document.getElementById("resultBox");
+    const submitBtn = document.getElementById("submitBtn");
+
+    function fileToBase64(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+                const full = String(reader.result || "");
+                const base64 = full.includes(",") ? full.split(",")[1] : full;
+                resolve(base64);
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+    }
+
+    submitBtn.addEventListener("click", async () => {
+        try {
+            statusText.textContent = "요청 중...";
+            const fileInput = document.getElementById("photoFile");
+            if (!fileInput.files || fileInput.files.length === 0) {
+                throw new Error("사진 파일을 선택해주세요.");
+            }
+            const file = fileInput.files[0];
+            const imageBase64 = await fileToBase64(file);
+
+            const payload = {
+                naturalText: document.getElementById("naturalText").value,
+                scheduleTime: document.getElementById("scheduleTime").value,
+                styleContext: {
+                    tpo: document.getElementById("tpo").value,
+                    mood: document.getElementById("mood").value,
+                    preferences: document.getElementById("preferences").value
+                        .split(",").map(v => v.trim()).filter(Boolean)
+                },
+                weatherInfo: {
+                    temperature: Number(document.getElementById("weatherTemp").value),
+                    status: document.getElementById("weatherStatus").value,
+                    humidity: document.getElementById("weatherHumidity").value
+                },
+                location: {
+                    placeName: document.getElementById("placeName").value,
+                    addressName: document.getElementById("addressName").value,
+                    latitude: Number(document.getElementById("latitude").value),
+                    longitude: Number(document.getElementById("longitude").value)
+                },
+                photo: {
+                    imageBytes: imageBase64,
+                    mimeType: file.type || "image/jpeg"
+                }
+            };
+
+            const res = await fetch("/api/recommendations", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+            const text = await res.text();
+            if (!res.ok) {
+                throw new Error("HTTP " + res.status + " - " + text);
+            }
+            resultBox.textContent = JSON.stringify(JSON.parse(text), null, 2);
+            statusText.textContent = "완료";
+        } catch (e) {
+            statusText.textContent = "실패";
+            resultBox.textContent = String(e.message || e);
+        }
+    });
+</script>
 </body>
 </html>
