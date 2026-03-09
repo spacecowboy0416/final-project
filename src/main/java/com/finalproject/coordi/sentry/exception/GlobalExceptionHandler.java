@@ -1,4 +1,4 @@
-package com.finalproject.coordi.exception;
+package com.finalproject.coordi.sentry.exception;
 
 import java.util.List;
 

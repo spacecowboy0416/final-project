@@ -1,4 +1,4 @@
-package com.finalproject.coordi.controller;
+package com.finalproject.coordi.sentry.controller;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.ControllerAdvice;

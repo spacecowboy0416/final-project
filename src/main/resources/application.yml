@@ -107,4 +107,4 @@ sentry:
 logging:
   level:
     root: INFO
-    com.finalproject.coordi: DEBUG
+    "[com.finalproject.coordi]": DEBUG
