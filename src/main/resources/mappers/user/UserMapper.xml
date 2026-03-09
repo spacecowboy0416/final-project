@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.finalproject.coordi.user.mapper.UserMapperInter">
+
+    <!-- 소셜 로그인 정보로 조회 -->
+    <select id="findByProviderAndProviderUserId" resultType="udto">
+        SELECT * FROM users 
+        WHERE provider = #{provider} AND provider_user_id = #{providerUserId}
+    </select>
+
+    <!-- 이메일로 조회 -->
+    <select id="findByEmail" parameterType="string" resultType="udto">
+        SELECT * FROM users WHERE email = #{email}
+    </select>
+
+    <!-- 저장: role과 status가 null일 경우 DB Default('USER', 'ACTIVE')가 들어가도록 COALESCE 사용 -->
+    <insert id="save" parameterType="udto" useGeneratedKeys="true" keyProperty="userId">
+        INSERT INTO users (
+            provider, provider_user_id, email, nickname, profile_image_url, role, status
+        ) VALUES (
+            #{provider}, #{providerUserId}, #{email}, #{nickname}, #{profileImageUrl},
+            COALESCE(#{role}, 'USER'), COALESCE(#{status}, 'ACTIVE')
+        )
+    </insert>
+
+    <!-- 업데이트 -->
+    <update id="update" parameterType="udto">
+        UPDATE users
+        <set>
+            <if test="nickname != null">nickname = #{nickname},</if>
+            <if test="profileImageUrl != null">profile_image_url = #{profileImageUrl},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="role != null">role = #{role},</if>
+        </set>
+        WHERE user_id = #{userId}
+    </update>
+
+    <!-- 마지막 로그인 시간만 업데이트 -->
+    <update id="updateLastLogin" parameterType="long">
+        UPDATE users 
+        SET last_login_at = CURRENT_TIMESTAMP 
+        WHERE user_id = #{userId}
+    </update>
+
+</mapper>
