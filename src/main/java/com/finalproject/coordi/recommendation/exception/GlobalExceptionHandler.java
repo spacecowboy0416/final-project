@@ -1,6 +1,7 @@
 package com.finalproject.coordi.recommendation.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolationException;
 import java.time.OffsetDateTime;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -51,6 +52,27 @@ public class GlobalExceptionHandler {
                 OffsetDateTime.now(),
                 ex.getErrorCode(),
                 ex.getMessage(),
+                request.getRequestURI()
+            )
+        );
+    }
+
+    // 메서드 레벨(@Validated) 검증 실패를 공통 에러 응답으로 변환한다.
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ApiErrorResponse> handleConstraintViolation(
+        ConstraintViolationException ex,
+        HttpServletRequest request
+    ) {
+        String message = ex.getConstraintViolations().stream()
+            .findFirst()
+            .map(v -> v.getPropertyPath() + ": " + v.getMessage())
+            .orElse("요청 값이 올바르지 않습니다.");
+
+        return ResponseEntity.badRequest().body(
+            new ApiErrorResponse(
+                OffsetDateTime.now(),
+                ErrorCode.INVALID_REQUEST,
+                message,
                 request.getRequestURI()
             )
         );

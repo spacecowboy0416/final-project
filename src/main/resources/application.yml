@@ -91,6 +91,9 @@ springdoc:
 external:
   api:
     gemini:
+      endpoint: ${GEMINI_ENDPOINT:https://generativelanguage.googleapis.com/v1beta}
+      model: ${GEMINI_MODEL:gemini-2.0-flash}
+      prompt-template: ${GEMINI_PROMPT_TEMPLATE:classpath:prompts/gemini/coordination-prompt.txt}
       key: ${GEMINI_API_KEY}
     shopping:
       endpoint: ${SHOPPING_API_ENDPOINT:https://openapi.naver.com/v1/search/shop.json}

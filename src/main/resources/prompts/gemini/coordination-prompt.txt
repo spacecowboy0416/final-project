@@ -1,0 +1,35 @@
+Return ONLY valid JSON. No markdown, no explanation.
+Use the exact top-level key: ai_blueprint.
+Required structure:
+{
+  "ai_blueprint": {
+    "schemaVersion": "1.0.0",
+    "main_item_analysis": {"temp":"","season":"","color":"","type":"","style":""},
+    "coordination": {
+      "tops|bottoms|outerwear|shoes|accessories": {
+        "item_name":"",
+        "search_query":"",
+        "category":"",
+        "attributes":{"color":"","material":"","fit":"","style":""},
+        "temp_range":[0,0],
+        "reasoning":"",
+        "priority":"essential|optional"
+      }
+    },
+    "styling_rule_applied":""
+  }
+}
+Input:
+- naturalText: %s
+- scheduleTime: %s
+- tpo: %s
+- mood: %s
+- preferences: %s
+- weather.temperature: %s
+- weather.feelsLike: %s
+- weather.status: %s
+- weather.isRaining: %s
+- weather.rainProbability: %s
+- location: (%s, %s) %s
+- photo.mimeType: %s
+- photo.imageBytes(base64): provided

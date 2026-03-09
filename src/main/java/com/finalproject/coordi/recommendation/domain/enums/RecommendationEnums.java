@@ -10,9 +10,9 @@ public final class RecommendationEnums {
     }
 
     /**
-     * 초안 코디의 생성 출처를 나타낸다.
+     * AI blueprint 생성 출처를 나타낸다.
      */
-    public enum DraftSource {
+    public enum BlueprintSource {
         GEMINI,
         FALLBACK
     }
@@ -24,15 +24,6 @@ public final class RecommendationEnums {
         PENDING,
         SUCCESS,
         FAILED
-    }
-
-    /**
-     * 슬롯 아이템이 현재 어떤 선택 단계에 있는지 나타낸다.
-     */
-    public enum SelectionStage {
-        DRAFT,
-        FINAL,
-        REJECTED
     }
 
     /**
@@ -51,6 +42,13 @@ public final class RecommendationEnums {
         @JsonValue
         public String code() {
             return code;
+        }
+
+        public static PriorityType fromCode(String rawCode) {
+            if (rawCode == null) {
+                return ESSENTIAL;
+            }
+            return OPTIONAL.code.equalsIgnoreCase(rawCode) ? OPTIONAL : ESSENTIAL;
         }
     }
 

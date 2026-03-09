@@ -1,4 +1,4 @@
-package com.finalproject.coordi.recommendation.service.outboundport;
+package com.finalproject.coordi.recommendation.service.apiport;
 
 /**
  * 사진 업로드를 위한 아웃바운드 포트.

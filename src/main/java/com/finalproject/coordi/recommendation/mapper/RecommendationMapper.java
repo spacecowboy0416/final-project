@@ -1,7 +1,11 @@
-package com.finalproject.coordi.recommendation.dao;
+package com.finalproject.coordi.recommendation.mapper;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+
+import com.finalproject.coordi.recommendation.dao.ProductDao;
+import com.finalproject.coordi.recommendation.dao.RecommendationDao;
+import com.finalproject.coordi.recommendation.dao.RecommendationItemDao;
 
 @Mapper
 public interface RecommendationMapper {
@@ -16,4 +20,7 @@ public interface RecommendationMapper {
 
     // source + externalId로 product_id를 조회한다.
     Long findProductIdBySourceAndExternalId(@Param("source") String source, @Param("externalId") String externalId);
+
+    // source + externalId로 product 레코드를 조회한다.
+    ProductDao findProductBySourceAndExternalId(@Param("source") String source, @Param("externalId") String externalId);
 }

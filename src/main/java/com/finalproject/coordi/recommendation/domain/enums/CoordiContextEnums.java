@@ -5,8 +5,8 @@ import com.fasterxml.jackson.annotation.JsonValue;
 /**
  * 추천 컨텍스트(TPO/스타일/계절/강수)에서 공통으로 사용하는 enum들을 한곳에 모아 관리한다.
  */
-public final class ContextEnums {
-    private ContextEnums() {
+public final class CoordiContextEnums {
+    private CoordiContextEnums() {
     }
 
     /**
@@ -18,7 +18,9 @@ public final class ContextEnums {
         CASUAL("casual"),
         EXERCISE("exercise"),
         TRAVEL("travel"),
-        FORMAL("formal");
+        FORMAL("formal"),
+        FUNERAL("funeral"),
+        WEDDING("wedding");
 
         private final String code;
 

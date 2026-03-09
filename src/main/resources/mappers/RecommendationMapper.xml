@@ -3,7 +3,7 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.finalproject.coordi.recommendation.dao.RecommendationMapper">
+<mapper namespace="com.finalproject.coordi.recommendation.mapper.RecommendationMapper">
 
     <insert id="insertRecommendation" parameterType="com.finalproject.coordi.recommendation.dao.RecommendationDao"
             useGeneratedKeys="true" keyProperty="recId">
@@ -109,6 +109,23 @@
 
     <select id="findProductIdBySourceAndExternalId" resultType="long">
         SELECT product_id
+        FROM product
+        WHERE source = #{source}
+          AND external_id = #{externalId}
+        LIMIT 1
+    </select>
+
+    <select id="findProductBySourceAndExternalId" resultType="com.finalproject.coordi.recommendation.dao.ProductDao">
+        SELECT
+            product_id AS productId,
+            source,
+            external_id AS externalId,
+            category_id AS categoryId,
+            name,
+            brand,
+            price,
+            image_url AS imageUrl,
+            link
         FROM product
         WHERE source = #{source}
           AND external_id = #{externalId}

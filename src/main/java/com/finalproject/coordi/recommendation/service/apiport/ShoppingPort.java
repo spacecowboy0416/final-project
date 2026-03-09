@@ -1,5 +1,8 @@
-package com.finalproject.coordi.recommendation.service.outboundport;
+package com.finalproject.coordi.recommendation.service.apiport;
 
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 import java.util.List;
 
 /**
@@ -28,8 +31,8 @@ public interface ShoppingPort {
      * @param resultLimit 한 번에 가져올 결과 개수
      */
     public record ShoppingSearchQuery(
-        String searchKeyword,
-        int resultLimit
+        @NotBlank String searchKeyword,
+        @Min(1) @Max(50) int resultLimit
     ) {
     }
 
