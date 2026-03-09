@@ -5,26 +5,29 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta http-equiv="X-UA-Compatible" content="ie=edge">
 
-        <script src="https://js.sentry-cdn.com/16e116e54eb3eed9180e71a232925041.min.js"
+        <script src="https://browser.sentry-cdn.com/8.0.0/bundle.tracing.replay.min.js"
             crossorigin="anonymous"></script>
 
         <script th:inline="javascript">
 
             const sentryDsn = /*[[${@environment.getProperty('sentry.dsn.frontend')}]]*/ '';
-            Sentry.init({
-                dsn: sentryDsn,
-                integrations: [
-                    Sentry.browserTracingIntegration(),
-                    Sentry.replayIntegration(),
-                ],
-                // Performance Monitoring
-                tracesSampleRate: 1.0,
-                // Session Replay
-                replaysSessionSampleRate: 0.1,
-                replaysOnErrorSampleRate: 1.0,
-            });
-        </script>
 
+            if (sentryDsn) {
+                Sentry.init({
+                    dsn: sentryDsn,
+                    integrations: [
+                        Sentry.browserTracingIntegration(),
+                        Sentry.replayIntegration(),
+                    ],
+                    // Performance Monitoring
+                    tracesSampleRate: 1.0,
+                    // Session Replay
+                    replaysSessionSampleRate: 0.1,
+                    replaysOnErrorSampleRate: 1.0,
+                });
+            }
+        </script>
+        <link rel="icon" href="data:;base64,iVBORw0KGgo=">
         <link rel="stylesheet" th:href="@{/css/common.css}">
         <script th:src="@{/webjars/jquery/jquery.min.js}"></script>
     </th:block>

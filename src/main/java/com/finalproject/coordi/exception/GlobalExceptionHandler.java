@@ -20,7 +20,7 @@ public class GlobalExceptionHandler {
 
         // URL 경로 추출
         String rawPath = request.getRequestURI();
-        // 숫자(ID)를 {id}로 치환
+        // 숫자(ID)를 {id}로 치환 - 에러 파편화 방지
         String formattedPath = rawPath.replaceAll("/\\d+(?=/|$)", "/{id}");
 
         // 상태 코드 설정 (500 서버 에러로 default 처리)
