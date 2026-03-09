@@ -1,31 +1,20 @@
 package com.finalproject.coordi.recommendation.dto.api;
 
-import com.finalproject.coordi.recommendation.dto.internal.BlueprintSlot;
-import com.finalproject.coordi.recommendation.domain.enums.RecommendationEnums.SlotKey;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.StyleType;
+import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.TpoType;
+import java.util.List;
 
 /**
- * 팀 공통 코디 출력 계약 DTO.
+ * Blueprint 기반 최종 coordination 출력 계약 DTO.
  */
 public record CoordinationOutputDto(
-    SlotKey slotKey,
-    String itemName,
-    String searchQuery,
-    double matchScore,
-    String color,
-    String material,
-    String fit,
-    String style
+    String blueprintId,
+    String status,
+    String blueprintSource,
+    TpoType tpoType,
+    StyleType styleType,
+    JsonNode aiBlueprint,
+    List<BlueprintOutputDto> blueprint
 ) {
-    public static CoordinationOutputDto from(BlueprintSlot slotBlueprint, double matchScore) {
-        return new CoordinationOutputDto(
-            slotBlueprint.slotKey(),
-            slotBlueprint.itemName(),
-            slotBlueprint.searchQuery(),
-            matchScore,
-            slotBlueprint.color(),
-            slotBlueprint.material(),
-            slotBlueprint.fit(),
-            slotBlueprint.style()
-        );
-    }
 }

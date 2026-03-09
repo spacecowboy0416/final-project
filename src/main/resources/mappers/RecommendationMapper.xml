@@ -5,7 +5,7 @@
 
 <mapper namespace="com.finalproject.coordi.recommendation.mapper.RecommendationMapper">
 
-    <insert id="insertRecommendation" parameterType="com.finalproject.coordi.recommendation.dao.RecommendationDao"
+    <insert id="insertRecommendation" parameterType="com.finalproject.coordi.recommendation.dto.persistent.RecommendationDto"
             useGeneratedKeys="true" keyProperty="recId">
         INSERT INTO recommendation
         (
@@ -29,7 +29,7 @@
         )
     </insert>
 
-    <insert id="insertRecommendationItem" parameterType="com.finalproject.coordi.recommendation.dao.RecommendationItemDao"
+    <insert id="insertRecommendationItem" parameterType="com.finalproject.coordi.recommendation.dto.persistent.RecommendationItemDto"
             useGeneratedKeys="true" keyProperty="recItemId">
         INSERT INTO recommendation_item
         (
@@ -75,7 +75,7 @@
         )
     </insert>
 
-    <insert id="upsertProduct" parameterType="com.finalproject.coordi.recommendation.dao.ProductDao">
+    <insert id="upsertProduct" parameterType="com.finalproject.coordi.recommendation.dto.persistent.ProductDto">
         INSERT INTO product
         (
             source,
@@ -115,7 +115,7 @@
         LIMIT 1
     </select>
 
-    <select id="findProductBySourceAndExternalId" resultType="com.finalproject.coordi.recommendation.dao.ProductDao">
+    <select id="findProductBySourceAndExternalId" resultType="com.finalproject.coordi.recommendation.dto.persistent.ProductDto">
         SELECT
             product_id AS productId,
             source,

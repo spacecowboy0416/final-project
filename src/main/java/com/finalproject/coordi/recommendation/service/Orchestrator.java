@@ -1,61 +1,64 @@
 package com.finalproject.coordi.recommendation.service;
 
-import com.finalproject.coordi.recommendation.dto.api.CoordinationRequestDto;
-import com.finalproject.coordi.recommendation.dto.api.CoordinationResponseDto;
-import com.finalproject.coordi.recommendation.service.component.CoordinationNarration;
-import com.finalproject.coordi.recommendation.service.component.CoordinationResponseAssembly;
-import com.finalproject.coordi.recommendation.service.component.CoordinationRuleValidation;
-import com.finalproject.coordi.recommendation.service.component.CoordinationValidator;
-import com.finalproject.coordi.recommendation.service.component.ParallelAiAndPhotoIngestion;
-import com.finalproject.coordi.recommendation.service.component.ParallelBestItemMapping;
-import com.finalproject.coordi.recommendation.service.component.ParallelShoppingSearch;
+import com.finalproject.coordi.recommendation.dto.api.BlueprintRequestDto;
+import com.finalproject.coordi.recommendation.dto.api.CoordinationOutputDto;
+import com.finalproject.coordi.recommendation.service.component.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
-/**
- * 코디 추천 파이프라인 오케스트레이터 스켈레톤.
- *
- * 0. 입력
- * 1. AI 코디 생성 + 사진/메타데이터 DB 저장(병렬)
- * 2. 룰 엔진 검증
- * 3. 슬롯별 쇼핑 검색(병렬) + 최적 아이템 DB 매핑(병렬)
- * 4. 자연어 코디 출력 조립
- */
 @Service
 @Validated
 @RequiredArgsConstructor
+
+/**
+ * Blueprint 생성 파이프라인을 조율하고 최종 coordination 응답을 반환한다.
+ */
 public class Orchestrator {
-    private final ParallelAiAndPhotoIngestion parallelAiAndPhotoIngestion;
-    private final CoordinationValidator coordinationValidator;
-    private final CoordinationRuleValidation coordinationRuleValidation;
-    private final ParallelShoppingSearch parallelShoppingSearch;
-    private final ParallelBestItemMapping parallelBestItemMapping;
-    private final CoordinationNarration coordinationNarration;
-    private final CoordinationResponseAssembly coordinationResponseAssembly;
+    private final WeatherFetcher weatherFetcher;
+    private final PromptBuilder promptBuilder;
+    private final BlueprintGenerator blueprintGenerator;
+    private final ItemImageUploader itemImageUploader;
+    private final ItemMetadataRecorder itemMetadataRecorder;
+    private final BlueprintValidator blueprintValidator;
+    private final ItemSearchQueryExtractor itemSearchQueryExtractor;
+    private final ShoppingSearcher shoppingSearcher;
+    private final ItemMatcher itemMatcher;
+    private final ItemUpserter itemUpsertService;
+    private final BlueprintResponseBuilder blueprintResponseBuilder;
 
     @Transactional
-    public CoordinationResponseDto coordinate(@Valid CoordinationRequestDto request) {
-        // 1) AI 코디 생성 + 사진/메타데이터 저장 병렬 실행 결과
-        var stage1 = parallelAiAndPhotoIngestion.execute(request);
+    // blueprint 추천 요청을 받아 전체 파이프라인을 순차 실행한다.
+    public CoordinationOutputDto coordinate(@Valid BlueprintRequestDto request) {
+        // 1. 날씨 조회
+        var weather = weatherFetcher.fetch(request);
 
-        // 1-1) AI 출력 제약(스키마/필수 키/형식) 검증
-        var constraintValidated = coordinationValidator.validateConstraints(stage1.aiRawBlueprint());
+        // 2. 프롬프트 생성(natural text, image, location(kakao map), scheduleTime, weather)
+        var prompt = promptBuilder.build(request, weather);
 
-        // 2) 제약 검증 통과 결과를 비즈니스 룰 엔진으로 검증
-        var validated = coordinationRuleValidation.validateBusinessRules(constraintValidated);
+        // 3.1 AI API 호출하여 blueprint 생성
+        var rawBlueprintJson = blueprintGenerator.generate(request, prompt);
 
-        // 3-1) 검증된 코디의 슬롯 기준 쇼핑 검색(병렬)
-        var slotCandidates = parallelShoppingSearch.searchBySlots(validated);
+        // 3.2 옷 사진 S3 업로드 및 메타데이터 저장
+        var imageUrl = itemImageUploader.upload(request.imageData());
+        itemMetadataRecorder.record(request, imageUrl);
 
-        // 3-2) 후보 상품 중 코디 적합 아이템을 DB 기준으로 매핑(병렬)
-        var finalItems = parallelBestItemMapping.mapBestItems(validated, slotCandidates);
+        // 4. 내부 룰 엔진으로 생성된 blueprint 검증(스키마, 필수 슬롯, 적합성 등)
+        var validatedBlueprint = blueprintValidator.validate(rawBlueprintJson);
 
-        // 4) 검증된 코디 + 최종 아이템을 자연어 출력으로 변환
-        var coordination = coordinationNarration.toNaturalLanguage(validated, finalItems);
+        // 5. 검증된 blueprint slot별 item search_query 추출 및 병렬 ShoppingApi 검색
+        var slotSearchQueries = itemSearchQueryExtractor.extract(validatedBlueprint);
+        var slotCandidates = shoppingSearcher.searchAll(slotSearchQueries);
 
-        return coordinationResponseAssembly.assemble(stage1.aiRawBlueprint(), coordination, finalItems);
+        // 6. 최적 아이템 DB에서 매칭 + 검색 결과 DB upsert
+        var matchedItemsBySlot = itemMatcher.matchAll(slotCandidates, validatedBlueprint);
+        itemUpsertService.upsertAll(matchedItemsBySlot);
+
+        // 7. 최종 응답 생성 및 노출
+        return blueprintResponseBuilder.build(validatedBlueprint, matchedItemsBySlot);
     }
 }
+
+

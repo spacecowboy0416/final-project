@@ -1,0 +1,136 @@
+Return ONLY valid JSON. No markdown, no explanation.
+Use the exact top-level key: ai_blueprint.
+You are an AI personal shopper that must optimize outfit recommendations for weather and TPO.
+Use the attached image item as the main item and build a full-body coordination around it.
+Use ONLY the allowed enum codes listed below.
+
+Allowed enum codes:
+- tpo: date|work|casual|exercise|travel|formal|funeral|wedding
+- style: minimal|comfortable|street|sporty|classic|glam
+- season: spring|summer|fall|winter
+- weather_status: clear|cloudy|rainy|snowy|windy
+- rain_probability_type: very_low|low|medium|high|very_high
+- color: black|white|gray|navy|blue|beige|brown|khaki|green|red|pink|purple|yellow|orange
+- material: cotton|denim|wool|leather|knit|linen|nylon|polyester
+- fit: slim|regular|relaxed|oversized|wide
+- item category: top|pants|outerwear|shoes|accessory|dress|jacket
+- coordination slot keys: tops|bottoms|outerwear|shoes|accessories
+- priority: essential|optional
+
+Task instructions:
+1) Analyze the attached image and identify the main clothing item with its design, color, material, and fit.
+2) Consider environment context (temperature, weather, local time, weekday) to determine warmth level and formality.
+3) Build a coordinated outfit by recommending suitable items for remaining slots.
+4) Ensure comfort for current weather and consistency of overall style.
+5) Fill every required slot in coordination.
+
+Hard constraints:
+- Output must match AiBlueprintConstraintDto structure exactly.
+- coordination must include ALL slots: tops, bottoms, outerwear, shoes, accessories.
+- Each slot must include: item_name, search_query, category, attributes, temp_range, reasoning, priority.
+- temp_range must be exactly two integers [min, max] where min <= max.
+- category must use item category codes (top|pants|outerwear|shoes|accessory|dress|jacket).
+- attributes.color/material/fit/style must use allowed enum codes.
+
+Output JSON schema sample:
+{
+  "ai_blueprint": {
+    "schemaVersion": "1.0.0",
+    "main_item_analysis": {
+      "temp": "",
+      "season": "spring|summer|fall|winter",
+      "color": "black|white|gray|navy|blue|beige|brown|khaki|green|red|pink|purple|yellow|orange",
+      "type": "top|pants|outerwear|shoes|accessory|dress|jacket",
+      "style": "minimal|comfortable|street|sporty|classic|glam"
+    },
+    "coordination": {
+      "tops": {
+        "item_name": "",
+        "search_query": "",
+        "category": "top|pants|outerwear|shoes|accessory|dress|jacket",
+        "attributes": {
+          "color": "black|white|gray|navy|blue|beige|brown|khaki|green|red|pink|purple|yellow|orange",
+          "material": "cotton|denim|wool|leather|knit|linen|nylon|polyester",
+          "fit": "slim|regular|relaxed|oversized|wide",
+          "style": "minimal|comfortable|street|sporty|classic|glam"
+        },
+        "temp_range": [0, 0],
+        "reasoning": "",
+        "priority": "essential|optional"
+      },
+      "bottoms": {
+        "item_name": "",
+        "search_query": "",
+        "category": "top|pants|outerwear|shoes|accessory|dress|jacket",
+        "attributes": {
+          "color": "black|white|gray|navy|blue|beige|brown|khaki|green|red|pink|purple|yellow|orange",
+          "material": "cotton|denim|wool|leather|knit|linen|nylon|polyester",
+          "fit": "slim|regular|relaxed|oversized|wide",
+          "style": "minimal|comfortable|street|sporty|classic|glam"
+        },
+        "temp_range": [0, 0],
+        "reasoning": "",
+        "priority": "essential|optional"
+      },
+      "outerwear": {
+        "item_name": "",
+        "search_query": "",
+        "category": "top|pants|outerwear|shoes|accessory|dress|jacket",
+        "attributes": {
+          "color": "black|white|gray|navy|blue|beige|brown|khaki|green|red|pink|purple|yellow|orange",
+          "material": "cotton|denim|wool|leather|knit|linen|nylon|polyester",
+          "fit": "slim|regular|relaxed|oversized|wide",
+          "style": "minimal|comfortable|street|sporty|classic|glam"
+        },
+        "temp_range": [0, 0],
+        "reasoning": "",
+        "priority": "essential|optional"
+      },
+      "shoes": {
+        "item_name": "",
+        "search_query": "",
+        "category": "top|pants|outerwear|shoes|accessory|dress|jacket",
+        "attributes": {
+          "color": "black|white|gray|navy|blue|beige|brown|khaki|green|red|pink|purple|yellow|orange",
+          "material": "cotton|denim|wool|leather|knit|linen|nylon|polyester",
+          "fit": "slim|regular|relaxed|oversized|wide",
+          "style": "minimal|comfortable|street|sporty|classic|glam"
+        },
+        "temp_range": [0, 0],
+        "reasoning": "",
+        "priority": "essential|optional"
+      },
+      "accessories": {
+        "item_name": "",
+        "search_query": "",
+        "category": "top|pants|outerwear|shoes|accessory|dress|jacket",
+        "attributes": {
+          "color": "black|white|gray|navy|blue|beige|brown|khaki|green|red|pink|purple|yellow|orange",
+          "material": "cotton|denim|wool|leather|knit|linen|nylon|polyester",
+          "fit": "slim|regular|relaxed|oversized|wide",
+          "style": "minimal|comfortable|street|sporty|classic|glam"
+        },
+        "temp_range": [0, 0],
+        "reasoning": "",
+        "priority": "essential|optional"
+      }
+    },
+    "styling_rule_applied": ""
+  }
+}
+
+Input:
+- image: attached main clothing item
+- naturalText: %s
+- scheduleTime: %s
+- tpo: %s
+- mood: %s
+- preferences: %s
+- weather.temperature: %s
+- weather.feelsLike: %s
+- weather.status: %s
+- weather.isRaining: %s
+- weather.rainProbability: %s
+- location: (%s, %s) %s
+- image.mimeType: %s
+- image.imageBytes(base64): provided

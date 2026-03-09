@@ -1,4 +1,4 @@
-package com.finalproject.coordi.recommendation.dao;
+package com.finalproject.coordi.recommendation.dto.persistent;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -8,7 +8,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 /**
- * recommendation 테이블 영속 모델.
+ * recommendation 테이블 영속 DTO.
  */
 @Getter
 @Setter
@@ -16,7 +16,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class RecommendationDao {
+public class RecommendationDto {
     private Long recId;
     private Long userId;
     private String inputMode;
@@ -26,3 +26,5 @@ public class RecommendationDao {
     private String aiBlueprint;
     private String aiExplanation;
 }
+
+

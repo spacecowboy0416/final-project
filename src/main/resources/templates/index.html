@@ -71,8 +71,8 @@
                     <input id="longitude" type="number" step="0.000001" value="127.027619">
                 </div>
                 <div class="field">
-                    <label for="photoFile">사진 파일</label>
-                    <input id="photoFile" type="file" accept="image/*">
+                    <label for="imageFile">사진 파일</label>
+                    <input id="imageFile" type="file" accept="image/*">
                 </div>
             </div>
 
@@ -108,7 +108,7 @@
     submitBtn.addEventListener("click", async () => {
         try {
             statusText.textContent = "요청 중...";
-            const fileInput = document.getElementById("photoFile");
+            const fileInput = document.getElementById("imageFile");
             if (!fileInput.files || fileInput.files.length === 0) {
                 throw new Error("사진 파일을 선택해주세요.");
             }
@@ -135,7 +135,7 @@
                     latitude: Number(document.getElementById("latitude").value),
                     longitude: Number(document.getElementById("longitude").value)
                 },
-                photo: {
+                image: {
                     imageBytes: imageBase64,
                     mimeType: file.type || "image/jpeg"
                 }

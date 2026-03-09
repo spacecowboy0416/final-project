@@ -1,4 +1,4 @@
-package com.finalproject.coordi.recommendation.dao;
+package com.finalproject.coordi.recommendation.dto.persistent;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -7,15 +7,15 @@ import lombok.Setter;
 import lombok.ToString;
 
 /**
- * recommendation_item 테이블 영속 모델.
+ * recommendation_item 테이블 영속 DTO.
  */
 @Getter
-@Setter 
+@Setter
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class RecommendationItemDao {
+public class RecommendationItemDto {
     private Long recItemId;
     private Long recId;
     private String slotKey;
@@ -36,3 +36,5 @@ public class RecommendationItemDao {
     private String scoringDetailsJson;
     private String reason;
 }
+
+

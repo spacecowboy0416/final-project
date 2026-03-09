@@ -101,6 +101,19 @@ external:
       client-secret: ${NAVER_CLIENT_SECRET:}
     weather:
       key: ${WEATHER_API_KEY}
+    kakao-map:
+      endpoint: ${KAKAO_MAP_ENDPOINT:https://dapi.kakao.com/v2/local/geo/coord2address.json}
+      key: ${KAKAO_MAP_API_KEY:}
+      auth-scheme: ${KAKAO_MAP_AUTH_SCHEME:KakaoAK}
+  storage:
+    image:
+      base-url: ${IMAGE_STORAGE_BASE_URL:https://mock-cdn.local/items/}
+      extension: ${IMAGE_STORAGE_EXTENSION:.jpg}
+
+recommendation:
+  response:
+    status: ${RECOMMENDATION_RESPONSE_STATUS:COMPLETED}
+    source: ${RECOMMENDATION_RESPONSE_SOURCE:AI}
 
 # 9. Sentry (Monitoring)
 sentry:

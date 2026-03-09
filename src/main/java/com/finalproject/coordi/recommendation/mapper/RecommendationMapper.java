@@ -1,26 +1,24 @@
 package com.finalproject.coordi.recommendation.mapper;
 
+import com.finalproject.coordi.recommendation.dto.persistent.ProductDto;
+import com.finalproject.coordi.recommendation.dto.persistent.RecommendationDto;
+import com.finalproject.coordi.recommendation.dto.persistent.RecommendationItemDto;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import com.finalproject.coordi.recommendation.dao.ProductDao;
-import com.finalproject.coordi.recommendation.dao.RecommendationDao;
-import com.finalproject.coordi.recommendation.dao.RecommendationItemDao;
-
+/**
+ * recommendation 도메인 MyBatis 매퍼 계약.
+ */
 @Mapper
 public interface RecommendationMapper {
-    // recommendation 헤더 레코드를 저장한다.
-    void insertRecommendation(RecommendationDao record);
+    int insertRecommendation(RecommendationDto recommendation);
 
-    // recommendation_item 슬롯 레코드를 저장한다.
-    void insertRecommendationItem(RecommendationItemDao record);
+    int insertRecommendationItem(RecommendationItemDto recommendationItem);
 
-    // product 레코드를 upsert한다.
-    void upsertProduct(ProductDao record);
+    int upsertProduct(ProductDto product);
 
-    // source + externalId로 product_id를 조회한다.
     Long findProductIdBySourceAndExternalId(@Param("source") String source, @Param("externalId") String externalId);
 
-    // source + externalId로 product 레코드를 조회한다.
-    ProductDao findProductBySourceAndExternalId(@Param("source") String source, @Param("externalId") String externalId);
+    ProductDto findProductBySourceAndExternalId(@Param("source") String source, @Param("externalId") String externalId);
 }
+
