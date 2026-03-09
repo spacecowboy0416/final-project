@@ -63,7 +63,7 @@ mybatis:
   mapper-locations: classpath:mappers/**/*.xml
   configuration:
     map-underscore-to-camel-case: true # DB의 snake_case를 Java의 camelCase로 매핑
-    jdbc-type-for-null: 'NULL'
+    jdbc-type-for-null: "NULL"
   type-aliases-package: com.finalproject.coordi
 
 # 6. AWS S3 (Cloud AWS)
@@ -97,5 +97,14 @@ external:
 
 # 9. Sentry (Monitoring)
 sentry:
-  dsn: ${SENTRY_DSN}
-  traces-sample-rate: 1.0
+  dsn: ${SENTRY_DSN_BACKEND}
+  dsn-frontend: ${SENTRY_DSN_FRONTEND}
+  traces-sample-rate: 1.0 # 추적할 Event의 비율 설정 - 1.0은 100% 추적, 아직 배포 이전이므로 1.0으로 설정
+  exception-resolver-order: -2147483647 # Order가 낮을수록 먼저 처리됨, Sentry가 예외를 가장 먼저 처리하도록 설정
+  ignored-exceptions-for-type:
+    - org.springframework.web.servlet.resource.NoResourceFoundException
+
+logging:
+  level:
+    root: INFO
+    "[com.finalproject.coordi]": DEBUG
