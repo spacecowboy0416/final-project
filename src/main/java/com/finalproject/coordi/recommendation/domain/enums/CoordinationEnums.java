@@ -1,18 +1,18 @@
 package com.finalproject.coordi.recommendation.domain.enums;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
  * 코디 도메인(TPO/스타일/의류속성) 전용 enum 모음.
  */
+
 public final class CoordinationEnums {
     // 유틸성 클래스 인스턴스화를 방지한다.
     private CoordinationEnums() {
     }
 
     // 약속/출근/캐주얼 등 상황(TPO) 분류 코드
-    public enum TpoType {
+    public enum TpoType implements CodedEnum {
         DATE("date"),
         WORK("work"),
         CASUAL("casual"),
@@ -28,27 +28,19 @@ public final class CoordinationEnums {
             this.code = code;
         }
 
-        @JsonValue
+        @Override
         public String code() {
             return code;
         }
 
         @JsonCreator
         public static TpoType fromCode(String rawCode) {
-            if (rawCode == null) {
-                return null;
-            }
-            for (TpoType value : values()) {
-                if (value.code.equalsIgnoreCase(rawCode)) {
-                    return value;
-                }
-            }
-            throw new IllegalArgumentException("Unknown TpoType code: " + rawCode);
+            return EnumResolver.fromCode(TpoType.class, rawCode);
         }
     }
 
     // 코디 무드/스타일 분류 코드
-    public enum StyleType {
+    public enum StyleType implements CodedEnum {
         MINIMAL("minimal"),
         COMFORTABLE("comfortable"),
         STREET("street"),
@@ -62,27 +54,19 @@ public final class CoordinationEnums {
             this.code = code;
         }
 
-        @JsonValue
+        @Override
         public String code() {
             return code;
         }
 
         @JsonCreator
         public static StyleType fromCode(String rawCode) {
-            if (rawCode == null) {
-                return null;
-            }
-            for (StyleType value : values()) {
-                if (value.code.equalsIgnoreCase(rawCode)) {
-                    return value;
-                }
-            }
-            throw new IllegalArgumentException("Unknown StyleType code: " + rawCode);
+            return EnumResolver.fromCode(StyleType.class, rawCode);
         }
     }
 
     // 주요 색상 분류 코드
-    public enum ColorType {
+    public enum ColorType implements CodedEnum {
         BLACK("black"),
         WHITE("white"),
         GRAY("gray"),
@@ -104,27 +88,19 @@ public final class CoordinationEnums {
             this.code = code;
         }
 
-        @JsonValue
+        @Override
         public String code() {
             return code;
         }
 
         @JsonCreator
         public static ColorType fromCode(String rawCode) {
-            if (rawCode == null) {
-                return null;
-            }
-            for (ColorType value : values()) {
-                if (value.code.equalsIgnoreCase(rawCode)) {
-                    return value;
-                }
-            }
-            throw new IllegalArgumentException("Unknown ColorType code: " + rawCode);
+            return EnumResolver.fromCode(ColorType.class, rawCode);
         }
     }
 
     // 의류 소재 분류 코드
-    public enum MaterialType {
+    public enum MaterialType implements CodedEnum {
         COTTON("cotton"),
         DENIM("denim"),
         WOOL("wool"),
@@ -140,27 +116,19 @@ public final class CoordinationEnums {
             this.code = code;
         }
 
-        @JsonValue
+        @Override
         public String code() {
             return code;
         }
 
         @JsonCreator
         public static MaterialType fromCode(String rawCode) {
-            if (rawCode == null) {
-                return null;
-            }
-            for (MaterialType value : values()) {
-                if (value.code.equalsIgnoreCase(rawCode)) {
-                    return value;
-                }
-            }
-            throw new IllegalArgumentException("Unknown MaterialType code: " + rawCode);
+            return EnumResolver.fromCode(MaterialType.class, rawCode);
         }
     }
 
     // 의류 핏 분류 코드
-    public enum FitType {
+    public enum FitType implements CodedEnum {
         SLIM("slim"),
         REGULAR("regular"),
         RELAXED("relaxed"),
@@ -173,27 +141,19 @@ public final class CoordinationEnums {
             this.code = code;
         }
 
-        @JsonValue
+        @Override
         public String code() {
             return code;
         }
 
         @JsonCreator
         public static FitType fromCode(String rawCode) {
-            if (rawCode == null) {
-                return null;
-            }
-            for (FitType value : values()) {
-                if (value.code.equalsIgnoreCase(rawCode)) {
-                    return value;
-                }
-            }
-            throw new IllegalArgumentException("Unknown FitType code: " + rawCode);
+            return EnumResolver.fromCode(FitType.class, rawCode);
         }
     }
 
     // 실제 아이템 카테고리 분류 코드(검색/매핑용)
-    public enum ItemCategoryType {
+    public enum ItemCategoryType implements CodedEnum {
         TOP("top"),
         PANTS("pants"),
         OUTERWEAR("outerwear"),
@@ -208,27 +168,19 @@ public final class CoordinationEnums {
             this.code = code;
         }
 
-        @JsonValue
+        @Override
         public String code() {
             return code;
         }
 
         @JsonCreator
         public static ItemCategoryType fromCode(String rawCode) {
-            if (rawCode == null) {
-                return null;
-            }
-            for (ItemCategoryType value : values()) {
-                if (value.code.equalsIgnoreCase(rawCode)) {
-                    return value;
-                }
-            }
-            throw new IllegalArgumentException("Unknown ItemCategoryType code: " + rawCode);
+            return EnumResolver.fromCode(ItemCategoryType.class, rawCode);
         }
     }
 
     // 코디 슬롯 키 분류 코드(tops/bottoms/outerwear/shoes/accessories)
-    public enum CategoryType {
+    public enum CategoryType implements CodedEnum {
         TOPS("tops"),
         BOTTOMS("bottoms"),
         OUTERWEAR("outerwear"),
@@ -241,22 +193,14 @@ public final class CoordinationEnums {
             this.code = code;
         }
 
-        @JsonValue
+        @Override
         public String code() {
             return code;
         }
 
         @JsonCreator
         public static CategoryType fromCode(String rawCode) {
-            if (rawCode == null) {
-                return null;
-            }
-            for (CategoryType value : values()) {
-                if (value.code.equalsIgnoreCase(rawCode)) {
-                    return value;
-                }
-            }
-            throw new IllegalArgumentException("Unknown CategoryType code: " + rawCode);
+            return EnumResolver.fromCode(CategoryType.class, rawCode);
         }
     }
 }

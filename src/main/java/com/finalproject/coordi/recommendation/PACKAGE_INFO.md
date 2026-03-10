@@ -14,7 +14,7 @@
 ```
 recommendation
 ├─ controller
-├─ domain ----------- enum과 프롬프트 비즈니스에서 고립하기 위해 만들었습니다
+├─ domain ----------- enum과 추후 ai 호출시 사용할 프롬프트 정의 레이어 입니다. 비즈니스에서 고립하기 위해 만들었습니다.
 │  ├─ enums
 │  └─ prompts
 ├─ dto

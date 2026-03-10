@@ -43,7 +43,7 @@ CREATE TABLE weather_snapshot (
   wind_speed DOUBLE,
   recorded_at DATETIME DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-ㅇ
+
 -- 4) 옷장(내 옷)
 CREATE TABLE closet_item (
   item_id BIGINT AUTO_INCREMENT PRIMARY KEY,
