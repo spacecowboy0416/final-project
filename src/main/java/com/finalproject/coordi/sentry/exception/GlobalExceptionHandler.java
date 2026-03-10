@@ -1,52 +1,83 @@
 package com.finalproject.coordi.sentry.exception;
 
-import java.util.List;
-
-import org.springframework.http.HttpStatus;
+import com.finalproject.coordi.domain.exception.BusinessException;
+import com.finalproject.coordi.domain.exception.ErrorCode;
+import io.sentry.Sentry;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import io.sentry.Sentry;
-import jakarta.servlet.http.HttpServletRequest;
-import lombok.extern.slf4j.Slf4j;
+import java.util.List;
+import java.util.Objects;
 
 @Slf4j
-@RestControllerAdvice // 프로젝트 내의 모든 Controller에서 발생하는 예외를 처리하는 클래스
+@RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(Exception.class) // 모든 예외를 처리하는 핸들러
-    public ResponseEntity<String> handlResponseEntity(Exception e, HttpServletRequest request) {
+    /**
+     * 직접 정의한 비즈니스 예외 처리
+     * (예: 사용자를 찾지 못함, 중복된 이메일 등)
+     */
+    @ExceptionHandler(BusinessException.class)
+    protected ResponseEntity<ErrorResponse> handleBusinessException(final BusinessException e, final HttpServletRequest request) {
+        log.warn("handleBusinessException: {}", e.getMessage());
 
-        // URL 경로 추출
-        String rawPath = request.getRequestURI();
-        // 숫자(ID)를 {id}로 치환 - 에러 파편화 방지
-        String formattedPath = rawPath.replaceAll("/\\d+(?=/|$)", "/{id}");
+        final ErrorCode errorCode = e.getErrorCode();
+        final ErrorResponse response = ErrorResponse.of(errorCode);
+        final HttpStatusCode status = Objects.requireNonNull(errorCode.getStatus());
 
-        // 상태 코드 설정 (500 서버 에러로 default 처리)
-        int statusCode = HttpStatus.INTERNAL_SERVER_ERROR.value();
+        // BusinessException은 "예상된 예외"이므로 Sentry에서는 경고(Warning) 수준으로 기록합니다.
+        Sentry.withScope(scope -> {
+            scope.setTag("api_path", request.getRequestURI());
+            scope.setTag("status_code", String.valueOf(status.value()));
+            scope.setTag("error_code", errorCode.getCode());
+            scope.setLevel(io.sentry.SentryLevel.WARNING);
+            scope.setFingerprint(List.of(errorCode.getCode(), request.getMethod(), request.getRequestURI())); // 에러코드, 메서드, 경로로 그룹핑
+            Sentry.captureException(e);
+        });
 
-        // Sentry 이슈 제목 형식
-        String sentryIssueName = String.format("[%d Error] =%s", statusCode, formattedPath);
+        return new ResponseEntity<>(response, status);
+    }
 
-        Sentry.configureScope((scope -> {
-            scope.setTransaction(sentryIssueName); // Sentry 제목 변경 - 위에서 format한 형식
-            scope.setTag("api_path", formattedPath); // 검색용 태그 추가
-            scope.setTag("status_code", String.valueOf(statusCode));
+    /**
+     * 처리되지 않은 모든 예외 처리 (최후의 보루)
+     * (예: NullPointerException, 기타 런타임 예외 등)
+     */
+    @ExceptionHandler(Exception.class)
+    protected ResponseEntity<ErrorResponse> handleException(final Exception e, final HttpServletRequest request) {
+        log.error("unhandledException: {}", e.getMessage(), e);
+
+        final ErrorCode errorCode = ErrorCode.INTERNAL_SERVER_ERROR;
+        final ErrorResponse response = ErrorResponse.of(errorCode);
+        final HttpStatusCode status = Objects.requireNonNull(errorCode.getStatus());
+
+        // 처리되지 않은 예외는 "치명적(Error)" 수준으로 Sentry에 기록합니다.
+        String formattedPath = request.getRequestURI().replaceAll("/\\d+(?=/|$)", "/{id}");
+        Sentry.withScope(scope -> {
+            scope.setTransaction(String.format("[%s] %s", request.getMethod(), formattedPath));
+            scope.setTag("api_path", formattedPath);
+            scope.setTag("status_code", String.valueOf(status.value()));
             scope.setTag("project_type", "BackEnd Error");
+            scope.setLevel(io.sentry.SentryLevel.ERROR);
+            scope.setFingerprint(List.of("500", formattedPath, e.getClass().getSimpleName())); // 500에러, 경로, 예외 클래스명으로 그룹핑
+            Sentry.captureException(e);
+        });
 
-            // 동일한 API 경로에서 터진 에러는 Sentry에서 1개의 이슈로 묶도록 설정
-            // fingerprint 설정 (custom)
-            scope.setFingerprint(List.of(String.valueOf(statusCode), formattedPath, e.getClass().getSimpleName()));
+        return new ResponseEntity<>(response, status);
+    }
 
-        }));
-
-        // 에러를 Sentry로 전송하고 터미널에도 로그 남기기
-        Sentry.captureException(e);
-        log.error("서버 에러 발생: {}", sentryIssueName, e);
-
-        // 프론트엔드(사용자가 마주하는 화면)에는 에러 원문 대신 정제된 메시지 반환 처리
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("서버 문제로 요청을 처리하지 못했습니다. 잠시후 다시 시도해주세요");
+    /**
+     * 표준 에러 응답 DTO
+     *
+     * @param code    - 비즈니스 에러 코드 (U001, I001 등)
+     * @param message - 사용자에게 보여주기 위한 친절한 메시지
+     */
+    public record ErrorResponse(String code, String message) {
+        public static ErrorResponse of(ErrorCode errorCode) {
+            return new ErrorResponse(errorCode.getCode(), errorCode.getMessage());
+        }
     }
 }
