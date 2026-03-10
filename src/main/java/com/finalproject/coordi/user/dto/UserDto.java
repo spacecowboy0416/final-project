@@ -2,7 +2,8 @@ package com.finalproject.coordi.user.dto;
 
 import lombok.*;
 import org.apache.ibatis.type.Alias;
-import java.time.LocalDateTime;
+
+import java.sql.Timestamp;
 
 @Getter
 @Setter
@@ -20,6 +21,6 @@ public class UserDto {
     private String profileImageUrl; // profile_image_url
     private String role;            // role (기본값 USER)
     private String status;          // status (기본값 ACTIVE)
-    private LocalDateTime createdAt;
-    private LocalDateTime lastLoginAt;
+    private Timestamp createdAt;
+    private Timestamp lastLoginAt;
 }

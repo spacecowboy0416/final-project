@@ -20,7 +20,4 @@ public interface UserMapperInter {
     
     // 유저 정보 업데이트 (로그인 시마다 프로필 정보 갱신)
     void update(UserDto user);
-    
-    // 마지막 로그인 시간만 별도로 업데이트
-    void updateLastLogin(Long userId);
 }

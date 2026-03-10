@@ -16,10 +16,10 @@
     <!-- 저장: role과 status가 null일 경우 DB Default('USER', 'ACTIVE')가 들어가도록 COALESCE 사용 -->
     <insert id="save" parameterType="udto" useGeneratedKeys="true" keyProperty="userId">
         INSERT INTO users (
-            provider, provider_user_id, email, nickname, profile_image_url, role, status
+            provider, provider_user_id, email, nickname, profile_image_url, role, status, created_at,last_login_at
         ) VALUES (
             #{provider}, #{providerUserId}, #{email}, #{nickname}, #{profileImageUrl},
-            COALESCE(#{role}, 'USER'), COALESCE(#{status}, 'ACTIVE')
+            COALESCE(#{role}, 'USER'), COALESCE(#{status}, 'ACTIVE'), now(), now()
         )
     </insert>
 
@@ -31,14 +31,8 @@
             <if test="profileImageUrl != null">profile_image_url = #{profileImageUrl},</if>
             <if test="status != null">status = #{status},</if>
             <if test="role != null">role = #{role},</if>
+            <if test="lastLoginAt != null">last_login_at = #{lastLoginAt},</if>
         </set>
-        WHERE user_id = #{userId}
-    </update>
-
-    <!-- 마지막 로그인 시간만 업데이트 -->
-    <update id="updateLastLogin" parameterType="long">
-        UPDATE users 
-        SET last_login_at = CURRENT_TIMESTAMP 
         WHERE user_id = #{userId}
     </update>
 
