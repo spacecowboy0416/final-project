@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -16,6 +17,13 @@ import java.sql.Timestamp;
 public class UserService {
 
     private final UserMapperInter userMapper;
+
+    /**
+     * 이메일로 사용자 정보를 조회합니다.
+     */
+    public Optional<UserDto> findByEmail(String email) {
+        return userMapper.findByEmail(email);
+    }
 
     /**
      * OAuth2 로그인 성공 후 사용자 정보를 DB에 저장하거나 업데이트합니다.

@@ -1,5 +1,8 @@
 package com.finalproject.coordi.config;
 
+import com.finalproject.coordi.auth.handler.OAuth2SuccessHandler;
+import com.finalproject.coordi.auth.jwt.JwtAuthenticationFilter;
+import com.finalproject.coordi.auth.jwt.JwtProvider;
 import com.finalproject.coordi.auth.oauth.CustomOAuth2UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -8,6 +11,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -18,21 +22,23 @@ import java.nio.charset.StandardCharsets;
 public class SecurityConfig {
 
     private final CustomOAuth2UserService customOAuth2UserService;
+    private final OAuth2SuccessHandler oAuth2SuccessHandler;
+    private final JwtProvider jwtProvider;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            // 1. CSRF 및 폼 로그인 등 기본 인증 방식 비활성화
+            // 1. CSRF 및 기본 인증 비활성화
             .csrf(csrf -> csrf.disable())
             .formLogin(form -> form.disable())
             .httpBasic(basic -> basic.disable())
             
-            // 2. 세션 정책 설정 (테스트를 위해 필요 시 세션 생성)
+            // 2. 세션 정책 설정: STATELESS (JWT 사용)
             .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
             
-            // 3. 인가(권한) 설정
+            // 3. 인가 설정
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/", "/login/**", "/oauth2/**", "/static/**", "/css/**", "/js/**").permitAll()
                 .anyRequest().authenticated()
@@ -43,13 +49,15 @@ public class SecurityConfig {
                 .userInfoEndpoint(userInfo -> userInfo
                     .userService(customOAuth2UserService)
                 )
-                .defaultSuccessUrl("/", true) // 성공 시 메인 페이지
+                .successHandler(oAuth2SuccessHandler) // 성공 핸들러 등록
                 .failureHandler((request, response, exception) -> {
-                    // 로그인 실패(중복 가입 등) 시 원인 메시지를 쿼리 파라미터로 전달
                     String encodedMsg = URLEncoder.encode(exception.getMessage(), StandardCharsets.UTF_8);
                     response.sendRedirect("/?error=true&message=" + encodedMsg);
                 })
-            );
+            )
+            
+            // 5. JWT 필터 등록 (UsernamePasswordAuthenticationFilter 이전에 실행)
+            .addFilterBefore(new JwtAuthenticationFilter(jwtProvider), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
