@@ -57,6 +57,13 @@ spring:
     multipart:
       max-file-size: 10MB
       max-request-size: 10MB
+      
+  devtools:
+    livereload:
+      enabled: true
+    restart:
+      enabled: true
+      additional-paths: src/main/resources/templates
 
 # 5. MyBatis 설정
 mybatis:
@@ -128,3 +135,16 @@ logging:
   level:
     root: INFO
     "[com.finalproject.coordi]": DEBUG
+
+# 정적 리소스(JS/CSS) 캐시 끄기
+  web:
+    resources:
+      chain:
+        cache: false
+
+# DevTools 및 LiveReload 활성화
+  devtools:
+    livereload:
+      enabled: true
+    restart:
+      enabled: true # 클래스 파일 변경 시 자동 재시작 (선택 사항)

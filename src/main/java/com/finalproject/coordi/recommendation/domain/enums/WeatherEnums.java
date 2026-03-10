@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
- * 날씨 API 컨텍스트(계절/강수/날씨상태) 전용 enum 모음.
+ * 날씨 API 컨텍스트(계절/날씨상태) 전용 enum 모음.
  */
 public final class WeatherEnums {
     // 유틸성 클래스 인스턴스화를 방지한다.
@@ -43,54 +43,36 @@ public final class WeatherEnums {
         }
     }
 
-    // 강수 형태 분류 코드
-    public enum PrecipitationType {
-        NONE("none"),
-        RAIN("rain"),
-        SNOW("snow");
-
-        private final String code;
-
-        PrecipitationType(String code) {
-            this.code = code;
-        }
-
-        @JsonValue
-        public String code() {
-            return code;
-        }
-
-        @JsonCreator
-        public static PrecipitationType fromCode(String rawCode) {
-            if (rawCode == null) {
-                return null;
-            }
-            for (PrecipitationType value : values()) {
-                if (value.code.equalsIgnoreCase(rawCode)) {
-                    return value;
-                }
-            }
-            throw new IllegalArgumentException("Unknown PrecipitationType code: " + rawCode);
-        }
-    }
-
-    // 날씨 상태 분류 코드
+    // 날씨 상태 분류 코드(룰 엔진용 단일 진실 공급원)
     public enum WeatherStatusType {
-        CLEAR("clear"),
-        CLOUDY("cloudy"),
-        RAINY("rainy"),
-        SNOWY("snowy"),
-        WINDY("windy");
+        CLEAR("clear", "맑음"),
+        PARTLY_CLOUDY("partly_cloudy", "구름 조금"),
+        CLOUDY("cloudy", "흐림"),
+        WINDY("windy", "바람 많음"),
+        RAIN("rain", "비"),
+        CLOUDY_RAIN("cloudy_rain", "흐리고 비"),
+        THUNDERSTORM("thunderstorm", "뇌우"),
+        THUNDERSTORM_RAIN("thunderstorm_rain", "뇌우와 비"),
+        SNOW("snow", "눈"),
+        CLOUDY_SNOW("cloudy_snow", "흐리고 눈"),
+        SLEET("sleet", "진눈깨비"),
+        HAIL("hail", "우박");
 
         private final String code;
+        private final String displayNameKo;
 
-        WeatherStatusType(String code) {
+        WeatherStatusType(String code, String displayNameKo) {
             this.code = code;
+            this.displayNameKo = displayNameKo;
         }
 
         @JsonValue
         public String code() {
             return code;
+        }
+
+        public String displayNameKo() {
+            return displayNameKo;
         }
 
         @JsonCreator

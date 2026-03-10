@@ -48,16 +48,19 @@ public class Orchestrator {
         // 4. 내부 룰 엔진으로 생성된 blueprint 검증(스키마, 필수 슬롯, 적합성 등)
         var validatedBlueprint = blueprintValidator.validate(rawBlueprintJson);
 
-        // 5. 검증된 blueprint slot별 item search_query 추출 및 병렬 ShoppingApi 검색
+        // 5. 검증된 blueprint slot별 item search_query 추출 및 ShoppingApi 검색
         var slotSearchQueries = itemSearchQueryExtractor.extract(validatedBlueprint);
         var slotCandidates = shoppingSearcher.searchAll(slotSearchQueries);
 
-        // 6. 최적 아이템 DB에서 매칭 + 검색 결과 DB upsert
+        // 6.  검색 결과 product schema upsert + 최적 아이템 매칭
         var matchedItemsBySlot = itemMatcher.matchAll(slotCandidates, validatedBlueprint);
         itemUpsertService.upsertAll(matchedItemsBySlot);
 
         // 7. 최종 응답 생성 및 노출
         return blueprintResponseBuilder.build(validatedBlueprint, matchedItemsBySlot);
+
+        // 8. closet에 저장 및 시간, 위치, 태그 조정으로 재검색
+        
     }
 }
 

@@ -1,6 +1,5 @@
 package com.finalproject.coordi.recommendation.dto.api;
 
-import com.finalproject.coordi.recommendation.domain.enums.WeatherEnums.PrecipitationType;
 import com.finalproject.coordi.recommendation.domain.enums.WeatherEnums.RainProbabilityType;
 import com.finalproject.coordi.recommendation.domain.enums.WeatherEnums.WeatherStatusType;
 import com.finalproject.coordi.recommendation.exception.ValidationMessages;
@@ -31,7 +30,6 @@ public record BlueprintRequestDto(
         @NotNull Double temperature,
         @NotNull Double feelsLike,
         @NotNull WeatherStatusType weatherStatus,
-        @NotNull PrecipitationType precipitationType,
         @NotNull RainProbabilityType rainProbability
     ) {}
 

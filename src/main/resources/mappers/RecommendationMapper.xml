@@ -13,6 +13,10 @@
             input_mode,
             input_text,
             product_option,
+            status,
+            blueprint_source,
+            tpo_type,
+            style_type,
             is_saved,
             ai_blueprint,
             ai_explanation
@@ -23,6 +27,10 @@
             #{inputMode},
             #{inputText},
             #{productOption},
+            #{status},
+            #{blueprintSource},
+            #{tpoType},
+            #{styleType},
             #{isSaved},
             CAST(#{aiBlueprint} AS JSON),
             #{aiExplanation}
@@ -75,6 +83,19 @@
         )
     </insert>
 
+    <insert id="insertRecommendationItemTag" parameterType="com.finalproject.coordi.recommendation.dto.persistent.RecommendationItemTagDto">
+        INSERT IGNORE INTO recommendation_item_tag
+        (
+            rec_item_id,
+            tag_id
+        )
+        VALUES
+        (
+            #{recItemId},
+            #{tagId}
+        )
+    </insert>
+
     <insert id="upsertProduct" parameterType="com.finalproject.coordi.recommendation.dto.persistent.ProductDto">
         INSERT INTO product
         (
@@ -105,6 +126,19 @@
             image_url = VALUES(image_url),
             link = VALUES(link),
             fetched_at = CURRENT_TIMESTAMP
+    </insert>
+
+    <insert id="insertProductTag" parameterType="com.finalproject.coordi.recommendation.dto.persistent.ProductTagDto">
+        INSERT IGNORE INTO product_tag
+        (
+            product_id,
+            tag_id
+        )
+        VALUES
+        (
+            #{productId},
+            #{tagId}
+        )
     </insert>
 
     <select id="findProductIdBySourceAndExternalId" resultType="long">

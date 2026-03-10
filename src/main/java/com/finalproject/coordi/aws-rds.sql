@@ -43,7 +43,7 @@ CREATE TABLE weather_snapshot (
   wind_speed DOUBLE,
   recorded_at DATETIME DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
+ㅇ
 -- 4) 옷장(내 옷)
 CREATE TABLE closet_item (
   item_id BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -190,31 +190,42 @@ CREATE TABLE system_error_log (
 -- =========================================================
 
 -- 13) 날씨 스냅샷 보강 (CoordinationRequestDto + KakaoMapPort 연계)
+CREATE TABLE weather_status_code (
+  weather_status_code VARCHAR(40) PRIMARY KEY,
+  display_name_ko VARCHAR(50) NOT NULL,
+  display_name_en VARCHAR(50) NOT NULL,
+  sort_order INT DEFAULT 0,
+  is_active BOOLEAN DEFAULT TRUE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 ALTER TABLE weather_snapshot
   ADD COLUMN feels_like DOUBLE NULL AFTER temp,
-  ADD COLUMN weather_status VARCHAR(20) NULL AFTER condition_text,
-  ADD COLUMN precipitation_type VARCHAR(20) NULL AFTER weather_status,
-  ADD COLUMN rain_probability VARCHAR(20) NULL AFTER precipitation_type,
+  ADD COLUMN weather_status VARCHAR(40) NULL AFTER condition_text,
+  ADD COLUMN rain_probability VARCHAR(20) NULL AFTER weather_status,
   ADD COLUMN latitude DECIMAL(10,7) NULL AFTER wind_speed,
   ADD COLUMN longitude DECIMAL(10,7) NULL AFTER latitude,
   ADD COLUMN place_name VARCHAR(120) NULL AFTER longitude,
   ADD COLUMN address_name VARCHAR(255) NULL AFTER place_name,
   ADD COLUMN resolved_by VARCHAR(20) NULL AFTER address_name;
 
+ALTER TABLE weather_snapshot
+  ADD CONSTRAINT fk_weather_snapshot_status
+  FOREIGN KEY (weather_status) REFERENCES weather_status_code(weather_status_code);
+
 CREATE INDEX idx_weather_recorded_at ON weather_snapshot (recorded_at);
 CREATE INDEX idx_weather_geo_time ON weather_snapshot (latitude, longitude, recorded_at);
+CREATE INDEX idx_weather_status_time ON weather_snapshot (weather_status, recorded_at);
 
 -- 14) recommendation 응답 메타 보강 (CoordinationResponseDto)
 ALTER TABLE recommendation
-  ADD COLUMN coordination_id VARCHAR(64) NULL AFTER rec_id,
   ADD COLUMN status VARCHAR(20) NULL AFTER product_option,
   ADD COLUMN blueprint_source VARCHAR(20) NULL AFTER status,
   ADD COLUMN tpo_type VARCHAR(20) NULL AFTER blueprint_source,
   ADD COLUMN style_type VARCHAR(20) NULL AFTER tpo_type;
 
-CREATE UNIQUE INDEX uk_recommendation_coordination_id ON recommendation (coordination_id);
+-- 15) product / recommendation_item 정규화 보강 (태그 공통 체계 + mapper SQL 정합)
+CREATE INDEX idx_product_tag_tag_id ON product_tag (tag_id, product_id);
 
--- 15) recommendation_item 상세 보강 (RecommendationItemDto / mapper SQL 정합)
 ALTER TABLE recommendation_item
   ADD COLUMN slot_key VARCHAR(20) NULL AFTER rec_id,
   ADD COLUMN item_name VARCHAR(200) NULL AFTER category_id,
@@ -234,14 +245,24 @@ ALTER TABLE recommendation_item
   ADD CONSTRAINT fk_recommendation_item_product
   FOREIGN KEY (product_id) REFERENCES product(product_id);
 
-CREATE INDEX idx_rec_item_slot ON recommendation_item (rec_id, slot_key);
+CREATE UNIQUE INDEX uk_rec_item_rec_slot ON recommendation_item (rec_id, slot_key);
 CREATE INDEX idx_rec_item_product ON recommendation_item (product_id);
 CREATE INDEX idx_rec_item_priority ON recommendation_item (priority);
+CREATE INDEX idx_rec_item_category_priority ON recommendation_item (category_id, priority);
 
--- 16) 업로드 이미지 메타데이터 (ItemMetadataRecorder 연계)
-CREATE TABLE recommendation_image_metadata (
+CREATE TABLE recommendation_item_tag (
+  rec_item_id BIGINT NOT NULL,
+  tag_id BIGINT NOT NULL,
+  PRIMARY KEY (rec_item_id, tag_id),
+  INDEX idx_rec_item_tag_tag_id (tag_id, rec_item_id),
+  CONSTRAINT fk_rec_item_tag_item FOREIGN KEY (rec_item_id) REFERENCES recommendation_item(rec_item_id) ON DELETE CASCADE,
+  CONSTRAINT fk_rec_item_tag_tag FOREIGN KEY (tag_id) REFERENCES tag(tag_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 16) 상품 이미지 메타데이터 (ItemMetadataRecorder 연계)
+CREATE TABLE product_image_metadata (
   image_meta_id BIGINT AUTO_INCREMENT PRIMARY KEY,
-  rec_id BIGINT NULL,
+  product_id BIGINT NOT NULL,
   user_id BIGINT NULL,
   mime_type VARCHAR(100) NOT NULL,
   image_size_bytes INT NULL,
@@ -250,14 +271,33 @@ CREATE TABLE recommendation_image_metadata (
   storage_path VARCHAR(255) NULL,
   checksum_sha256 CHAR(64) NULL,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  INDEX idx_image_meta_rec (rec_id),
+  INDEX idx_image_meta_product (product_id),
   INDEX idx_image_meta_user_time (user_id, created_at),
   INDEX idx_image_meta_checksum (checksum_sha256),
-  CONSTRAINT fk_image_meta_rec FOREIGN KEY (rec_id) REFERENCES recommendation(rec_id),
+  CONSTRAINT fk_image_meta_product FOREIGN KEY (product_id) REFERENCES product(product_id),
   CONSTRAINT fk_image_meta_user FOREIGN KEY (user_id) REFERENCES users(user_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 17) enum/category/tag 코드 정합성 시드
+INSERT INTO weather_status_code (weather_status_code, display_name_ko, display_name_en, sort_order, is_active) VALUES
+  ('clear', '맑음', 'Clear', 10, TRUE),
+  ('partly_cloudy', '구름 조금', 'Partly Cloudy', 20, TRUE),
+  ('cloudy', '흐림', 'Cloudy', 30, TRUE),
+  ('windy', '바람 많음', 'Windy', 40, TRUE),
+  ('rain', '비', 'Rain', 50, TRUE),
+  ('cloudy_rain', '흐리고 비', 'Cloudy Rain', 60, TRUE),
+  ('thunderstorm', '뇌우', 'Thunderstorm', 70, TRUE),
+  ('thunderstorm_rain', '뇌우와 비', 'Thunderstorm Rain', 80, TRUE),
+  ('snow', '눈', 'Snow', 90, TRUE),
+  ('cloudy_snow', '흐리고 눈', 'Cloudy Snow', 100, TRUE),
+  ('sleet', '진눈깨비', 'Sleet', 110, TRUE),
+  ('hail', '우박', 'Hail', 120, TRUE)
+ON DUPLICATE KEY UPDATE
+  display_name_ko = VALUES(display_name_ko),
+  display_name_en = VALUES(display_name_en),
+  sort_order = VALUES(sort_order),
+  is_active = VALUES(is_active);
+
 INSERT INTO category (code, name, sort_order) VALUES
   ('top', '상의', 10),
   ('pants', '하의', 20),
@@ -277,6 +317,9 @@ INSERT INTO tag (type, name) VALUES
   ('STYLE', 'sporty'),
   ('STYLE', 'classic'),
   ('STYLE', 'glam'),
+  ('STYLE', 'feminine'),
+  ('STYLE', 'modern'),
+  ('STYLE', 'vintage'),
   ('COLOR', 'black'),
   ('COLOR', 'white'),
   ('COLOR', 'gray'),
@@ -299,11 +342,17 @@ INSERT INTO tag (type, name) VALUES
   ('MATERIAL', 'linen'),
   ('MATERIAL', 'nylon'),
   ('MATERIAL', 'polyester'),
+  ('MATERIAL', 'fleece'),
+  ('MATERIAL', 'corduroy'),
   ('FIT', 'slim'),
   ('FIT', 'regular'),
   ('FIT', 'relaxed'),
   ('FIT', 'oversized'),
   ('FIT', 'wide'),
+  ('SEASON', 'spring'),
+  ('SEASON', 'summer'),
+  ('SEASON', 'autumn'),
+  ('SEASON', 'winter'),
   ('TPO', 'date'),
   ('TPO', 'work'),
   ('TPO', 'casual'),
@@ -311,7 +360,12 @@ INSERT INTO tag (type, name) VALUES
   ('TPO', 'travel'),
   ('TPO', 'formal'),
   ('TPO', 'funeral'),
-  ('TPO', 'wedding')
+  ('TPO', 'wedding'),
+  ('SLOT', 'tops'),
+  ('SLOT', 'bottoms'),
+  ('SLOT', 'outerwear'),
+  ('SLOT', 'shoes'),
+  ('SLOT', 'accessories')
 ON DUPLICATE KEY UPDATE
   name = VALUES(name);
 

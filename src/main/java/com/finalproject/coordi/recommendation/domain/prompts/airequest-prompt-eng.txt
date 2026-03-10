@@ -8,7 +8,7 @@ Allowed enum codes:
 - tpo: date|work|casual|exercise|travel|formal|funeral|wedding
 - style: minimal|comfortable|street|sporty|classic|glam
 - season: spring|summer|fall|winter
-- weather_status: clear|cloudy|rainy|snowy|windy
+- weather_status: clear|partly_cloudy|cloudy|windy|rain|cloudy_rain|thunderstorm|thunderstorm_rain|snow|cloudy_snow|sleet|hail
 - rain_probability_type: very_low|low|medium|high|very_high
 - color: black|white|gray|navy|blue|beige|brown|khaki|green|red|pink|purple|yellow|orange
 - material: cotton|denim|wool|leather|knit|linen|nylon|polyester

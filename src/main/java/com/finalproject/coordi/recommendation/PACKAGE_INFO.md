@@ -6,13 +6,15 @@
 - `Blueprint`: AI 생성/검증/중간 산출물(내부 처리용)
 - `Coordination`: 최종 코디 결과(외부 응답용)
 - `Recommendation`: 추천 과정 전반
-
-
+- `slot`: 카테고리가 어디에 들어가야할 지 정하는 키. 
+- `category`: 옷의 종류. 코트와 자켓은 같은 outer slot에 들어간다. 
+- `product`: item(closet_item을 포함한) 개별 옷의 전체집합. 명시적이지는 않으나 원시 스키마 구조가 협의되었으므로 이대로 가겠습니다.
+  
 ## Visual Tree
-```text
+```
 recommendation
 ├─ controller
-├─ domain ----------- enum과 프롬프트 분리
+├─ domain ----------- enum과 프롬프트 비즈니스에서 고립하기 위해 만들었습니다
 │  ├─ enums
 │  └─ prompts
 ├─ dto
