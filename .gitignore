@@ -1,5 +1,6 @@
 ### Gradle ###
 HELP.md
+GEMINI.md
 .gradle
 build/
 !gradle/wrapper/gradle-wrapper.jar
@@ -56,3 +57,4 @@ antigravity.db
 .env.*
 !src/main/resources/application.yml
 !src/main/resources/application.properties
+!gradle/wrapper/gradle-wrapper.properties
