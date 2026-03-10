@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import com.finalproject.coordi.errorlog.service.AiErrorTrackerService;
 
@@ -22,10 +23,18 @@ public class GlobalExceptionHandler {
 
     private final AiErrorTrackerService aiErrorTrackerService;
 
+    // 파비콘 등 단순 이미지/정적자원 누락 에러는 무시 (AI 비용 절감)
+    @ExceptionHandler(NoResourceFoundException.class)
+    public String handleNoResourceFound(NoResourceFoundException e) {
+        log.warn("단순 정적 자원 누락 (AI 분석 무시됨): {}", e.getMessage());
+        return "error/500";
+    }
+
+    // 기존의 모든 에러를 처리하고 AI로 분석하는 메인 핸들러
     @ExceptionHandler(Exception.class)
     public String handleAllExceptions(Exception e, Model model, HttpServletRequest request) {
         
-        // 1. Sentry - 에러 발생 알림 실시간 전송 (변경예정)
+        // 1. Sentry - 에러 발생 알림 실시간 전송
         String rawPath = request.getRequestURI();
         String formattedPath = rawPath.replaceAll("/\\d+(?=/|$)", "/{id}");
         int statusCode = HttpStatus.INTERNAL_SERVER_ERROR.value();
