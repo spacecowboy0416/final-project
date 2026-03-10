@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:replace="~{layout/common :: configFragment}"></th:block>
+    <link rel="stylesheet" th:href="@{/closet/css/closet.css}">
+    <title>나의 옷장</title>
+</head>
+<body>
+    <div th:replace="~{layout/common :: headerFragment}"></div>
+
+    <main class="main-content">
+        <h2 style="margin-bottom: 15px;">내가 저장한 코디 추천</h2>
+        
+        <div th:if="${#lists.isEmpty(savedCoordis)}" class="empty-msg-box">
+            <p style="color: #666; margin: 0;">아직 저장된 코디가 없습니다. 코디 추천을 받아보세요!</p>
+            <a th:href="@{/recommend}" class="btn" style="background: #007bff; color: white; margin-top: 15px;">코디 추천받기</a>
+        </div>
+
+        <div th:unless="${#lists.isEmpty(savedCoordis)}" class="slider-container" style="margin-bottom: 40px;">
+            <div class="coordi-card" th:each="coordi : ${savedCoordis}">
+                <span class="date-badge" th:text="${#temporals.format(coordi.createdAt, 'yyyy-MM-dd HH:mm')}">날짜</span>
+                <h5 th:text="${coordi.inputText}">입력 텍스트</h5>
+                <p class="ai-desc-text" th:text="${coordi.aiExplanation}"></p>
+                <a th:href="@{/recommend(editId=${coordi.recId})}" class="btn-link-custom">수정 / 상세 보기</a>
+            </div>
+        </div>
+
+        <hr style="border: 0; border-top: 2px solid #333; margin-bottom: 30px;">
+
+        <h2>나의 옷장</h2>
+        
+        <div class="form-box">
+            <h4 style="margin-bottom: 15px;">새로운 코디 등록하기</h4>
+            <form th:action="@{/closet/add}" method="post" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label>코디명</label>
+                    <input type="text" name="name" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>카테고리 ID</label>
+                    <input type="number" name="categoryId" class="form-control" value="1" required>
+                </div>
+                <div class="form-group">
+                    <label>계절</label>
+                    <select name="season" class="form-control">
+                        <option value="SPRING">봄</option>
+                        <option value="SUMMER">여름</option>
+                        <option value="FALL">가을</option>
+                        <option value="WINTER">겨울</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>코디 사진</label>
+                    <input type="file" name="imageFile" class="form-control" accept="image/*">
+                </div>
+                <button type="submit" class="btn login-btn">등록하기</button>
+            </form>
+        </div>
+
+        <h4 style="margin-bottom: 15px;">내 코디 목록</h4>
+        <div th:if="${#lists.isEmpty(items)}">
+            <p style="color: #666; padding: 20px 0;">등록된 코디가 없습니다. 새로운 코디를 추가해 보세요.</p>
+        </div>
+        
+        <div class="closet-grid">
+            <div class="item-card" th:each="item : ${items}">
+                <img th:if="${item.imageUrl != null}" th:src="${item.imageUrl}" class="item-image" alt="옷 이미지">
+                <div th:unless="${item.imageUrl != null}" class="item-image item-image-empty">이미지 없음</div>
+                
+                <div class="item-info">
+                    <span class="badge" th:text="${item.season}">계절</span>
+                    <h4 style="margin: 5px 0; font-size: 1.1rem; color: #333;" th:text="${item.name}">코디명</h4>
+                    <p style="color: #666; font-size: 0.9rem; margin-bottom: 10px;">카테고리: [[${item.categoryId}]]</p>
+                    
+                    <form th:action="@{/closet/delete/{itemId}(itemId=${item.itemId})}" method="post" onsubmit="return confirm('정말 삭제하시겠습니까?');">
+                        <button type="submit" class="btn" style="background: #dc3545; color: white; width: 100%; padding: 8px; border-radius: 4px; font-size: 0.9rem;">삭제</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer th:replace="~{layout/common :: footerFragment}"></footer>
+</body>
+</html>

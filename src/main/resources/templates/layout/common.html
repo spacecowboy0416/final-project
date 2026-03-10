@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <link rel="stylesheet" th:href="@{/common/css/common.css}">
     <script th:src="@{/webjars/jquery/jquery.min.js}"></script>
 </th:block>
 
@@ -18,10 +18,10 @@
         
         <ul class="nav-menu">
             <li><a th:href="@{/recommend}">코디추천</a></li>
-            <li><a th:href="@{/closet}">나의옷장</a></li>
+            <li><a th:href="@{/closet}">나의코디</a></li>
             <li><a th:href="@{/board}">커뮤니티</a></li>
             <li sec:authorize="hasRole('ADMIN')">
-                <a th:href="@{/admin}" style="color: #dc3545; font-weight: 800;">관리자 메뉴</a>
+                <a th:href="@{/admin/logs}" style="color: #dc3545; font-weight: 800;">관리자 메뉴</a>
             </li>
             <li sec:authorize="isAnonymous()">
                 <a th:href="@{/login}" class="btn login-btn">로그인 / 회원가입</a>

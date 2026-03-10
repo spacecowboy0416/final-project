@@ -1,0 +1,67 @@
+/* ==========================================================================
+   나의 옷장 전용 스타일 (closet-main.html)
+   ========================================================================== */
+
+/* 가로 슬라이드 컨테이너 설정 */
+.slider-container {
+    display: flex;
+    overflow-x: auto;
+    gap: 20px;
+    padding: 10px 5px 20px 5px;
+    scroll-snap-type: x mandatory; 
+    -webkit-overflow-scrolling: touch; 
+}
+
+/* 스크롤바 디자인 */
+.slider-container::-webkit-scrollbar { height: 8px; }
+.slider-container::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+.slider-container::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+
+/* 슬라이드 카드 낱개 디자인 */
+.coordi-card {
+    min-width: 300px;
+    max-width: 300px;
+    background: #fff;
+    border: 1px solid #eaeaea;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    scroll-snap-align: start; 
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.coordi-card h5 { margin-bottom: 10px; color: #333; font-size: 1.1rem; font-weight: 700; }
+.coordi-card p { font-size: 0.9rem; color: #555; line-height: 1.5; flex-grow: 1; }
+.date-badge { font-size: 0.8rem; color: #999; margin-bottom: 15px; display: block; }
+.ai-desc-text { overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; }
+
+/* 버튼 스타일 링크 */
+.btn-link-custom {
+    display: block;
+    text-align: center;
+    background: #333;
+    color: white;
+    width: 100%;
+    margin-top: 15px;
+    border-radius: 6px;
+    padding: 10px 0;
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+.btn-link-custom:hover { background: #555; color: white; text-decoration: none; }
+
+/* 기존 옷장 그리드 CSS */
+.closet-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; margin-top: 20px; }
+.item-card { border: 1px solid #ddd; border-radius: 8px; padding: 10px; text-align: center; background: #fff; }
+.item-image { width: 100%; height: 200px; object-fit: cover; border-radius: 4px; background: #eee; }
+.item-image-empty { display: flex; align-items: center; justify-content: center; color: #999; font-size: 0.9rem; }
+.item-info { margin-top: 10px; text-align: left; }
+.badge { display: inline-block; padding: 3px 8px; background: #333; color: #fff; font-size: 0.8rem; border-radius: 4px; }
+
+/* 폼 디자인 */
+.form-group { margin-bottom: 15px; }
+.form-control { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+.form-box { background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 30px; margin-top: 20px; }
+.empty-msg-box { background: #f8f9fa; padding: 30px; border-radius: 8px; text-align: center; margin-bottom: 40px; }
