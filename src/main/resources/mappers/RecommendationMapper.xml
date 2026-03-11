@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.finalproject.coordi.recommendation.mapper.RecommendationMapper">
+
+    <insert id="insertRecommendation" parameterType="com.finalproject.coordi.recommendation.dto.persistent.RecommendationDto"
+            useGeneratedKeys="true" keyProperty="recId">
+        INSERT INTO recommendation
+        (
+            user_id,
+            input_mode,
+            input_text,
+            product_option,
+            tpo_type,
+            style_type,
+            is_saved,
+            ai_blueprint,
+            ai_explanation
+        )
+        VALUES
+        (
+            #{userId},
+            #{inputMode},
+            #{inputText},
+            #{productOption},
+            #{tpoType},
+            #{styleType},
+            #{isSaved},
+            CAST(#{aiBlueprint} AS JSON),
+            #{aiExplanation}
+        )
+    </insert>
+
+    <insert id="insertRecommendationItem" parameterType="com.finalproject.coordi.recommendation.dto.persistent.RecommendationItemDto"
+            useGeneratedKeys="true" keyProperty="recItemId">
+        INSERT INTO recommendation_item
+        (
+            rec_id,
+            slot_key,
+            source_type,
+            product_id,
+            search_query,
+            priority,
+            selection_stage,
+            match_score,
+            scoring_details_json,
+            reason
+        )
+        VALUES
+        (
+            #{recId},
+            #{slotKey},
+            #{sourceType},
+            #{productId},
+            #{searchQuery},
+            #{priority},
+            #{selectionStage},
+            #{matchScore},
+            CAST(#{scoringDetailsJson} AS JSON),
+            #{reason}
+        )
+    </insert>
+
+    <insert id="insertRecommendationItemTag" parameterType="com.finalproject.coordi.recommendation.dto.persistent.RecommendationItemTagDto">
+        INSERT IGNORE INTO recommendation_item_tag
+        (
+            rec_item_id,
+            tag_id
+        )
+        VALUES
+        (
+            #{recItemId},
+            #{tagId}
+        )
+    </insert>
+
+    <insert id="upsertProduct" parameterType="com.finalproject.coordi.recommendation.dto.persistent.ProductDto">
+        INSERT INTO product
+        (
+            source,
+            external_id,
+            category_id,
+            name,
+            brand,
+            price,
+            image_url,
+            link,
+            color,
+            material,
+            fit,
+            style,
+            season,
+            temp_min,
+            temp_max
+        )
+        VALUES
+        (
+            #{source},
+            #{externalId},
+            #{categoryId},
+            #{name},
+            #{brand},
+            #{price},
+            #{imageUrl},
+            #{link},
+            #{color},
+            #{material},
+            #{fit},
+            #{style},
+            #{season},
+            #{tempMin},
+            #{tempMax}
+        )
+        ON DUPLICATE KEY UPDATE
+            name = VALUES(name),
+            brand = VALUES(brand),
+            price = VALUES(price),
+            image_url = VALUES(image_url),
+            link = VALUES(link),
+            color = VALUES(color),
+            material = VALUES(material),
+            fit = VALUES(fit),
+            style = VALUES(style),
+            season = VALUES(season),
+            temp_min = VALUES(temp_min),
+            temp_max = VALUES(temp_max),
+            fetched_at = CURRENT_TIMESTAMP
+    </insert>
+
+    <insert id="insertProductTag" parameterType="com.finalproject.coordi.recommendation.dto.persistent.ProductTagDto">
+        INSERT IGNORE INTO product_tag
+        (
+            product_id,
+            tag_id
+        )
+        VALUES
+        (
+            #{productId},
+            #{tagId}
+        )
+    </insert>
+
+    <select id="findProductIdBySourceAndExternalId" resultType="long">
+        SELECT product_id
+        FROM product
+        WHERE source = #{source}
+          AND external_id = #{externalId}
+        LIMIT 1
+    </select>
+
+    <select id="findProductBySourceAndExternalId" resultType="com.finalproject.coordi.recommendation.dto.persistent.ProductDto">
+        SELECT
+            product_id AS productId,
+            source,
+            external_id AS externalId,
+            category_id AS categoryId,
+            name,
+            brand,
+            price,
+            image_url AS imageUrl,
+            link,
+            color,
+            material,
+            fit,
+            style,
+            season,
+            temp_min AS tempMin,
+            temp_max AS tempMax
+        FROM product
+        WHERE source = #{source}
+          AND external_id = #{externalId}
+        LIMIT 1
+    </select>
+</mapper>

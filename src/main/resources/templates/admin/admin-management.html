@@ -2,14 +2,14 @@
 <html lang="ko">
 
   <head>
-    <th:block th:replace="~{common :: configFragment}"></th:block>
+    <th:block th:replace="~{layout/common :: configFragment}"></th:block>
     <link rel="stylesheet" th:href="@{/admin/css/admin.css}" />
     <link rel="stylesheet" th:href="@{/admin/css/admin-item.css}" />
     <title>관리자 페이지</title>
   </head>
 
   <body>
-    <div th:replace="~{common :: headerFragment}"></div>
+    <div th:replace="~{layout/common :: headerFragment}"></div>
 
     <main class="admin-main">
       <!-- Sidebar -->
@@ -45,7 +45,7 @@
         <div id="admin-content-area"></div>
       </section>
     </main>
-    <footer th:replace="~{common :: footerFragment}"></footer>
+    <footer th:replace="~{layout/common :: footerFragment}"></footer>
 
     <!-- Templates for dynamic content -->
     <template id="item-management-template">
