@@ -1,8 +1,8 @@
 package com.finalproject.coordi.auth.handler;
 
 import com.finalproject.coordi.auth.jwt.JwtProvider;
-import com.finalproject.coordi.user.dto.UserDto;
-import com.finalproject.coordi.user.service.UserService;
+import com.finalproject.coordi.users.dto.UserDto;
+import com.finalproject.coordi.users.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;

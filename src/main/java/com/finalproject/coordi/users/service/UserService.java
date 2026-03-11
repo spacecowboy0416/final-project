@@ -1,7 +1,7 @@
-package com.finalproject.coordi.user.service;
+package com.finalproject.coordi.users.service;
 
-import com.finalproject.coordi.user.dto.UserDto;
-import com.finalproject.coordi.user.mapper.UserMapperInter;
+import com.finalproject.coordi.users.dto.UserDto;
+import com.finalproject.coordi.users.mapper.UserMapperInter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
@@ -19,7 +19,7 @@ public class UserService {
     private final UserMapperInter userMapper;
 
     /**
-     * 이메일로 사용자 정보를 조회합니다.
+     * 이메일로 사용자 정보를 조회합니다. (로그인 후 정보 획득용)
      */
     public Optional<UserDto> findByEmail(String email) {
         return userMapper.findByEmail(email);
@@ -44,7 +44,7 @@ public class UserService {
                     return existingUser;
                 })
                 .orElseGet(() -> {
-                    // 2. 소셜 계정은 처음이지만, 같은 이메일로 이미 다른 소셜 가입이 되어있는지 확인
+                    // 2. 소셜 계정은 처음이지만, 같은 이메일로 이미 다른 소셜 가입이 되어있는지 확인 (중복 가입 방지)
                     userMapper.findByEmail(userDto.getEmail()).ifPresent(existingEmailUser -> {
                         log.warn("중복 이메일 가입 시도 거절 - Email: {}, 기존 가입경로: {}", 
                                  existingEmailUser.getEmail(), existingEmailUser.getProvider());

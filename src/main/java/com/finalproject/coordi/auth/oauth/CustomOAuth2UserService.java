@@ -1,7 +1,7 @@
 package com.finalproject.coordi.auth.oauth;
 
-import com.finalproject.coordi.user.dto.UserDto;
-import com.finalproject.coordi.user.service.UserService;
+import com.finalproject.coordi.users.dto.UserDto;
+import com.finalproject.coordi.users.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
