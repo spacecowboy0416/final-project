@@ -106,21 +106,9 @@ external:
       endpoint: ${GEMINI_ENDPOINT:https://generativelanguage.googleapis.com/v1beta}
       model: ${GEMINI_MODEL:gemini-2.0-flash}
       key: ${GEMINI_API_KEY}
-      image:
-        max-long-edge: ${GEMINI_IMAGE_MAX_LONG_EDGE:1280}
-        jpeg-quality: ${GEMINI_IMAGE_JPEG_QUALITY:0.82}
-      http:
-        connect-timeout-ms: ${GEMINI_HTTP_CONNECT_TIMEOUT_MS:1500}
-        response-timeout-ms: ${GEMINI_HTTP_RESPONSE_TIMEOUT_MS:30000}
-        connection-request-timeout-ms: ${GEMINI_HTTP_CONNECTION_REQUEST_TIMEOUT_MS:1000}
-        max-connections: ${GEMINI_HTTP_MAX_CONNECTIONS:200}
-        max-connections-per-route: ${GEMINI_HTTP_MAX_CONNECTIONS_PER_ROUTE:100}
-        idle-evict-seconds: ${GEMINI_HTTP_IDLE_EVICT_SECONDS:30}
       cache:
         enabled: ${GEMINI_PROMPT_CACHE_ENABLED:true}
         ttl-seconds: ${GEMINI_PROMPT_CACHE_TTL_SECONDS:3600}
-        warmup:
-          enabled: ${GEMINI_PROMPT_CACHE_WARMUP_ENABLED:true}
     gemini-jin:
       endpoint: ${GEMINI_JIN_ENDPOINT:https://generativelanguage.googleapis.com/v1beta}
       model: ${GEMINI_JIN_MODEL:gemini-2.5-flash}

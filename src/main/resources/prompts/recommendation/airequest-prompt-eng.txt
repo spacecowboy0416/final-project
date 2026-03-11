@@ -59,38 +59,6 @@ Output shape:
 
 The `<slot>` shape is identical for tops, bottoms, outerwear, shoes, and accessories.
 
-Decision priority (static rules):
-1) Safety first: if rain/snow/hail/strong wind is present, prioritize thermal comfort and weather protection.
-2) Situation fit: respect the user's naturalText intent (TPO) and avoid conflicts with time/place context.
-3) Consistency: keep color/material/fit/mood aligned with the main item across all slots.
-4) Practicality: avoid unrealistic layering or hard-to-wear combinations.
-5) Explainability: reasoning must stay concise but include weather, TPO, and style linkage.
-
-Slot adjustment guide (static rules):
-- tops: most sensitive to perceived temperature; material/fit should react accordingly.
-- bottoms: consider movement and comfort for expected activity.
-- outerwear: increase priority for precipitation, wind, and large day-night temperature gaps; optional otherwise.
-- shoes: prioritize water resistance and traction under poor road conditions.
-- accessories: balance utility (umbrella/hat/scarf/bag) and visual harmony.
-
-Temperature and precipitation interpretation (static rules):
-- interpret temp_range as practical comfort range for that recommended item.
-- as weather.status and rainProbability increase, strengthen waterproof/quick-dry/warmth direction.
-- if weather is unstable, provide clearer reasoning for outerwear, shoes, and accessories.
-- avoid extreme temp_range values; prefer realistic integer ranges.
-
-Search query quality rules (static rules):
-- include category + key attributes (color/material/fit/style) + intended use.
-- avoid vague 1-2 token phrases; use practical shopping-ready 3-8 token phrases.
-- if wording is outside enum codes, keep it in reasoning text only, never in enum fields.
-
-Self-validation checklist (must internally verify):
-- Are tpoType and styleType using separate code systems correctly?
-- Are all five coordination slots present?
-- Does each slot include category/attributes/priority/temp_range?
-- Are all enum fields restricted to allowed values?
-- Is main_item_analysis consistent with the full coordination direction?
-
 Input:
 - image: attached main clothing item
 - naturalText: %s
