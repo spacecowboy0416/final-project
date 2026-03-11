@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Recommendation Test</title>
+    <link rel="icon" href="data:,">
     <style>
         body { margin: 0; font-family: sans-serif; }
         main { padding: 16px; }
@@ -16,6 +17,9 @@
         .input-grid .full-width { grid-column: 1 / -1; }
         .result-slot-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .slot-card { border: 1px solid #ddd; padding: 12px; }
+        .image-preview-box { border: 1px solid #ddd; padding: 12px; min-height: 180px; display: flex; align-items: center; justify-content: center; }
+        .image-preview-box img { max-width: 100%; max-height: 220px; display: block; }
+        .image-preview-box span { color: #666; }
         @media (max-width: 900px) {
             .layout { grid-template-columns: 1fr; }
             .input-grid { grid-template-columns: 1fr; }
@@ -30,10 +34,6 @@
         <p><a th:href="@{/}">인덱스로 돌아가기</a></p>
     </section>
 
-                <section>
-              <h3>devtool livereload 테스트 attempt 9</h3>
-            </section>
-
     <div class="layout">
         <div class="panel">
             <section>
@@ -46,6 +46,10 @@
                     <div class="full-width">
                         <input id="imageFile" type="file" accept="image/*">
                         <p id="imageInfo">선택된 파일 없음</p>
+                        <div class="image-preview-box">
+                            <img id="imagePreview" alt="업로드 이미지 미리보기" hidden>
+                            <span id="imagePreviewEmpty">이미지 미리보기 없음</span>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -55,7 +59,7 @@
                 <div class="input-grid">
                     <div class="full-width">
                         <label for="naturalText">자연어 요청</label>
-                        <textarea id="naturalText" rows="4">텍스트 입력</textarea>
+                        <textarea id="naturalText" rows="4">봄철 데이트에 입고 나갈 깔끔하고 편한 코디를 만들어줘</textarea>
                     </div>
                 </div>
             </section>
@@ -78,6 +82,10 @@
                 <button id="useCurrentLocationBtn" type="button">현재 위치 사용</button>
                 <div class="input-grid">
                     <div>
+                        <label for="districtName">구/군</label>
+                        <input id="districtName" type="text">
+                    </div>
+                    <div>
                         <label for="placeName">장소명</label>
                         <input id="placeName" type="text">
                     </div>
@@ -97,44 +105,10 @@
             </section>
 
             <section>
-                <h3>날씨 프리뷰</h3>
+                <h3>날씨 조회 기준</h3>
                 <div class="input-grid">
-                    <div>
-                        <label for="temperature">기온</label>
-                        <input id="temperature" type="number" step="0.1" value="20">
-                    </div>
-                    <div>
-                        <label for="feelsLike">체감온도</label>
-                        <input id="feelsLike" type="number" step="0.1" value="19">
-                    </div>
-                    <div>
-                        <label for="weatherStatus">날씨 상태</label>
-                        <select id="weatherStatus">
-                            <option value="CLEAR">맑음</option>
-                            <option value="PARTLY_CLOUDY">구름 조금</option>
-                            <option value="CLOUDY">흐림</option>
-                            <option value="WINDY">바람 많음</option>
-                            <option value="RAIN">비</option>
-                            <option value="CLOUDY_RAIN">흐리고 비</option>
-                            <option value="THUNDERSTORM">뇌우</option>
-                            <option value="THUNDERSTORM_RAIN">뇌우와 비</option>
-                            <option value="SNOW">눈</option>
-                            <option value="CLOUDY_SNOW">흐리고 눈</option>
-                            <option value="SLEET">진눈깨비</option>
-                            <option value="HAIL">우박</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label for="rainProbability">강수 확률</label>
-                        <select id="rainProbability">
-                            <option value="VERY_LOW">VERY_LOW</option>
-                            <option value="LOW">LOW</option>
-                            <option value="MEDIUM">MEDIUM</option>
-                            <option value="HIGH">HIGH</option>
-                            <option value="VERY_HIGH">VERY_HIGH</option>
-                        </select>
-                    </div>
                     <div class="full-width">
+                        <p>입력한 구/군과 일시를 기준으로 Redis 캐시 서버에서 날씨 정보를 조회합니다.</p>
                         <pre id="weatherPreview"></pre>
                     </div>
                 </div>
@@ -149,6 +123,8 @@
             <section>
                 <h3>출력</h3>
                 <p id="statusText">대기 중</p>
+                <p id="elapsedTimeText">소요 시간: -</p>
+                <pre id="errorText">에러 없음</pre>
             </section>
 
             <section>
@@ -161,8 +137,6 @@
                 <section id="resultSkeleton">
                     <div>
                         <h4>추천 메타</h4>
-                        <p>status: <span id="resultStatus">READY</span></p>
-                        <p>blueprintSource: <span id="resultSource">AI</span></p>
                         <p>tpoType: <span id="resultTpo">미정</span></p>
                         <p>styleType: <span id="resultStyle">미정</span></p>
                     </div>
@@ -172,34 +146,44 @@
                         <div class="result-slot-grid">
                             <div class="slot-card">
                                 <strong>tops</strong>
+                                <img id="slotTopsImage" alt="tops 이미지" style="max-width:100%;max-height:140px;display:none;margin:8px 0;">
                                 <p id="slotTopsName">아이템명 대기</p>
                                 <p id="slotTopsReason">추천 사유 대기</p>
+                                <p id="slotTopsScore">점수 대기</p>
                             </div>
                             <div class="slot-card">
                                 <strong>bottoms</strong>
+                                <img id="slotBottomsImage" alt="bottoms 이미지" style="max-width:100%;max-height:140px;display:none;margin:8px 0;">
                                 <p id="slotBottomsName">아이템명 대기</p>
                                 <p id="slotBottomsReason">추천 사유 대기</p>
+                                <p id="slotBottomsScore">점수 대기</p>
                             </div>
                             <div class="slot-card">
                                 <strong>outerwear</strong>
+                                <img id="slotOuterwearImage" alt="outerwear 이미지" style="max-width:100%;max-height:140px;display:none;margin:8px 0;">
                                 <p id="slotOuterwearName">아이템명 대기</p>
                                 <p id="slotOuterwearReason">추천 사유 대기</p>
+                                <p id="slotOuterwearScore">점수 대기</p>
                             </div>
                             <div class="slot-card">
                                 <strong>shoes</strong>
+                                <img id="slotShoesImage" alt="shoes 이미지" style="max-width:100%;max-height:140px;display:none;margin:8px 0;">
                                 <p id="slotShoesName">아이템명 대기</p>
                                 <p id="slotShoesReason">추천 사유 대기</p>
+                                <p id="slotShoesScore">점수 대기</p>
                             </div>
                             <div class="slot-card">
                                 <strong>accessories</strong>
+                                <img id="slotAccessoriesImage" alt="accessories 이미지" style="max-width:100%;max-height:140px;display:none;margin:8px 0;">
                                 <p id="slotAccessoriesName">아이템명 대기</p>
                                 <p id="slotAccessoriesReason">추천 사유 대기</p>
+                                <p id="slotAccessoriesScore">점수 대기</p>
                             </div>
                         </div>
                     </div>
 
                     <div>
-                        <h4>AI Blueprint 원문</h4>
+                        <h4>Blueprint 메타</h4>
                         <pre id="blueprintBox">blueprint 대기</pre>
                     </div>
                 </section>
@@ -217,51 +201,91 @@
     const kakaoMapApiKey = /*[[${kakaoMapApiKey}]]*/ "";
 </script>
 <script>
+    // TEST ONLY: 매번 파일을 업로드하지 않아도 recommendation 파이프라인을 빠르게 확인할 수 있게
+    // 샘플 이미지/텍스트/위치/시간 기본값을 고정한다.
+    const TEST_SAMPLE_IMAGE_URL = "/recommendation/image/test_sample_gerytshirt.jpg";
+    const TEST_SAMPLE_IMAGE_NAME = "test_sample_gerytshirt.jpg";
+    const TEST_SAMPLE_IMAGE_MIME_TYPE = "image/jpeg";
+    const TEST_SAMPLE_LOCATION = {
+        districtName: "중구",
+        placeName: "서울특별시청",
+        addressName: "서울특별시 중구 세종대로 110",
+        latitude: 37.5665,
+        longitude: 126.9780
+    };
+    const TEST_SAMPLE_SCHEDULE_TIME = "2026-03-11T14:00";
+
     const scheduleTimeInput = document.getElementById("scheduleTime");
     const imageFileInput = document.getElementById("imageFile");
     const imageInfo = document.getElementById("imageInfo");
+    const imagePreview = document.getElementById("imagePreview");
+    const imagePreviewEmpty = document.getElementById("imagePreviewEmpty");
     const payloadPreview = document.getElementById("payloadPreview");
     const resultBox = document.getElementById("resultBox");
     const statusText = document.getElementById("statusText");
+    const elapsedTimeText = document.getElementById("elapsedTimeText");
+    const errorText = document.getElementById("errorText");
     const weatherPreview = document.getElementById("weatherPreview");
     const mapStatus = document.getElementById("mapStatus");
-    const resultStatus = document.getElementById("resultStatus");
-    const resultSource = document.getElementById("resultSource");
     const resultTpo = document.getElementById("resultTpo");
     const resultStyle = document.getElementById("resultStyle");
     const blueprintBox = document.getElementById("blueprintBox");
+    const kakaoSdkUrl = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${kakaoMapApiKey}&autoload=false&libraries=services`;
+    const sampleImageState = {
+        imageBytes: null,
+        mimeType: TEST_SAMPLE_IMAGE_MIME_TYPE,
+        name: TEST_SAMPLE_IMAGE_NAME,
+        sourceUrl: TEST_SAMPLE_IMAGE_URL
+    };
 
-    function updateSlot(slotKey, itemName, reason) {
+    function updateSlot(slotKey, imageUrl, itemName, reason, scoreText) {
         const normalizedKey = slotKey.charAt(0).toUpperCase() + slotKey.slice(1);
+        const imageElement = document.getElementById(`slot${normalizedKey}Image`);
         const nameElement = document.getElementById(`slot${normalizedKey}Name`);
         const reasonElement = document.getElementById(`slot${normalizedKey}Reason`);
+        const scoreElement = document.getElementById(`slot${normalizedKey}Score`);
+        if (imageElement) {
+            if (imageUrl) {
+                imageElement.src = imageUrl;
+                imageElement.style.display = "block";
+            } else {
+                imageElement.removeAttribute("src");
+                imageElement.style.display = "none";
+            }
+        }
         if (nameElement) {
             nameElement.textContent = itemName || "아이템명 대기";
         }
         if (reasonElement) {
             reasonElement.textContent = reason || "추천 사유 대기";
         }
+        if (scoreElement) {
+            scoreElement.textContent = scoreText || "점수 대기";
+        }
     }
 
     function resetResultSkeleton() {
-        resultStatus.textContent = "READY";
-        resultSource.textContent = "AI";
         resultTpo.textContent = "미정";
         resultStyle.textContent = "미정";
-        blueprintBox.textContent = "blueprint 대기";
+        blueprintBox.textContent = "blueprint 메타 대기";
         ["tops", "bottoms", "outerwear", "shoes", "accessories"].forEach(slotKey => {
-            updateSlot(slotKey, "", "");
+            updateSlot(slotKey, "", "", "", "");
         });
     }
 
+    function resetOutputStatus() {
+        elapsedTimeText.textContent = "소요 시간: -";
+        errorText.textContent = "에러 없음";
+    }
+
     function updateResultSkeleton(response) {
-        resultStatus.textContent = response?.status || "COMPLETED";
-        resultSource.textContent = response?.blueprintSource || "AI";
         resultTpo.textContent = response?.tpoType || "미정";
         resultStyle.textContent = response?.styleType || "미정";
-        blueprintBox.textContent = response?.aiBlueprint
-            ? JSON.stringify(response.aiBlueprint, null, 2)
-            : "blueprint 없음";
+        blueprintBox.textContent = response
+            ? JSON.stringify({
+                stylingRuleApplied: response.stylingRuleApplied
+            }, null, 2)
+            : "blueprint 메타 없음";
 
         const blueprintItems = Array.isArray(response?.blueprint) ? response.blueprint : [];
         const slotMap = new Map();
@@ -273,7 +297,8 @@
 
         ["tops", "bottoms", "outerwear", "shoes", "accessories"].forEach(slotKey => {
             const item = slotMap.get(slotKey);
-            updateSlot(slotKey, item?.itemName, item?.reasoning || item?.reason);
+            const scoreText = item ? `match=${item.matchScore}` : "";
+            updateSlot(slotKey, item?.imageUrl, item?.itemName, item?.reasoning, scoreText);
         });
     }
 
@@ -319,10 +344,9 @@
 
     function updateWeatherPreview() {
         const preview = {
-            temperature: Number(document.getElementById("temperature").value),
-            feelsLike: Number(document.getElementById("feelsLike").value),
-            weatherStatus: document.getElementById("weatherStatus").value,
-            rainProbability: document.getElementById("rainProbability").value
+            scheduleTime: toOffsetDateTime(scheduleTimeInput.value),
+            location: readLocationFields(),
+            weatherSource: "REDIS_CACHE_SERVER"
         };
         weatherPreview.textContent = JSON.stringify(preview, null, 2);
     }
@@ -331,8 +355,22 @@
         payloadPreview.textContent = JSON.stringify(payload, null, 2);
     }
 
+    function buildPreviewPayload(file) {
+        const activeImage = resolveActiveImage(file);
+        return {
+            naturalText: document.getElementById("naturalText").value,
+            scheduleTime: toOffsetDateTime(scheduleTimeInput.value),
+            location: readLocationFields(),
+            imageData: {
+                inputStatus: activeImage ? "success" : "missing",
+                mimeType: activeImage?.mimeType || ""
+            }
+        };
+    }
+
     function readLocationFields() {
         return {
+            districtName: document.getElementById("districtName").value,
             placeName: document.getElementById("placeName").value,
             addressName: document.getElementById("addressName").value,
             latitude: Number(document.getElementById("latitude").value),
@@ -342,33 +380,78 @@
 
     async function buildPayload() {
         const file = imageFileInput.files && imageFileInput.files[0];
-        if (!file) {
-            throw new Error("이미지 파일을 선택해주세요.");
+        const activeImage = await resolveActiveImagePayload(file);
+        if (!activeImage) {
+            throw new Error("테스트용 샘플 이미지 또는 업로드 이미지를 준비하지 못했습니다.");
         }
 
-        const imageBytes = await fileToBase64(file);
         const payload = {
             naturalText: document.getElementById("naturalText").value,
             scheduleTime: toOffsetDateTime(scheduleTimeInput.value),
-            weatherInfo: {
-                temperature: Number(document.getElementById("temperature").value),
-                feelsLike: Number(document.getElementById("feelsLike").value),
-                weatherStatus: document.getElementById("weatherStatus").value,
-                rainProbability: document.getElementById("rainProbability").value
-            },
             location: readLocationFields(),
             imageData: {
-                imageBytes,
-                mimeType: file.type || "image/jpeg"
+                imageBytes: activeImage.imageBytes,
+                mimeType: activeImage.mimeType
             }
         };
-        updatePayloadPreview(payload);
+        updatePayloadPreview(buildPreviewPayload(file));
         return payload;
+    }
+
+    function resolveActiveImage(file) {
+        if (file) {
+            return {
+                mimeType: file.type || TEST_SAMPLE_IMAGE_MIME_TYPE,
+                name: file.name
+            };
+        }
+        if (sampleImageState.imageBytes) {
+            return sampleImageState;
+        }
+        return null;
+    }
+
+    async function resolveActiveImagePayload(file) {
+        if (file) {
+            return {
+                imageBytes: await fileToBase64(file),
+                mimeType: file.type || TEST_SAMPLE_IMAGE_MIME_TYPE
+            };
+        }
+        if (sampleImageState.imageBytes) {
+            return sampleImageState;
+        }
+        return null;
+    }
+
+    async function loadTestSampleImage() {
+        const response = await fetch(TEST_SAMPLE_IMAGE_URL);
+        if (!response.ok) {
+            throw new Error(`샘플 이미지를 불러오지 못했습니다. HTTP ${response.status}`);
+        }
+
+        const blob = await response.blob();
+        sampleImageState.mimeType = blob.type || TEST_SAMPLE_IMAGE_MIME_TYPE;
+        sampleImageState.imageBytes = await fileToBase64(new File([blob], TEST_SAMPLE_IMAGE_NAME, { type: sampleImageState.mimeType }));
+        imageInfo.textContent = `${TEST_SAMPLE_IMAGE_NAME} (${sampleImageState.mimeType}) - 테스트 기본 이미지`;
+        imagePreview.src = TEST_SAMPLE_IMAGE_URL;
+        imagePreview.hidden = false;
+        imagePreviewEmpty.hidden = true;
+        updatePayloadPreview(buildPreviewPayload(null));
+    }
+
+    function applyTestSampleLocation() {
+        document.getElementById("districtName").value = TEST_SAMPLE_LOCATION.districtName;
+        document.getElementById("placeName").value = TEST_SAMPLE_LOCATION.placeName;
+        document.getElementById("addressName").value = TEST_SAMPLE_LOCATION.addressName;
+        document.getElementById("latitude").value = TEST_SAMPLE_LOCATION.latitude;
+        document.getElementById("longitude").value = TEST_SAMPLE_LOCATION.longitude;
     }
 
     function setLocation(latitude, longitude) {
         document.getElementById("latitude").value = latitude;
         document.getElementById("longitude").value = longitude;
+        updateWeatherPreview();
     }
 
     function loadKakaoMap() {
@@ -378,99 +461,141 @@
         }
 
         const script = document.createElement("script");
-        script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${kakaoMapApiKey}&autoload=false&libraries=services`;
+        script.src = kakaoSdkUrl;
         script.onload = () => {
-            kakao.maps.load(() => {
-                const initialLatitude = 37.5665;
-                const initialLongitude = 126.9780;
-                setLocation(initialLatitude, initialLongitude);
-
-                const container = document.getElementById("map");
-                const map = new kakao.maps.Map(container, {
-                    center: new kakao.maps.LatLng(initialLatitude, initialLongitude),
-                    level: 3
-                });
-                const geocoder = new kakao.maps.services.Geocoder();
-                const marker = new kakao.maps.Marker({
-                    position: new kakao.maps.LatLng(initialLatitude, initialLongitude)
-                });
-                marker.setMap(map);
-
-                function updateAddress(lat, lng) {
-                    geocoder.coord2Address(lng, lat, (result, status) => {
-                        if (status === kakao.maps.services.Status.OK && result[0]) {
-                            document.getElementById("addressName").value =
-                                result[0].road_address?.address_name || result[0].address.address_name || "";
-                            document.getElementById("placeName").value =
-                                result[0].road_address?.building_name || result[0].address.region_3depth_name || "";
-                        }
-                    });
+            try {
+                if (!window.kakao || !window.kakao.maps) {
+                    mapStatus.textContent = "카카오 SDK는 내려왔지만 window.kakao.maps가 없습니다.";
+                    return;
                 }
 
-                kakao.maps.event.addListener(map, "click", mouseEvent => {
-                    const lat = mouseEvent.latLng.getLat();
-                    const lng = mouseEvent.latLng.getLng();
-                    setLocation(lat, lng);
-                    marker.setPosition(mouseEvent.latLng);
-                    updateAddress(lat, lng);
-                });
+                kakao.maps.load(() => {
+                    try {
+                        const initialLatitude = 37.5665;
+                        const initialLongitude = 126.9780;
+                        let updateAddress;
+                        setLocation(initialLatitude, initialLongitude);
 
-                updateAddress(initialLatitude, initialLongitude);
-                mapStatus.textContent = "지도 준비 완료";
-            });
+                        const container = document.getElementById("map");
+                        const map = new kakao.maps.Map(container, {
+                            center: new kakao.maps.LatLng(initialLatitude, initialLongitude),
+                            level: 3
+                        });
+                        const geocoder = new kakao.maps.services.Geocoder();
+                        const marker = new kakao.maps.Marker({
+                            position: new kakao.maps.LatLng(initialLatitude, initialLongitude)
+                        });
+                        marker.setMap(map);
+
+                        updateAddress = (lat, lng) => {
+                            geocoder.coord2Address(lng, lat, (result, status) => {
+                                if (status === kakao.maps.services.Status.OK && result[0]) {
+                                    document.getElementById("districtName").value =
+                                        result[0].address?.region_2depth_name || "";
+                                    document.getElementById("addressName").value =
+                                        result[0].road_address?.address_name || result[0].address.address_name || "";
+                                    document.getElementById("placeName").value =
+                                        result[0].road_address?.building_name || result[0].address.region_3depth_name || "";
+                                    updateWeatherPreview();
+                                }
+                            });
+                        };
+
+                        kakao.maps.event.addListener(map, "click", mouseEvent => {
+                            const lat = mouseEvent.latLng.getLat();
+                            const lng = mouseEvent.latLng.getLng();
+                            setLocation(lat, lng);
+                            marker.setPosition(mouseEvent.latLng);
+                            updateAddress(lat, lng);
+                        });
+
+                        document.getElementById("useCurrentLocationBtn").addEventListener("click", () => {
+                            if (!navigator.geolocation) {
+                                mapStatus.textContent = "브라우저에서 위치 기능을 지원하지 않습니다.";
+                                return;
+                            }
+                            navigator.geolocation.getCurrentPosition(position => {
+                                const lat = position.coords.latitude;
+                                const lng = position.coords.longitude;
+                                const latLng = new kakao.maps.LatLng(lat, lng);
+                                setLocation(lat, lng);
+                                marker.setPosition(latLng);
+                                map.setCenter(latLng);
+                                updateAddress(lat, lng);
+                                mapStatus.textContent = "현재 위치를 입력했습니다.";
+                            }, () => {
+                                mapStatus.textContent = "현재 위치를 가져오지 못했습니다.";
+                            });
+                        });
+
+                        updateAddress(initialLatitude, initialLongitude);
+                        mapStatus.textContent = "지도 준비 완료";
+                    } catch (error) {
+                        mapStatus.textContent = `지도 초기화 실패: ${error.message || error}`;
+                    }
+                });
+            } catch (error) {
+                mapStatus.textContent = `카카오 SDK 후처리 실패: ${error.message || error}`;
+            }
         };
         script.onerror = () => {
-            mapStatus.textContent = "카카오 지도 스크립트를 불러오지 못했습니다.";
+            mapStatus.textContent = `카카오 지도 스크립트를 불러오지 못했습니다. URL: ${kakaoSdkUrl}`;
         };
         document.head.appendChild(script);
     }
 
-    scheduleTimeInput.value = toDateTimeLocalValue(roundToThirtyMinutes(new Date()));
+    scheduleTimeInput.value = TEST_SAMPLE_SCHEDULE_TIME;
+    applyTestSampleLocation();
     updateWeatherPreview();
     resetResultSkeleton();
+    resetOutputStatus();
     updatePayloadPreview({
         naturalText: document.getElementById("naturalText").value,
         scheduleTime: toOffsetDateTime(scheduleTimeInput.value),
-        weatherInfo: {
-            temperature: Number(document.getElementById("temperature").value),
-            feelsLike: Number(document.getElementById("feelsLike").value),
-            weatherStatus: document.getElementById("weatherStatus").value,
-            rainProbability: document.getElementById("rainProbability").value
-        },
         location: readLocationFields(),
         imageData: {
-            imageBytes: "...",
-            mimeType: "image/jpeg"
+            inputStatus: "missing",
+            mimeType: ""
         }
     });
 
     imageFileInput.addEventListener("change", () => {
         const file = imageFileInput.files && imageFileInput.files[0];
         imageInfo.textContent = file ? `${file.name} (${file.type || "unknown"})` : "선택된 파일 없음";
-    });
+        updatePayloadPreview(buildPreviewPayload(file));
 
-    document.getElementById("useCurrentLocationBtn").addEventListener("click", () => {
-        if (!navigator.geolocation) {
-            mapStatus.textContent = "브라우저에서 위치 기능을 지원하지 않습니다.";
+        if (!file) {
+            imagePreview.hidden = true;
+            imagePreview.removeAttribute("src");
+            imagePreviewEmpty.hidden = false;
             return;
         }
-        navigator.geolocation.getCurrentPosition(position => {
-            setLocation(position.coords.latitude, position.coords.longitude);
-            mapStatus.textContent = "현재 위치를 입력했습니다.";
-        }, () => {
-            mapStatus.textContent = "현재 위치를 가져오지 못했습니다.";
-        });
+
+        const reader = new FileReader();
+        reader.onload = () => {
+            imagePreview.src = String(reader.result || "");
+            imagePreview.hidden = false;
+            imagePreviewEmpty.hidden = true;
+        };
+        reader.onerror = () => {
+            imagePreview.hidden = true;
+            imagePreview.removeAttribute("src");
+            imagePreviewEmpty.hidden = false;
+        };
+        reader.readAsDataURL(file);
     });
 
-    ["temperature", "feelsLike", "weatherStatus", "rainProbability"].forEach(id => {
+    ["scheduleTime", "districtName", "placeName", "addressName", "latitude", "longitude"].forEach(id => {
         document.getElementById(id).addEventListener("input", updateWeatherPreview);
         document.getElementById(id).addEventListener("change", updateWeatherPreview);
     });
 
     document.getElementById("submitBtn").addEventListener("click", async () => {
+        const requestStartedAt = Date.now();
         try {
             statusText.textContent = "요청 중";
             resetResultSkeleton();
+            resetOutputStatus();
             const payload = await buildPayload();
             const response = await fetch("/api/recommendations", {
                 method: "POST",
@@ -485,12 +610,18 @@
             updateResultSkeleton(parsed);
             resultBox.textContent = JSON.stringify(parsed, null, 2);
             statusText.textContent = "완료";
+            elapsedTimeText.textContent = `소요 시간: ${Date.now() - requestStartedAt}ms`;
         } catch (error) {
             resultBox.textContent = String(error.message || error);
             statusText.textContent = "실패";
+            elapsedTimeText.textContent = `소요 시간: ${Date.now() - requestStartedAt}ms`;
+            errorText.textContent = String(error.stack || error.message || error);
         }
     });
 
+    loadTestSampleImage().catch(error => {
+        imageInfo.textContent = `샘플 이미지 로드 실패: ${error.message || error}`;
+    });
     loadKakaoMap();
 </script>
 </body>

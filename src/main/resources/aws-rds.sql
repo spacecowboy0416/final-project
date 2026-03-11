@@ -186,15 +186,17 @@ CREATE TABLE system_error_log (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- =========================================================
--- 2026-03-09, jin, 코디 추천 로직 고도화에 따른 스키마 변경
+-- 2026-03-11, jin, 코디 추천 로직 고도화에 따른 스키마 변경
 -- =========================================================
 
--- 13) 날씨 스냅샷 보강 (CoordinationRequestDto + KakaoMapPort 연계)
+-- 13) 날씨 스냅샷 보강 
+
+-- 날씨 상태 코드 마스터 테이블
 CREATE TABLE weather_status_code (
   weather_status_code VARCHAR(40) PRIMARY KEY,
   display_name_ko VARCHAR(50) NOT NULL,
   display_name_en VARCHAR(50) NOT NULL,
-  sort_order INT DEFAULT 0,
+  sort_order INT DEFAULT 0, -- FE에서 보이는 순서 정렬. 
   is_active BOOLEAN DEFAULT TRUE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -226,14 +228,19 @@ ALTER TABLE recommendation
 -- 15) product / recommendation_item 정규화 보강 (태그 공통 체계 + mapper SQL 정합)
 CREATE INDEX idx_product_tag_tag_id ON product_tag (tag_id, product_id);
 
+ALTER TABLE product
+  ADD COLUMN color VARCHAR(30) NULL AFTER link,
+  ADD COLUMN material VARCHAR(30) NULL AFTER color,
+  ADD COLUMN fit VARCHAR(30) NULL AFTER material,
+  ADD COLUMN style VARCHAR(30) NULL AFTER fit,
+  ADD COLUMN season VARCHAR(20) NULL AFTER style,
+  ADD COLUMN temp_min INT NULL AFTER season,
+  ADD COLUMN temp_max INT NULL AFTER temp_min;
+
 ALTER TABLE recommendation_item
   ADD COLUMN slot_key VARCHAR(20) NULL AFTER rec_id,
-  ADD COLUMN item_name VARCHAR(200) NULL AFTER category_id,
-  ADD COLUMN search_query VARCHAR(300) NULL AFTER item_name,
-  ADD COLUMN attributes_json JSON NULL AFTER search_query,
-  ADD COLUMN temp_min INT NULL AFTER attributes_json,
-  ADD COLUMN temp_max INT NULL AFTER temp_min,
-  ADD COLUMN priority VARCHAR(20) NULL AFTER temp_max,
+  ADD COLUMN search_query VARCHAR(300) NULL AFTER product_id,
+  ADD COLUMN priority VARCHAR(20) NULL AFTER search_query,
   ADD COLUMN selection_stage VARCHAR(30) NULL AFTER priority,
   ADD COLUMN match_score DECIMAL(6,4) NULL AFTER selection_stage,
   ADD COLUMN style_score DECIMAL(6,4) NULL AFTER match_score,
@@ -248,7 +255,9 @@ ALTER TABLE recommendation_item
 CREATE UNIQUE INDEX uk_rec_item_rec_slot ON recommendation_item (rec_id, slot_key);
 CREATE INDEX idx_rec_item_product ON recommendation_item (product_id);
 CREATE INDEX idx_rec_item_priority ON recommendation_item (priority);
-CREATE INDEX idx_rec_item_category_priority ON recommendation_item (category_id, priority);
+CREATE INDEX idx_product_style ON product (style);
+CREATE INDEX idx_product_color ON product (color);
+CREATE INDEX idx_product_temp_range ON product (temp_min, temp_max);
 
 CREATE TABLE recommendation_item_tag (
   rec_item_id BIGINT NOT NULL,
@@ -369,3 +378,57 @@ INSERT INTO tag (type, name) VALUES
 ON DUPLICATE KEY UPDATE
   name = VALUES(name);
 
+-- =========================================================
+-- 2026-03-11, jin, product 중심 정규화 및 ownership/result 분리
+-- =========================================================
+
+-- 18) closet_item을 product ownership 관계로 정리
+ALTER TABLE closet_item
+  ADD COLUMN product_id BIGINT NULL AFTER user_id;
+
+ALTER TABLE closet_item
+  ADD CONSTRAINT fk_closet_item_product
+  FOREIGN KEY (product_id) REFERENCES product(product_id);
+
+ALTER TABLE closet_item
+  DROP FOREIGN KEY closet_item_ibfk_2;
+
+DROP INDEX idx_closet_user_category ON closet_item;
+DROP INDEX category_id ON closet_item;
+
+ALTER TABLE closet_item
+  DROP COLUMN category_id,
+  DROP COLUMN name,
+  DROP COLUMN color,
+  DROP COLUMN season,
+  DROP COLUMN thickness,
+  DROP COLUMN image_url;
+
+CREATE INDEX idx_closet_user_product ON closet_item (user_id, product_id);
+CREATE INDEX idx_closet_item_product ON closet_item (product_id);
+
+DROP TABLE closet_item_tag;
+
+-- 19) recommendation_item을 추천 실행 결과/점수 테이블로 축소
+ALTER TABLE recommendation_item
+  DROP FOREIGN KEY recommendation_item_ibfk_3;
+
+DROP INDEX idx_rec_item_category_priority ON recommendation_item;
+
+ALTER TABLE recommendation_item
+  DROP COLUMN category_id,
+  DROP COLUMN item_name,
+  DROP COLUMN attributes_json,
+  DROP COLUMN temp_min,
+  DROP COLUMN temp_max;
+
+-- 20) recommendation 최종 출력 기준으로 세부 score 축소
+ALTER TABLE recommendation_item
+  DROP COLUMN style_score,
+  DROP COLUMN color_score,
+  DROP COLUMN temp_score;
+
+-- 21) recommendation 최종 출력 기준으로 불필요 메타 제거
+ALTER TABLE recommendation
+  DROP COLUMN status,
+  DROP COLUMN blueprint_source;

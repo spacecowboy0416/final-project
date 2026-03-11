@@ -5,9 +5,21 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class BlueprintValidator {
-    public Object validate(JsonNode rawBlueprintJson) {
-        // TODO: AI 원본 JSON을 파싱하고 블루프린트 스키마를 검증한다.
-        return null;
+    /**
+     * Gemini가 반환한 blueprint JSON을 recommendation 파이프라인에서 계속 사용할 수 있게
+     * 최소 구조만 확인한 뒤 그대로 다음 단계로 넘긴다.
+     */
+    public JsonNode validate(JsonNode rawBlueprintJson) {
+        if (rawBlueprintJson == null || rawBlueprintJson.isMissingNode() || rawBlueprintJson.isNull()) {
+            throw new IllegalStateException("AI blueprint 응답이 비어 있습니다.");
+        }
+
+        JsonNode blueprintRoot = rawBlueprintJson.path("ai_blueprint");
+        if (!blueprintRoot.isObject()) {
+            throw new IllegalStateException("AI blueprint 최상위 키 ai_blueprint가 없습니다.");
+        }
+
+        return rawBlueprintJson;
     }
 }
 

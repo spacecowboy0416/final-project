@@ -23,14 +23,14 @@ import org.springframework.web.bind.annotation.ResponseBody;
  */
 public class RecommendationController {
     private final Orchestrator orchestratorService;
-    @Value("${external.api.kakao-map.key:}")
-    private String kakaoMapApiKey;
+    @Value("${external.api.kakao-map.js-key:}")
+    private String kakaoMapJsKey;
 
     // 추천 테스트 페이지를 반환한다.
     @GetMapping("/recommend")
     public String recommendTestPage(Model model) {
-        model.addAttribute("kakaoMapApiKey", kakaoMapApiKey);
-        return "recommend-test";
+        model.addAttribute("kakaoMapApiKey", kakaoMapJsKey);
+        return "recommendation/recommend-test";
     }
 
     // 추천 요청을 받아 오케스트레이터로 최종 coordination 응답을 생성한다.

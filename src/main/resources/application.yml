@@ -18,6 +18,11 @@ spring:
     url: jdbc:mysql://${RDS_HOSTNAME}:${RDS_PORT}/${RDS_DB_NAME}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul
     username: ${RDS_USERNAME}
     password: ${RDS_PASSWORD}
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
 
   # 2. Thymeleaf (FE)
   thymeleaf:
@@ -100,7 +105,13 @@ external:
     gemini:
       endpoint: ${GEMINI_ENDPOINT:https://generativelanguage.googleapis.com/v1beta}
       model: ${GEMINI_MODEL:gemini-2.0-flash}
-      prompt-template: ${GEMINI_PROMPT_TEMPLATE:classpath:prompts/gemini/coordination-prompt.txt}
+      key: ${GEMINI_API_KEY}
+      cache:
+        enabled: ${GEMINI_PROMPT_CACHE_ENABLED:true}
+        ttl-seconds: ${GEMINI_PROMPT_CACHE_TTL_SECONDS:3600}
+    gemini-jin:
+      endpoint: ${GEMINI_JIN_ENDPOINT:https://generativelanguage.googleapis.com/v1beta}
+      model: ${GEMINI_JIN_MODEL:gemini-2.5-flash}
       key: ${GEMINI_API_KEY}
     shopping:
       endpoint: ${SHOPPING_API_ENDPOINT:https://openapi.naver.com/v1/search/shop.json}
@@ -108,9 +119,12 @@ external:
       client-secret: ${NAVER_CLIENT_SECRET:}
     weather:
       key: ${WEATHER_API_KEY}
+      redis:
+        key-prefix: ${WEATHER_REDIS_KEY_PREFIX:weather:district}
     kakao-map:
       endpoint: ${KAKAO_MAP_ENDPOINT:https://dapi.kakao.com/v2/local/geo/coord2address.json}
-      key: ${KAKAO_MAP_API_KEY:}
+      js-key: ${KAKAO_MAP_JS_KEY:}
+      admin-key: ${KAKAO_MAP_ADMIN_KEY:}
       auth-scheme: ${KAKAO_MAP_AUTH_SCHEME:KakaoAK}
   storage:
     image:
@@ -118,6 +132,8 @@ external:
       extension: ${IMAGE_STORAGE_EXTENSION:.jpg}
 
 recommendation:
+  prompt:
+    template: ${RECOMMENDATION_PROMPT_TEMPLATE:classpath:prompts/recommendation/airequest-prompt-kr.txt}
   response:
     status: ${RECOMMENDATION_RESPONSE_STATUS:COMPLETED}
     source: ${RECOMMENDATION_RESPONSE_SOURCE:AI}

@@ -22,8 +22,6 @@ public class RecommendationDto {
     private String inputMode;
     private String inputText;
     private String productOption;
-    private String status;
-    private String blueprintSource;
     private String tpoType;
     private String styleType;
     private Boolean isSaved;

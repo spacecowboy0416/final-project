@@ -203,5 +203,26 @@ public final class CoordinationEnums {
             return EnumResolver.fromCode(CategoryType.class, rawCode);
         }
     }
-}
 
+    // 슬롯별 필수도 분류 코드
+    public enum PriorityType implements CodedEnum {
+        ESSENTIAL("essential"),
+        OPTIONAL("optional");
+
+        private final String code;
+
+        PriorityType(String code) {
+            this.code = code;
+        }
+
+        @Override
+        public String code() {
+            return code;
+        }
+
+        @JsonCreator
+        public static PriorityType fromCode(String rawCode) {
+            return EnumResolver.fromCode(PriorityType.class, rawCode);
+        }
+    }
+}

@@ -1,6 +1,5 @@
 package com.finalproject.coordi.recommendation.dto.api;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.StyleType;
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.TpoType;
 import java.util.List;
@@ -10,11 +9,9 @@ import java.util.List;
  */
 public record CoordinationOutputDto(
     String blueprintId,
-    String status,
-    String blueprintSource,
     TpoType tpoType,
     StyleType styleType,
-    JsonNode aiBlueprint,
+    String stylingRuleApplied,
     List<BlueprintOutputDto> blueprint
 ) {
 }

@@ -5,12 +5,14 @@ import com.finalproject.coordi.recommendation.dto.api.CoordinationOutputDto;
 import com.finalproject.coordi.recommendation.service.component.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 @Service
 @Validated
+@Slf4j
 @RequiredArgsConstructor
 
 /**
@@ -32,36 +34,68 @@ public class Orchestrator {
     @Transactional
     // blueprint 추천 요청을 받아 전체 파이프라인을 순차 실행한다.
     public CoordinationOutputDto coordinate(@Valid BlueprintRequestDto request) {
+        long pipelineStartedAt = System.nanoTime();
+
         // 1. 날씨 조회
+        long weatherStartedAt = System.nanoTime();
         var weather = weatherFetcher.fetch(request);
+        logStageDuration("weatherFetcher.fetch", weatherStartedAt);
 
         // 2. 프롬프트 생성(natural text, image, location(kakao map), scheduleTime, weather)
+        long promptStartedAt = System.nanoTime();
         var prompt = promptBuilder.build(request, weather);
+        logStageDuration("promptBuilder.build", promptStartedAt);
 
         // 3.1 AI API 호출하여 blueprint 생성
+        long blueprintStartedAt = System.nanoTime();
         var rawBlueprintJson = blueprintGenerator.generate(request, prompt);
+        logStageDuration("blueprintGenerator.generate", blueprintStartedAt);
 
         // 3.2 옷 사진 S3 업로드 및 메타데이터 저장
+        long imageUploadStartedAt = System.nanoTime();
         var imageUrl = itemImageUploader.upload(request.imageData());
+        logStageDuration("itemImageUploader.upload", imageUploadStartedAt);
+
+        long imageMetadataStartedAt = System.nanoTime();
         itemMetadataRecorder.record(request, imageUrl);
+        logStageDuration("itemMetadataRecorder.record", imageMetadataStartedAt);
 
         // 4. 내부 룰 엔진으로 생성된 blueprint 검증(스키마, 필수 슬롯, 적합성 등)
+        long validatorStartedAt = System.nanoTime();
         var validatedBlueprint = blueprintValidator.validate(rawBlueprintJson);
+        logStageDuration("blueprintValidator.validate", validatorStartedAt);
 
         // 5. 검증된 blueprint slot별 item search_query 추출 및 ShoppingApi 검색
+        long extractorStartedAt = System.nanoTime();
         var slotSearchQueries = itemSearchQueryExtractor.extract(validatedBlueprint);
+        logStageDuration("itemSearchQueryExtractor.extract", extractorStartedAt);
+
+        long shoppingStartedAt = System.nanoTime();
         var slotCandidates = shoppingSearcher.searchAll(slotSearchQueries);
+        logStageDuration("shoppingSearcher.searchAll", shoppingStartedAt);
 
         // 6.  검색 결과 product schema upsert + 최적 아이템 매칭
+        long matcherStartedAt = System.nanoTime();
         var matchedItemsBySlot = itemMatcher.matchAll(slotCandidates, validatedBlueprint);
+        logStageDuration("itemMatcher.matchAll", matcherStartedAt);
+
+        long upsertStartedAt = System.nanoTime();
         itemUpsertService.upsertAll(matchedItemsBySlot);
+        logStageDuration("itemUpsertService.upsertAll", upsertStartedAt);
 
         // 7. 최종 응답 생성 및 노출
-        return blueprintResponseBuilder.build(validatedBlueprint, matchedItemsBySlot);
+        long responseBuilderStartedAt = System.nanoTime();
+        CoordinationOutputDto response = blueprintResponseBuilder.build(validatedBlueprint, matchedItemsBySlot, weather);
+        logStageDuration("blueprintResponseBuilder.build", responseBuilderStartedAt);
+        logStageDuration("recommendationPipeline.total", pipelineStartedAt);
+        return response;
 
         // 8. closet에 저장 및 시간, 위치, 태그 조정으로 재검색
         
     }
+
+    private void logStageDuration(String stageName, long startedAt) {
+        long elapsedMillis = (System.nanoTime() - startedAt) / 1_000_000;
+        log.info("recommendation stage={} elapsedMs={}", stageName, elapsedMillis);
+    }
 }
-
-

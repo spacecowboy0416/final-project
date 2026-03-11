@@ -95,4 +95,27 @@ public final class WeatherEnums {
             return EnumResolver.fromCode(RainProbabilityType.class, rawCode);
         }
     }
+
+    // 날씨 조회 데이터 출처 코드
+    public enum WeatherSourceType implements CodedEnum {
+        REDIS_CACHE("redis_cache"),
+        REDIS_CACHE_MISS("redis_cache_miss"),
+        REDIS_PARSE_ERROR("redis_parse_error");
+
+        private final String code;
+
+        WeatherSourceType(String code) {
+            this.code = code;
+        }
+
+        @Override
+        public String code() {
+            return code;
+        }
+
+        @JsonCreator
+        public static WeatherSourceType fromCode(String rawCode) {
+            return EnumResolver.fromCode(WeatherSourceType.class, rawCode);
+        }
+    }
 }

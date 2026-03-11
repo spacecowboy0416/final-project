@@ -13,8 +13,6 @@
             input_mode,
             input_text,
             product_option,
-            status,
-            blueprint_source,
             tpo_type,
             style_type,
             is_saved,
@@ -27,8 +25,6 @@
             #{inputMode},
             #{inputText},
             #{productOption},
-            #{status},
-            #{blueprintSource},
             #{tpoType},
             #{styleType},
             #{isSaved},
@@ -45,18 +41,10 @@
             slot_key,
             source_type,
             product_id,
-            category_id,
-            item_name,
             search_query,
-            attributes_json,
-            temp_min,
-            temp_max,
             priority,
             selection_stage,
             match_score,
-            style_score,
-            color_score,
-            temp_score,
             scoring_details_json,
             reason
         )
@@ -66,18 +54,10 @@
             #{slotKey},
             #{sourceType},
             #{productId},
-            #{categoryId},
-            #{itemName},
             #{searchQuery},
-            CAST(#{attributesJson} AS JSON),
-            #{tempMin},
-            #{tempMax},
             #{priority},
             #{selectionStage},
             #{matchScore},
-            #{styleScore},
-            #{colorScore},
-            #{tempScore},
             CAST(#{scoringDetailsJson} AS JSON),
             #{reason}
         )
@@ -106,7 +86,14 @@
             brand,
             price,
             image_url,
-            link
+            link,
+            color,
+            material,
+            fit,
+            style,
+            season,
+            temp_min,
+            temp_max
         )
         VALUES
         (
@@ -117,7 +104,14 @@
             #{brand},
             #{price},
             #{imageUrl},
-            #{link}
+            #{link},
+            #{color},
+            #{material},
+            #{fit},
+            #{style},
+            #{season},
+            #{tempMin},
+            #{tempMax}
         )
         ON DUPLICATE KEY UPDATE
             name = VALUES(name),
@@ -125,6 +119,13 @@
             price = VALUES(price),
             image_url = VALUES(image_url),
             link = VALUES(link),
+            color = VALUES(color),
+            material = VALUES(material),
+            fit = VALUES(fit),
+            style = VALUES(style),
+            season = VALUES(season),
+            temp_min = VALUES(temp_min),
+            temp_max = VALUES(temp_max),
             fetched_at = CURRENT_TIMESTAMP
     </insert>
 
@@ -159,7 +160,14 @@
             brand,
             price,
             image_url AS imageUrl,
-            link
+            link,
+            color,
+            material,
+            fit,
+            style,
+            season,
+            temp_min AS tempMin,
+            temp_max AS tempMax
         FROM product
         WHERE source = #{source}
           AND external_id = #{externalId}

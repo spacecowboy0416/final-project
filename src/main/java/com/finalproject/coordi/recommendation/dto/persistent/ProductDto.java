@@ -26,6 +26,13 @@ public class ProductDto {
     private Integer price;
     private String imageUrl;
     private String link;
+    private String color;
+    private String material;
+    private String fit;
+    private String style;
+    private String season;
+    private Integer tempMin;
+    private Integer tempMax;
 }
 
 

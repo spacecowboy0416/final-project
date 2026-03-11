@@ -21,18 +21,10 @@ public class RecommendationItemDto {
     private String slotKey;
     private String sourceType;
     private Long productId;
-    private Long categoryId;
-    private String itemName;
     private String searchQuery;
-    private String attributesJson;
-    private Integer tempMin;
-    private Integer tempMax;
     private String priority;
     private String selectionStage;
     private Double matchScore;
-    private Double styleScore;
-    private Double colorScore;
-    private Double tempScore;
     private String scoringDetailsJson;
     private String reason;
 }
