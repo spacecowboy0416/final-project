@@ -4,7 +4,6 @@ import com.finalproject.coordi.closet.dto.SavedCoordiDto;
 import com.finalproject.coordi.closet.service.ClosetService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,22 +17,16 @@ public class ClosetApiController {
 
     @PostMapping
     public ResponseEntity<String> saveCoordi(@RequestBody SavedCoordiDto dto) {
-        try {
-            Long currentUserId = 1L; 
-            dto.setUserId(currentUserId);
-            closetService.saveRecommendation(dto);
-            return ResponseEntity.ok("코디가 옷장에 저장되었습니다.");
-        } catch (Exception e) {
-            log.error("API: 코디 저장 실패", e);
-            // 에러 발생 시 프론트엔드 쪽에 500 에러 상태코드와 메시지를 전달합니다.
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                                 .body("코디 저장 중 서버 오류가 발생했습니다.");
-        }
+        Long currentUserId = 1L; // TODO: 추후 Spring Security 유저 정보로 변경
+        dto.setUserId(currentUserId);
+        closetService.saveRecommendation(dto);
+        
+        return ResponseEntity.ok("코디가 옷장에 저장되었습니다.");
     }
 
     @PutMapping("/{recId}")
     public ResponseEntity<String> updateCoordi(@PathVariable Long recId, @RequestBody SavedCoordiDto dto) {
-        Long currentUserId = 1L;
+        Long currentUserId = 1L; // TODO: 추후 Spring Security 연동
         dto.setRecId(recId);
         dto.setUserId(currentUserId);
         closetService.updateRecommendation(dto);
@@ -42,7 +35,7 @@ public class ClosetApiController {
 
     @DeleteMapping("/{recId}")
     public ResponseEntity<String> deleteCoordi(@PathVariable Long recId) {
-        Long currentUserId = 1L;
+        Long currentUserId = 1L; // TODO: 추후 Spring Security 연동
         closetService.deleteSavedCoordi(recId, currentUserId);
         return ResponseEntity.ok("옷장에서 코디가 삭제되었습니다.");
     }

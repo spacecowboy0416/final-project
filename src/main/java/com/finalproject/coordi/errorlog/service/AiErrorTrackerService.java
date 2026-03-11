@@ -20,13 +20,13 @@ public class AiErrorTrackerService {
     private final ErrorLogMapper errorLogMapper;
     private final GeminiApiService geminiApiService;
 
-    // 1. 기존 파라미터 1개짜리 메서드
+    // 기존 파라미터 1개짜리 메서드
     @Async
     public void trackAndAnalyze(Exception e) {
         trackAndAnalyze(e, e.getMessage()); 
     }
 
-    // 2. 파라미터 2개짜리 메인 로직
+    // 파라미터 2개짜리 메인 로직
     @Async
     public void trackAndAnalyze(Exception e, String customMessage) {
         try {
@@ -38,19 +38,19 @@ public class AiErrorTrackerService {
             // 에러 식별용 고유 해시값 생성
             String errorHash = generateHash(errorType + stackTrace);
 
-            // [수정됨] 태주님의 매퍼 메서드(findByHash) 사용
+            // 매퍼 메서드(findByHash) 사용
             SystemErrorLog existingLog = errorLogMapper.findByHash(errorHash);
 
             if (existingLog != null) {
-                // [비용 절감] 이미 분석된 에러라면 발생 횟수만 1 증가 (태주님 메서드 사용)
+                // 이미 분석된 에러라면 발생 횟수만 1 증가
                 errorLogMapper.incrementOccurrence(errorHash);
                 log.info("기존 에러 누적 (AI 호출 생략) - 타입: {}, 누적 횟수 증가", errorType);
             } else {
-                // [신규 에러] 처음 보는 에러라면 Gemini AI에게 원인 분석 요청
+                // 처음 보는 에러라면 Gemini AI에게 원인 분석 요청
                 log.info("신규 에러 발생, AI 분석 시작 - 타입: {}", errorType);
                 String aiSolution = geminiApiService.askGemini(messageToSave, stackTrace);
 
-                // [수정됨] 태주님의 DTO를 생성해서 insertLog에 전달
+                // DTO를 생성해서 insertLog에 전달
                 SystemErrorLog newLog = new SystemErrorLog();
                 newLog.setErrorHash(errorHash);
                 newLog.setErrorType(errorType);

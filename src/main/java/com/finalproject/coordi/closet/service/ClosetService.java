@@ -17,7 +17,7 @@ public class ClosetService {
 
     private final ClosetMapper closetMapper;
 
-    // --- 코디 추천 결과 관리 ---
+    // 코디 추천 결과 관리
     public List<SavedCoordiDto> getSavedCoordis(Long userId) {
         return closetMapper.findSavedCoordis(userId);
     }
@@ -30,7 +30,7 @@ public class ClosetService {
             log.info("코디 저장 성공 - userId: {}", dto.getUserId());
         } catch (Exception e) {
             log.error("코디 추천 결과 저장 중 DB 에러 발생 - userId: {}", dto.getUserId(), e);
-            // 에러를 던져야 GlobalExceptionHandler가 낚아채서 AI 에러 로그 DB에 저장합니다.
+            // 에러를 던져 GlobalExceptionHandler가 낚아채서 AI 에러 로그 DB에 저장
             throw new RuntimeException("코디 추천 결과를 저장하는 중 문제가 발생했습니다.", e);
         }
     }
@@ -43,7 +43,7 @@ public class ClosetService {
         closetMapper.unsaveCoordi(recId, userId);
     }
 
-    // --- 개별 옷 아이템 관리 ---
+    // 개별 옷 아이템 관리
     public List<ClosetItemDto> getUserCloset(Long userId) {
         return closetMapper.findItemsByUserId(userId);
     }
@@ -51,7 +51,6 @@ public class ClosetService {
     public void addClosetItem(Long userId, ClosetItemDto itemDto, MultipartFile imageFile) {
         String imageUrl = null;
         
-        // 1. S3 업로드 등 외부 I/O 통신은 에러 발생 확률이 높으므로 꼼꼼히 감싸줍니다.
         try {
             if (imageFile != null && !imageFile.isEmpty()) {
                 imageUrl = uploadImageToS3(imageFile); 
@@ -61,7 +60,7 @@ public class ClosetService {
             throw new RuntimeException("이미지 파일 업로드에 실패했습니다. 파일 용량이나 형식을 확인해주세요.", e);
         }
 
-        // 2. DB 저장 처리
+        // DB 저장 처리
         try {
             itemDto.setUserId(userId);
             itemDto.setImageUrl(imageUrl);

@@ -12,14 +12,23 @@ public class GeminiApiService {
     @Value("${external.api.gemini.key}")
     private String apiKey;
 
-    @SuppressWarnings("unchecked") // 형변환 경고 무시
+    @Value("${external.api.gemini.url}")
+    private String apiUrl;
+
+    @SuppressWarnings("unchecked")
     public String askGemini(String message, String stackTrace) {
-        String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-latest:generateContent?key=" + apiKey;
+        
+        String requestUrl = apiUrl + "?key=" + apiKey;
         RestTemplate restTemplate = new RestTemplate();
 
-        String prompt = "스프링 부트 서버에서 에러가 발생했습니다. 신입 개발자가 이해하기 쉽게 원인과 해결 코드를 한국어로 짧고 명확하게 요약해 주세요.\n"
-                + "[메시지] " + message + "\n"
-                + "[위치] " + stackTrace;
+        String prompt = "당신은 백엔드 시스템의 'Sentry 모니터링 분석 AI'입니다. 전달된 에러를 분석하여 Sentry Alert 규격에 맞는 '이슈 요약 리포트'를 작성하세요.\n"
+                + "불필요한 설명, 인사말, 마크다운 기호(#, *, ` 등)는 절대 배제하고 오직 아래 3가지 Sentry 태그 포맷으로만 답변하세요.\n\n"
+                + "포맷:\n"
+                + "[Issue] 에러 클래스명 및 발생 위치\n"
+                + "[Root Cause] 기술적 원인 1문장\n"
+                + "[Action] 해결을 위한 코드/DB 수정 지시 1문장\n\n"
+                + "[Sentry Context]\n" + message + "\n"
+                + "StackTrace: " + stackTrace;
 
         Map<String, Object> requestBody = Map.of(
             "contents", new Object[]{
@@ -28,7 +37,7 @@ public class GeminiApiService {
         );
 
         try {
-            Map<String, Object> response = restTemplate.postForObject(url, requestBody, Map.class);
+            Map<String, Object> response = restTemplate.postForObject(requestUrl, requestBody, Map.class);
             List<Map<String, Object>> candidates = (List<Map<String, Object>>) response.get("candidates");
             Map<String, Object> content = (Map<String, Object>) candidates.get(0).get("content");
             List<Map<String, Object>> parts = (List<Map<String, Object>>) content.get("parts");

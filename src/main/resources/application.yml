@@ -64,7 +64,7 @@ mybatis:
   configuration:
     map-underscore-to-camel-case: true # DB의 snake_case를 Java의 camelCase로 매핑
     jdbc-type-for-null: "NULL"
-    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl # [태주님 설정 유지] 실행 쿼리 출력
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
   type-aliases-package: com.finalproject.coordi
 
 # 6. AWS S3 (Cloud AWS)
@@ -93,6 +93,7 @@ external:
   api:
     gemini:
       key: ${GEMINI_API_KEY}
+      url: "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
     weather:
       key: ${WEATHER_API_KEY}
 

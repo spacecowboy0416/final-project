@@ -9,71 +9,50 @@
     <div th:replace="~{layout/common :: headerFragment}"></div>
 
     <main class="main-content">
-        <h2 style="margin-bottom: 15px;">내가 저장한 코디 추천</h2>
         
-        <div th:if="${#lists.isEmpty(savedCoordis)}" class="empty-msg-box">
-            <p style="color: #666; margin: 0;">아직 저장된 코디가 없습니다. 코디 추천을 받아보세요!</p>
-            <a th:href="@{/recommend}" class="btn" style="background: #007bff; color: white; margin-top: 15px;">코디 추천받기</a>
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 15px;">
+            <h2 style="margin: 0;">내 코디 룩북</h2>
+            <a th:href="@{/recommend}" class="btn" style="background: #333; color: white; padding: 8px 15px; border-radius: 20px; font-size: 0.9rem;">+ 새 코디 추천받기</a>
+        </div>
+        
+        <div th:if="${#lists.isEmpty(savedCoordis)}" class="empty-msg-box" style="background: #f8f9fa; padding: 40px; text-align: center; border-radius: 12px;">
+            <p style="color: #888; margin: 0; font-size: 1.1rem;">아직 저장된 코디가 없습니다.</p>
         </div>
 
-        <div th:unless="${#lists.isEmpty(savedCoordis)}" class="slider-container" style="margin-bottom: 40px;">
-            <div class="coordi-card" th:each="coordi : ${savedCoordis}">
+        <div th:unless="${#lists.isEmpty(savedCoordis)}" class="slider-container" style="margin-bottom: 50px;">
+            <div class="coordi-card clickable-card" th:each="coordi : ${savedCoordis}"
+                 th:data-id="${coordi.recId}"
+                 th:data-title="${coordi.inputText}"
+                 th:data-desc="${coordi.aiExplanation}"
+                 th:data-date="${#temporals.format(coordi.createdAt, 'yyyy-MM-dd HH:mm')}"
+                 onclick="openCoordiModal(this)">
                 <span class="date-badge" th:text="${#temporals.format(coordi.createdAt, 'yyyy-MM-dd HH:mm')}">날짜</span>
                 <h5 th:text="${coordi.inputText}">입력 텍스트</h5>
-                <p class="ai-desc-text" th:text="${coordi.aiExplanation}"></p>
-                <a th:href="@{/recommend(editId=${coordi.recId})}" class="btn-link-custom">수정 / 상세 보기</a>
+                <p class="ai-desc-text" style="overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;" th:text="${coordi.aiExplanation}"></p>
             </div>
         </div>
 
-        <hr style="border: 0; border-top: 2px solid #333; margin-bottom: 30px;">
+        <hr style="border: 0; border-top: 2px solid #eee; margin-bottom: 40px;">
 
-        <h2>나의 옷장</h2>
-        
-        <div class="form-box">
-            <h4 style="margin-bottom: 15px;">새로운 코디 등록하기</h4>
-            <form th:action="@{/closet/add}" method="post" enctype="multipart/form-data">
-                <div class="form-group">
-                    <label>코디명</label>
-                    <input type="text" name="name" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label>카테고리 ID</label>
-                    <input type="number" name="categoryId" class="form-control" value="1" required>
-                </div>
-                <div class="form-group">
-                    <label>계절</label>
-                    <select name="season" class="form-control">
-                        <option value="SPRING">봄</option>
-                        <option value="SUMMER">여름</option>
-                        <option value="FALL">가을</option>
-                        <option value="WINTER">겨울</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>코디 사진</label>
-                    <input type="file" name="imageFile" class="form-control" accept="image/*">
-                </div>
-                <button type="submit" class="btn login-btn">등록하기</button>
-            </form>
-        </div>
-
-        <h4 style="margin-bottom: 15px;">내 코디 목록</h4>
-        <div th:if="${#lists.isEmpty(items)}">
-            <p style="color: #666; padding: 20px 0;">등록된 코디가 없습니다. 새로운 코디를 추가해 보세요.</p>
-        </div>
+        <h2 style="margin-bottom: 20px;">나의 옷장 (보유 아이템)</h2>
         
         <div class="closet-grid">
-            <div class="item-card" th:each="item : ${items}">
+            <div class="item-card add-item-card" onclick="openAddItemModal()">
+                <div class="plus-icon">+</div>
+                <div class="add-item-text">새로운 옷 등록하기</div>
+            </div>
+
+            <div class="item-card clickable-card" th:each="item : ${items}">
                 <img th:if="${item.imageUrl != null}" th:src="${item.imageUrl}" class="item-image" alt="옷 이미지">
                 <div th:unless="${item.imageUrl != null}" class="item-image item-image-empty">이미지 없음</div>
                 
                 <div class="item-info">
                     <span class="badge" th:text="${item.season}">계절</span>
-                    <h4 style="margin: 5px 0; font-size: 1.1rem; color: #333;" th:text="${item.name}">코디명</h4>
+                    <h4 style="margin: 5px 0; font-size: 1.1rem; color: #333;" th:text="${item.name}">옷 이름</h4>
                     <p style="color: #666; font-size: 0.9rem; margin-bottom: 10px;">카테고리: [[${item.categoryId}]]</p>
                     
-                    <form th:action="@{/closet/delete/{itemId}(itemId=${item.itemId})}" method="post" onsubmit="return confirm('정말 삭제하시겠습니까?');">
-                        <button type="submit" class="btn" style="background: #dc3545; color: white; width: 100%; padding: 8px; border-radius: 4px; font-size: 0.9rem;">삭제</button>
+                    <form th:action="@{/closet/delete/{itemId}(itemId=${item.itemId})}" method="post" onsubmit="return confirm('이 옷을 정말 삭제하시겠습니까?');">
+                        <button type="submit" class="btn" style="background: #fff; color: #dc3545; border: 1px solid #dc3545; width: 100%; padding: 8px; border-radius: 6px; font-size: 0.9rem; transition: 0.2s;">삭제</button>
                     </form>
                 </div>
             </div>
@@ -81,5 +60,57 @@
     </main>
 
     <footer th:replace="~{layout/common :: footerFragment}"></footer>
+
+    <div id="coordiModal" class="modal-overlay">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeCoordiModal()">&times;</span>
+            <span id="modalDate" style="color: #999; font-size: 0.8rem;">날짜</span>
+            <h3 id="modalTitle" style="margin: 10px 0 20px 0;">코디 제목</h3>
+            
+            <p id="modalDesc" style="color: #555; line-height: 1.6; background: #f8f9fa; padding: 15px; border-radius: 8px;"></p>
+            
+            <div class="modal-buttons">
+                <button type="button" class="btn-flex" style="background: #28a745; color: white;" onclick="editCoordi()">상/하의 변경</button>
+                <button type="button" class="btn-flex" style="background: #17a2b8; color: white;" onclick="shareCoordi()">자랑하기</button>
+                <form id="deleteCoordiForm" method="post" style="flex: 1; display: flex;">
+                    <button type="submit" class="btn-flex" style="background: #dc3545; color: white; width: 100%;" onclick="return confirm('이 코디를 삭제하시겠습니까?');">삭제</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="addItemModal" class="modal-overlay">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeAddItemModal()">&times;</span>
+            <h3 style="margin-top: 0; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px;">새로운 옷 등록</h3>
+            
+            <form th:action="@{/closet/add}" method="post" enctype="multipart/form-data">
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #444;">옷 이름 (예: 검정 슬랙스)</label>
+                    <input type="text" name="name" class="form-control" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px;">
+                </div>
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #444;">카테고리 (1: 상의, 2: 하의 등)</label>
+                    <input type="number" name="categoryId" class="form-control" value="1" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px;">
+                </div>
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #444;">계절</label>
+                    <select name="season" class="form-control" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px;">
+                        <option value="SPRING">봄</option>
+                        <option value="SUMMER">여름</option>
+                        <option value="FALL">가을</option>
+                        <option value="WINTER">겨울</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-bottom: 25px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #444;">옷 사진</label>
+                    <input type="file" name="imageFile" class="form-control" accept="image/*" style="width: 100%;">
+                </div>
+                <button type="submit" class="btn-flex" style="background: #007bff; color: white; width: 100%;">옷장에 추가하기</button>
+            </form>
+        </div>
+    </div>
+
+    <script th:src="@{/closet/js/closet.js}"></script>
 </body>
 </html>
