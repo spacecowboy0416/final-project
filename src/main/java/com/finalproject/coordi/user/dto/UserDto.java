@@ -1,4 +1,4 @@
-package com.finalproject.coordi.users.dto;
+package com.finalproject.coordi.user.dto;
 
 import lombok.*;
 import org.apache.ibatis.type.Alias;

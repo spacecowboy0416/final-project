@@ -15,6 +15,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+// 모든 요청이 서버에 들어올 때마다 가장 먼저 실행되는 검문소
 @RequiredArgsConstructor
 @Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -43,7 +44,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             // 새 AccessToken 생성
             String newAccessToken = jwtProvider.createAccessToken(userId, role);
             
-            // 새 쿠키 설정 및 응답 헤더 추가
+            // 새 쿠키를 브라우저에 다시 전달
             ResponseCookie newCookie = ResponseCookie.from("accessToken", newAccessToken)
                     .path("/")
                     .httpOnly(true)
@@ -61,11 +62,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
+    // SecurityContext에 유저 정보를 등록
     private void setAuthentication(String token) {
         Authentication authentication = jwtProvider.getAuthentication(token);
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 
+    //브라우저가 보낸 모든 쿠키 중에서 원하는 이름의 쿠키만 가져오기
     private String resolveToken(HttpServletRequest request, String name) {
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {

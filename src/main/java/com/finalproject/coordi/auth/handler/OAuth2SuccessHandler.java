@@ -1,8 +1,8 @@
 package com.finalproject.coordi.auth.handler;
 
 import com.finalproject.coordi.auth.jwt.JwtProvider;
-import com.finalproject.coordi.users.dto.UserDto;
-import com.finalproject.coordi.users.service.UserService;
+import com.finalproject.coordi.user.dto.UserDto;
+import com.finalproject.coordi.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -31,16 +31,22 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         
         // 1. 유저 정보 추출
         String email = (String) attributes.get("email");
-        UserDto user = userService.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        UserDto user = userService.findByEmail(email);
+        
+        if (user == null) {
+            log.error("사용자 정보를 찾을 수 없습니다: {}", email);
+            throw new IllegalArgumentException("사용자를 찾을 수 없습니다.");
+        }
 
         // 2. JWT 토큰 생성 (Stateless)
         String accessToken = jwtProvider.createAccessToken(user.getUserId(), user.getRole());
         String refreshToken = jwtProvider.createRefreshToken(user.getUserId(), user.getRole());
 
-        // 3. 보안 쿠키 설정 (HttpOnly, Secure, SameSite=Strict)
+        // 3. 보안 쿠키 설정 (HttpOnly, Secure, SameSite=Lax)
         setTokenCookie(response, "accessToken", accessToken, 1800); // 30분
         setTokenCookie(response, "refreshToken", refreshToken, 604800); // 7일
+
+        log.info("JWT 발급 및 쿠키 설정 완료 - User: {}, Role: {}", email, user.getRole());
         
         // 4. 메인 페이지로 리다이렉트
         response.sendRedirect("/");
