@@ -5,7 +5,7 @@ import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.Tpo
 import java.util.List;
 
 /**
- * recommendation 내부에서 최종 recommendation 출력이 어떤 메타와 아이템 목록을 가져야 하는지 제약하는 DTO.
+ * recommendation 내부에서 최종 coordination 출력이 어떤 메타와 아이템 목록을 가져야 하는지 제약하는 DTO.
  *
  * @param blueprintId recommendation이 최종 코디를 식별할 때 사용하는 내부/외부 식별자
  * @param tpoType 코디의 TPO 분류
