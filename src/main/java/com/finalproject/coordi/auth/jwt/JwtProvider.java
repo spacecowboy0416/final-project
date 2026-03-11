@@ -38,9 +38,8 @@ public class JwtProvider {
     /**
      * Access Token 생성 (서버 저장 X)
      */
-    public String createAccessToken(Long userId, String email, String role) {
+    public String createAccessToken(Long userId, String role) {
         Claims claims = Jwts.claims().setSubject(String.valueOf(userId));
-        claims.put("email", email);
         claims.put("role", role);
 
         Date now = new Date();
@@ -53,11 +52,15 @@ public class JwtProvider {
     }
 
     /**
-     * Refresh Token 생성 (서버 저장 X - 향후 Redis 확장 가능)
+     * Refresh Token 생성 (재발급을 위해 정보를 포함)
      */
-    public String createRefreshToken() {
+    public String createRefreshToken(Long userId, String role) {
+        Claims claims = Jwts.claims().setSubject(String.valueOf(userId));
+        claims.put("role", role);
+
         Date now = new Date();
         return Jwts.builder()
+                .setClaims(claims)
                 .setIssuedAt(now)
                 .setExpiration(new Date(now.getTime() + REFRESH_TOKEN_EXP))
                 .signWith(key, SignatureAlgorithm.HS256)
@@ -88,7 +91,7 @@ public class JwtProvider {
         } catch (SecurityException | MalformedJwtException e) {
             log.error("잘못된 JWT 서명입니다.");
         } catch (ExpiredJwtException e) {
-            log.error("만료된 JWT 토큰입니다.");
+            log.warn("만료된 JWT 토큰입니다.");
         } catch (UnsupportedJwtException e) {
             log.error("지원되지 않는 JWT 토큰입니다.");
         } catch (IllegalArgumentException e) {
@@ -97,11 +100,14 @@ public class JwtProvider {
         return false;
     }
 
-    private Claims parseClaims(String token) {
+    /**
+     * 만료 여부와 상관없이 토큰에서 Claims를 추출 (재발급 로직용)
+     */
+    public Claims parseClaims(String token) {
         try {
             return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
         } catch (ExpiredJwtException e) {
-            return e.getClaims();
+            return e.getClaims(); // 만료되었어도 내부에 담긴 정보는 꺼낼 수 있음
         }
     }
 }

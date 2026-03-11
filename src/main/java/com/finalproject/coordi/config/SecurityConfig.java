@@ -37,10 +37,20 @@ public class SecurityConfig {
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
+            // Stateless 환경에서도 필터에서 설정한 SecurityContext를 유지하도록 설정
+            .securityContext(context -> context
+                .requireExplicitSave(false)
+            )
             
             // 3. 인가 설정
             .authorizeHttpRequests(auth -> auth
+                // 슈퍼관리자만
+                .requestMatchers("/admin/super/**").hasRole("SUPERADMIN")
+                // 관리자 및 슈퍼관리자만
+                .requestMatchers("/admin/**").hasAnyRole("ADMIN", "SUPERADMIN")
+                // 누구나 접근 가능
                 .requestMatchers("/", "/login/**", "/oauth2/**", "/static/**", "/css/**", "/js/**").permitAll()
+                // 그 외 모든 요청은 인증 필요
                 .anyRequest().authenticated()
             )
             
@@ -56,7 +66,15 @@ public class SecurityConfig {
                 })
             )
             
-            // 5. JWT 필터 등록 (UsernamePasswordAuthenticationFilter 이전에 실행)
+            // 5. 로그아웃 설정
+            .logout(logout -> logout
+                .logoutUrl("/logout")
+                .logoutSuccessUrl("/")
+                .deleteCookies("accessToken", "refreshToken")
+                .invalidateHttpSession(true)
+            )
+            
+            // 6. JWT 필터 등록 (UsernamePasswordAuthenticationFilter 이전에 실행)
             .addFilterBefore(new JwtAuthenticationFilter(jwtProvider), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

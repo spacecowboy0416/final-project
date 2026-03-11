@@ -35,14 +35,12 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
         // 2. JWT 토큰 생성 (Stateless)
-        String accessToken = jwtProvider.createAccessToken(user.getUserId(), user.getEmail(), user.getRole());
-        String refreshToken = jwtProvider.createRefreshToken();
+        String accessToken = jwtProvider.createAccessToken(user.getUserId(), user.getRole());
+        String refreshToken = jwtProvider.createRefreshToken(user.getUserId(), user.getRole());
 
         // 3. 보안 쿠키 설정 (HttpOnly, Secure, SameSite=Strict)
         setTokenCookie(response, "accessToken", accessToken, 1800); // 30분
         setTokenCookie(response, "refreshToken", refreshToken, 604800); // 7일
-
-        log.info("JWT 발급 및 쿠키 설정 완료 - User: {}", email);
         
         // 4. 메인 페이지로 리다이렉트
         response.sendRedirect("/");
@@ -52,8 +50,8 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         ResponseCookie cookie = ResponseCookie.from(name, value)
                 .path("/")
                 .httpOnly(true)
-                .secure(true) // HTTPS가 아닐 경우 작동하지 않을 수 있으나 보안상 권장
-                .sameSite("Strict") // CSRF 방어
+                .secure(true) // HTTPS 환경 권장 (로컬 localhost에선 브라우저가 허용)
+                .sameSite("Lax") // CSRF 방어 강화 (외부 리다이렉트 대응을 위해 Lax 권장)
                 .maxAge(maxAge)
                 .build();
         response.addHeader("Set-Cookie", cookie.toString());
