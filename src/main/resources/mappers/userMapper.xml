@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.finalproject.coordi.domain.user.UserRepository">
+
+    <select id="findAll" resultType="com.finalproject.coordi.domain.user.User">
+        SELECT
+            user_id, provider, provider_user_id, email, nickname, profile_image_url,
+            role, status, created_at, last_login_at
+        FROM
+            users
+        <where>
+            <if test="role != null and role != 'ALL'">
+                AND role = #{role}
+            </if>
+            <if test="searchTerm != null and searchTerm != ''">
+                AND (nickname LIKE CONCAT('%', #{searchTerm}, '%') OR email LIKE CONCAT('%', #{searchTerm}, '%'))
+            </if>
+        </where>
+        <choose>
+            <when test="sort == 'name_asc'">
+                ORDER BY nickname ASC
+            </when>
+            <when test="sort == 'name_desc'">
+                ORDER BY nickname DESC
+            </when>
+            <otherwise>
+                ORDER BY user_id DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="findById" parameterType="long" resultType="com.finalproject.coordi.domain.user.User">
+        SELECT
+            user_id, provider, provider_user_id, email, nickname, profile_image_url,
+            role, status, created_at, last_login_at
+        FROM
+            users
+        WHERE
+            user_id = #{userId}
+    </select>
+
+    <update id="updateUserStatus">
+        UPDATE users
+        SET status = #{status}
+        WHERE user_id = #{userId}
+    </update>
+
+    <update id="updateUser">
+        UPDATE users
+        <set>
+            <if test="role != null and role != ''">
+                role = #{role},
+            </if>
+            <if test="status != null and status != ''">
+                status = #{status},
+            </if>
+        </set>
+        WHERE user_id = #{userId}
+    </update>
+
+</mapper>
