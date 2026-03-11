@@ -17,6 +17,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Collections;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -85,6 +86,8 @@ public class BlueprintResponseBuilder {
         WeatherFetcher.WeatherContext weather,
         Map<CategoryType, ItemMatcher.MatchedItem> matchedItemsBySlot
     ) {
+        Map<CategoryType, ItemMatcher.MatchedItem> safeMatchedItemsBySlot =
+            matchedItemsBySlot == null ? Collections.emptyMap() : matchedItemsBySlot;
         return Arrays.stream(CategoryType.values())
             .map(categoryType -> toBlueprintOutput(
                 categoryType,
@@ -92,7 +95,7 @@ public class BlueprintResponseBuilder {
                 mainItemAnalysis,
                 stylingRuleApplied,
                 weather,
-                matchedItemsBySlot.get(categoryType)
+                safeMatchedItemsBySlot.get(categoryType)
             ))
             .toList();
     }

@@ -21,7 +21,7 @@ public class PromptBuilder {
      */
     public PromptPayload build(BlueprintRequestDto request, WeatherFetcher.WeatherContext weather) {
         try {
-            String template = new String(promptTemplate.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+            String template = loadTemplateText();
             TemplateSections templateSections = splitTemplate(template);
             return new PromptPayload(
                 templateSections.cacheablePrompt(),
@@ -44,6 +44,23 @@ public class PromptBuilder {
         } catch (IOException exception) {
             throw new IllegalStateException("AI 프롬프트 템플릿을 읽지 못했습니다.", exception);
         }
+    }
+
+    /**
+     * Gemini cachedContents 워밍에 사용할 정적 프롬프트 prefix를 반환한다.
+     * 이 메서드는 사용자 입력/날씨 같은 동적 데이터를 포함하지 않는 영역만 추출하므로
+     * 캐시 키의 안정성을 유지하면서 warm-up 시점과 요청 시점의 계약을 일치시킨다.
+     */
+    public String loadCacheablePrompt() {
+        try {
+            return splitTemplate(loadTemplateText()).cacheablePrompt();
+        } catch (IOException exception) {
+            throw new IllegalStateException("AI 프롬프트 템플릿을 읽지 못했습니다.", exception);
+        }
+    }
+
+    private String loadTemplateText() throws IOException {
+        return new String(promptTemplate.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
     }
 
     private TemplateSections splitTemplate(String template) {

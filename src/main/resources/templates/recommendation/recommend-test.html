@@ -355,6 +355,17 @@
         payloadPreview.textContent = JSON.stringify(payload, null, 2);
     }
 
+    function parseErrorResponse(responseText) {
+        if (!responseText) {
+            return null;
+        }
+        try {
+            return JSON.parse(responseText);
+        } catch (_) {
+            return null;
+        }
+    }
+
     function buildPreviewPayload(file) {
         const activeImage = resolveActiveImage(file);
         return {
@@ -604,7 +615,13 @@
             });
             const responseText = await response.text();
             if (!response.ok) {
-                throw new Error(`HTTP ${response.status} - ${responseText}`);
+                const errorJson = parseErrorResponse(responseText);
+                const errorMessage = errorJson
+                    ? `HTTP ${response.status} - ${errorJson.code || "UNKNOWN"}: ${errorJson.message || "오류"}`
+                    : `HTTP ${response.status} - ${responseText}`;
+                const error = new Error(errorMessage);
+                error.responseJson = errorJson;
+                throw error;
             }
             const parsed = JSON.parse(responseText);
             updateResultSkeleton(parsed);
@@ -615,7 +632,11 @@
             resultBox.textContent = String(error.message || error);
             statusText.textContent = "실패";
             elapsedTimeText.textContent = `소요 시간: ${Date.now() - requestStartedAt}ms`;
-            errorText.textContent = String(error.stack || error.message || error);
+            if (error.responseJson) {
+                errorText.textContent = JSON.stringify(error.responseJson, null, 2);
+            } else {
+                errorText.textContent = String(error.stack || error.message || error);
+            }
         }
     });
 

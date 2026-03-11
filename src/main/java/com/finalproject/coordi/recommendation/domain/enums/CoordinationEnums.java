@@ -61,6 +61,9 @@ public final class CoordinationEnums {
 
         @JsonCreator
         public static StyleType fromCode(String rawCode) {
+            if (rawCode != null && "casual".equalsIgnoreCase(rawCode.trim())) {
+                return COMFORTABLE;
+            }
             return EnumResolver.fromCode(StyleType.class, rawCode);
         }
     }

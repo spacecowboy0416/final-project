@@ -1,9 +1,9 @@
 package com.finalproject.coordi.recommendation.exception;
 
 import com.finalproject.coordi.recommendation.controller.RecommendationController;
-import com.finalproject.coordi.sentry.exception.GlobalExceptionHandler;
 import io.sentry.Sentry;
 import jakarta.servlet.http.HttpServletRequest;
+import java.time.OffsetDateTime;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -21,7 +21,7 @@ public class RecommendationExceptionHandler {
      * 클라이언트에서 바로 확인할 수 있게 recommendation 전용 코드로 반환한다.
      */
     @ExceptionHandler(IllegalStateException.class)
-    protected ResponseEntity<GlobalExceptionHandler.ErrorResponse> handleIllegalStateException(
+    protected ResponseEntity<RecommendationErrorResponse> handleIllegalStateException(
         final IllegalStateException e,
         final HttpServletRequest request
     ) {
@@ -38,7 +38,32 @@ public class RecommendationExceptionHandler {
 
         return ResponseEntity
             .status(HttpStatus.BAD_GATEWAY)
-            .body(new GlobalExceptionHandler.ErrorResponse("R001", e.getMessage()));
+            .body(RecommendationErrorResponse.of("R001", e, request));
+    }
+
+    /**
+     * recommendation 파이프라인의 enum 코드 해석 실패 등 입력/응답 포맷 오류를
+     * recommendation 전용 코드로 반환한다.
+     */
+    @ExceptionHandler(IllegalArgumentException.class)
+    protected ResponseEntity<RecommendationErrorResponse> handleIllegalArgumentException(
+        final IllegalArgumentException e,
+        final HttpServletRequest request
+    ) {
+        log.error("recommendationIllegalArgumentException: {}", e.getMessage(), e);
+
+        Sentry.withScope(scope -> {
+            scope.setTag("api_path", request.getRequestURI());
+            scope.setTag("status_code", String.valueOf(HttpStatus.BAD_GATEWAY.value()));
+            scope.setTag("project_type", "Recommendation IllegalArgument");
+            scope.setLevel(io.sentry.SentryLevel.ERROR);
+            scope.setFingerprint(List.of("recommendation_illegal_argument", request.getMethod(), request.getRequestURI()));
+            Sentry.captureException(e);
+        });
+
+        return ResponseEntity
+            .status(HttpStatus.BAD_GATEWAY)
+            .body(RecommendationErrorResponse.of("R001", e, request));
     }
 
     /**
@@ -46,7 +71,7 @@ public class RecommendationExceptionHandler {
      * datasource 원인 메시지를 recommendation 전용 응답으로 반환한다.
      */
     @ExceptionHandler(CannotCreateTransactionException.class)
-    protected ResponseEntity<GlobalExceptionHandler.ErrorResponse> handleCannotCreateTransactionException(
+    protected ResponseEntity<RecommendationErrorResponse> handleCannotCreateTransactionException(
         final CannotCreateTransactionException e,
         final HttpServletRequest request
     ) {
@@ -63,9 +88,47 @@ public class RecommendationExceptionHandler {
 
         return ResponseEntity
             .status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body(new GlobalExceptionHandler.ErrorResponse(
-                "R002",
-                e.getRootCause() == null ? e.getMessage() : e.getRootCause().getMessage()
-            ));
+            .body(RecommendationErrorResponse.of("R002", e, request));
+    }
+
+    /**
+     * recommendation 테스트 페이지에서 백엔드 원인 확인을 쉽게 하기 위한 전용 에러 응답.
+     */
+    public record RecommendationErrorResponse(
+        String code,
+        String message,
+        String causeClass,
+        String causeMessage,
+        String path,
+        String timestamp
+    ) {
+        public static RecommendationErrorResponse of(
+            final String code,
+            final Throwable throwable,
+            final HttpServletRequest request
+        ) {
+            final Throwable root = rootCauseOf(throwable);
+            final String message = throwable == null ? null : throwable.getMessage();
+            final String fallbackMessage = root == null ? null : root.getMessage();
+            return new RecommendationErrorResponse(
+                code,
+                message == null || message.isBlank() ? fallbackMessage : message,
+                root == null ? null : root.getClass().getSimpleName(),
+                root == null ? null : root.getMessage(),
+                request == null ? null : request.getRequestURI(),
+                OffsetDateTime.now().toString()
+            );
+        }
+
+        private static Throwable rootCauseOf(final Throwable throwable) {
+            if (throwable == null) {
+                return null;
+            }
+            Throwable current = throwable;
+            while (current.getCause() != null && current.getCause() != current) {
+                current = current.getCause();
+            }
+            return current;
+        }
     }
 }
