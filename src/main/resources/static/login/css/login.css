@@ -1,0 +1,85 @@
+body, html {
+    height: 100%;
+    margin: 0;
+    font-family: 'Pretendard', sans-serif;
+    background-color: #f8f9fa;
+}
+
+.login-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.login-container {
+    width: 100%;
+    max-width: 400px;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    padding: 40px 30px;
+}
+
+.login-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.login-header h2 {
+    margin: 0;
+    color: #333;
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.social-btn-group {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.social-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 16px;
+    transition: all 0.2s;
+}
+
+.social-btn:hover {
+    opacity: 0.9;
+}
+
+.social-btn:active {
+    transform: scale(0.98);
+}
+
+.google-btn {
+    background-color: #fff;
+    color: #757575;
+    border: 1px solid #ddd;
+}
+
+.kakao-btn {
+    background-color: #fee500;
+    color: #3c1e1e;
+}
+
+.naver-btn {
+    background-color: #03c75a;
+    color: #fff;
+}
+
+.footer-text {
+    margin-top: 30px;
+    text-align: center;
+    font-size: 14px;
+    color: #888;
+    line-height: 1.5;
+}
