@@ -1,6 +1,7 @@
 package com.finalproject.coordi.auth.handler;
 
 import com.finalproject.coordi.auth.jwt.JwtProvider;
+import com.finalproject.coordi.domain.exception.user.UserNotFoundException;
 import com.finalproject.coordi.user.dto.UserDto;
 import com.finalproject.coordi.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -30,12 +31,11 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         Map<String, Object> attributes = oAuth2User.getAttributes();
         
         // 1. 유저 정보 추출
-        String email = (String) attributes.get("email");
+        String email = (String) attributes.get("email"); //kakao는 email이 없을 수 있으므로, providerUserId로도 조회 가능하도록 UserService에서 처리 필요
         UserDto user = userService.findByEmail(email);
         
         if (user == null) {
-            log.error("사용자 정보를 찾을 수 없습니다: {}", email);
-            throw new IllegalArgumentException("사용자를 찾을 수 없습니다.");
+            throw new UserNotFoundException();
         }
 
         // 2. JWT 토큰 생성 (Stateless)
@@ -45,8 +45,6 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         // 3. 보안 쿠키 설정 (HttpOnly, Secure, SameSite=Lax)
         setTokenCookie(response, "accessToken", accessToken, 1800); // 30분
         setTokenCookie(response, "refreshToken", refreshToken, 604800); // 7일
-
-        log.info("JWT 발급 및 쿠키 설정 완료 - User: {}, Role: {}", email, user.getRole());
         
         // 4. 메인 페이지로 리다이렉트
         response.sendRedirect("/");

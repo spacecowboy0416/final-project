@@ -19,7 +19,12 @@ public enum ErrorCode {
     EMAIL_DUPLICATION(HttpStatus.CONFLICT, "U002", "이미 가입된 이메일입니다."),
     
     // Item
-    ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "I001", "해당 아이템을 찾을 수 없습니다.");
+    ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "I001", "해당 아이템을 찾을 수 없습니다."),
+
+    // Auth
+    AUTH_FAILED(HttpStatus.UNAUTHORIZED, "A001", "인증에 실패하였습니다."),
+    TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "A002", "만료된 토큰입니다."),
+    INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "A003", "유효하지 않은 토큰입니다.");
 
     // 필요한 도메인별 에러 코드 추가...
 

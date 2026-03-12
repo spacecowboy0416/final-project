@@ -1,10 +1,10 @@
 package com.finalproject.coordi.user.service;
 
+import com.finalproject.coordi.domain.exception.user.EmailDuplicationException;
 import com.finalproject.coordi.user.dto.UserDto;
 import com.finalproject.coordi.user.mapper.UserMapperInter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,9 +47,7 @@ public class UserService {
             // 2. 이메일 중복 체크 (다른 소셜 계정 가입 여부 확인)
             UserDto emailUser = userMapper.findByEmail(userDto.getEmail());
             if (emailUser != null) {
-                log.warn("중복 이메일 가입 시도 거절 - Email: {}, 기존 가입경로: {}", 
-                         emailUser.getEmail(), emailUser.getProvider());
-                throw new OAuth2AuthenticationException("이미 " + emailUser.getProvider() + " 계정으로 가입된 이메일입니다.");
+                throw new EmailDuplicationException();
             }
 
             // 3. 신규 사용자 등록

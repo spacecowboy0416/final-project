@@ -1,5 +1,6 @@
 package com.finalproject.coordi.auth.jwt;
 
+import com.finalproject.coordi.domain.exception.auth.TokenExpiredException;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -56,13 +57,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             // 인증 정보 설정
             setAuthentication(newAccessToken);
-            log.info("AccessToken 자동 갱신 완료 - User ID: {}", userId);
+        }
+        // 토큰이 존재하지만 둘 다 유효하지 않은 경우
+        else if (accessToken != null || refreshToken != null) {
+            throw new TokenExpiredException();
         }
 
         filterChain.doFilter(request, response);
     }
 
-    // SecurityContext에 유저 정보를 등록
+    // SecurityContext에 유저 정보 등록
     private void setAuthentication(String token) {
         Authentication authentication = jwtProvider.getAuthentication(token);
         SecurityContextHolder.getContext().setAuthentication(authentication);

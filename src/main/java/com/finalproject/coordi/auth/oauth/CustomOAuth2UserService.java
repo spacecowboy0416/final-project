@@ -1,5 +1,6 @@
 package com.finalproject.coordi.auth.oauth;
 
+import com.finalproject.coordi.domain.exception.auth.AuthFailedException;
 import com.finalproject.coordi.user.dto.UserDto;
 import com.finalproject.coordi.user.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -40,7 +41,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         // 3. 비즈니스 로직을 통한 DB 저장 또는 업데이트
         UserDto savedUser = userService.saveOrUpdate(userDto);
         
-        // 4. 권한과 식별자 키를 담아 OAuth2User 객체 반환
+        // 4. 권한 정보를 담아 SecurityContext용 OAuth2User 반환
         return new DefaultOAuth2User(
                 Collections.singleton(new SimpleGrantedAuthority("ROLE_" + savedUser.getRole())),
                 attributes,
@@ -81,6 +82,6 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                     .profileImageUrl((String) response.get("profile_image"))
                     .build();
         }
-        throw new OAuth2AuthenticationException("지원하지 않는 소셜 로그인 서비스입니다: " + registrationId);
+        throw new AuthFailedException();
     }
 }
