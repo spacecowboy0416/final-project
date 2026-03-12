@@ -23,15 +23,15 @@ public enum ErrorCode {
     // Item
     ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "I001", "해당 아이템을 찾을 수 없습니다."),
 
-    // Recommendation (100번대)
-    RECOMMEND_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "RECOMMEND-100", "추천 정보를 불러오는 데 실패했습니다."),
+    // 💡 Recommendation
+    RECOMMEND_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "R001", "추천 정보를 불러오는 데 실패했습니다."),
 
-    // Closet (200번대)
-    CLOSET_NOT_FOUND(HttpStatus.NOT_FOUND, "CLOSET-200", "옷장 정보를 찾을 수 없습니다."),
-    IMAGE_UPLOAD_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "CLOSET-201", "이미지 업로드 중 오류가 발생했습니다."),
+    // 💡 Closet
+    CLOSET_NOT_FOUND(HttpStatus.NOT_FOUND, "M001", "옷장 정보를 찾을 수 없습니다."),
+    IMAGE_UPLOAD_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "M002", "이미지 업로드 중 오류가 발생했습니다."),
 
-    // Admin (500번대)
-    ADMIN_AUTH_FAIL(HttpStatus.FORBIDDEN, "ADMIN-500", "관리자 권한이 없습니다.");
+    // 💡 Admin
+    ADMIN_AUTH_FAIL(HttpStatus.FORBIDDEN, "A001", "관리자 권한이 없습니다.");
 
     private final HttpStatusCode status;
     private final String code;
