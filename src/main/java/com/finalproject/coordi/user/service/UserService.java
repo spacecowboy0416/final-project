@@ -42,6 +42,8 @@ public class UserService {
             existingUser.setProfileImageUrl(userDto.getProfileImageUrl());
             existingUser.setLastLoginAt(new Timestamp(System.currentTimeMillis()));
             userMapper.update(existingUser);
+            
+            existingUser.setNewUser(false); // 기존 회원임을 표시
             return existingUser;
         } else {
             // 2. 이메일 중복 체크 (다른 소셜 계정 가입 여부 확인)
@@ -57,6 +59,8 @@ public class UserService {
             userDto.setCreatedAt(new Timestamp(System.currentTimeMillis()));
             userDto.setLastLoginAt(new Timestamp(System.currentTimeMillis()));
             userMapper.save(userDto);
+            
+            userDto.setNewUser(true); // 신규 가입자임을 표시
             return userDto;
         }
     }

@@ -14,6 +14,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 @Service
@@ -42,9 +43,13 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         UserDto savedUser = userService.saveOrUpdate(userDto);
         
         // 4. 권한 정보를 담아 SecurityContext용 OAuth2User 반환
+        // attributes는 불변일 수 있으므로 새로운 Mutable Map 생성하여 정보 전달
+        Map<String, Object> customAttributes = new HashMap<>(attributes);
+        customAttributes.put("isNewUser", savedUser.isNewUser());
+
         return new DefaultOAuth2User(
                 Collections.singleton(new SimpleGrantedAuthority("ROLE_" + savedUser.getRole())),
-                attributes,
+                customAttributes,
                 userNameAttributeName
         );
     }

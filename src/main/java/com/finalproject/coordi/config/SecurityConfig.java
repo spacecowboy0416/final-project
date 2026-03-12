@@ -47,7 +47,7 @@ public class SecurityConfig {
                 // 슈퍼관리자만
                 .requestMatchers("/admin/super/**").hasRole("SUPERADMIN")
                 // 관리자 및 슈퍼관리자만
-                .requestMatchers("/admin/**").hasAnyRole("ADMIN", "SUPERADMIN")
+                .requestMatchers("/admin/**","/admin-management/**").hasAnyRole("ADMIN", "SUPERADMIN")
                 // 누구나 접근 가능
                 .requestMatchers("/", "/login/**", "/oauth2/**", "/static/**", "/css/**", "/js/**").permitAll()
                 // 그 외 모든 요청은 인증 필요

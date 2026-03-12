@@ -31,12 +31,15 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         Map<String, Object> attributes = oAuth2User.getAttributes();
         
         // 1. 유저 정보 추출
-        String email = (String) attributes.get("email"); //kakao는 email이 없을 수 있으므로, providerUserId로도 조회 가능하도록 UserService에서 처리 필요
+        String email = (String) attributes.get("email");
         UserDto user = userService.findByEmail(email);
         
         if (user == null) {
             throw new UserNotFoundException();
         }
+
+        // CustomOAuth2UserService에서 전달받은 신규 가입 여부 확인
+        boolean isNewUser = (boolean) attributes.getOrDefault("isNewUser", false);
 
         // 2. JWT 토큰 생성 (Stateless)
         String accessToken = jwtProvider.createAccessToken(user.getUserId(), user.getRole());
@@ -46,8 +49,9 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         setTokenCookie(response, "accessToken", accessToken, 1800); // 30분
         setTokenCookie(response, "refreshToken", refreshToken, 604800); // 7일
         
-        // 4. 메인 페이지로 리다이렉트
-        response.sendRedirect("/");
+        // 4. 메인 페이지로 리다이렉트 (신규 가입 여부 파라미터 추가)
+        String targetUrl = "/?login=success&isNew=" + isNewUser;
+        response.sendRedirect(targetUrl);
     }
 
     private void setTokenCookie(HttpServletResponse response, String name, String value, int maxAge) {
