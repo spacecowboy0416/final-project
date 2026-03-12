@@ -9,6 +9,7 @@ import java.util.Map;
 import org.springframework.stereotype.Component;
 
 @Component
+// TODO: ItemMatcher는 오케스트레이터에만 참조되어 있습니다
 public class ItemMatcher {
     public Map<CategoryType, MatchedItem> matchAll(
         Map<CategoryType, List<ShoppingProductCandidate>> slotCandidates,
