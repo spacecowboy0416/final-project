@@ -19,9 +19,12 @@ public enum ErrorCode {
     EMAIL_DUPLICATION(HttpStatus.CONFLICT, "U002", "이미 가입된 이메일입니다."),
     
     // Item
-    ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "I001", "해당 아이템을 찾을 수 없습니다.");
+    ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "I001", "해당 아이템을 찾을 수 없습니다."),
 
     // 필요한 도메인별 에러 코드 추가...
+	// Weather
+	CURRENT_WEATHER_RESPONSE_NULL(HttpStatus.INTERNAL_SERVER_ERROR, "W001", "현재 날씨 응답이 비어 있습니다."),
+	FORECAST_WEATHER_RESPONSE_NULL(HttpStatus.INTERNAL_SERVER_ERROR, "W002", "예보 날씨 응답이 비어 있습니다.");
 
     private final HttpStatusCode status;
     private final String code;

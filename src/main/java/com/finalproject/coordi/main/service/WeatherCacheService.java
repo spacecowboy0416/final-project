@@ -1,0 +1,67 @@
+package com.finalproject.coordi.main.service;
+
+import java.time.Duration;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Service;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.finalproject.coordi.main.dto.WeatherContextDto;
+
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+public class WeatherCacheService {
+
+    private static final Logger log = LoggerFactory.getLogger(WeatherCacheService.class);
+
+    private static final Duration WEATHER_TTL = Duration.ofMinutes(30);
+
+    private final RedisTemplate<String, Object> redisTemplate;
+    private final ObjectMapper objectMapper;
+
+    public void cacheWeather(String city, String gu, WeatherContextDto dto) {
+        String key = buildKey(city, gu);
+        redisTemplate.opsForValue().set(key, dto, WEATHER_TTL);
+
+        log.info("[WEATHER CACHE PUT] key={}, ttlMinutes={}", key, WEATHER_TTL.toMinutes());
+    }
+
+    public WeatherContextDto getWeather(String city, String gu) {
+        String key = buildKey(city, gu);
+        Object value = redisTemplate.opsForValue().get(key);
+
+        if (value == null) {
+            log.info("[WEATHER CACHE MISS] key={}", key);
+            return null;
+        }
+
+        log.info("[WEATHER CACHE HIT] key={}", key);
+
+        if (value instanceof WeatherContextDto dto) {
+            return dto;
+        }
+
+        return objectMapper.convertValue(value, WeatherContextDto.class);
+    }
+
+    private String buildKey(String city, String gu) {
+        return "weather:" + normalize(city, "서울") + ":" + normalize(gu, "unknown");
+    }
+
+    private String normalize(String value, String fallback) {
+        if (value == null || value.isBlank()) {
+            return fallback;
+        }
+
+        return value.trim()
+                .replace(" ", "")
+                .replace("특별시", "")
+                .replace("광역시", "")
+                .replace("특별자치시", "")
+                .replace("특별자치도", "");
+    }
+}

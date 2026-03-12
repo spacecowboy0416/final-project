@@ -94,6 +94,12 @@ external:
       key: ${GEMINI_API_KEY}
     weather:
       key: ${WEATHER_API_KEY}
+      current-url: https://api.openweathermap.org/data/2.5/weather
+      forecast-url: https://api.openweathermap.org/data/2.5/forecast
+    kakao:
+      local:
+        rest-api-key: ${KAKAO_REST_API_KEY}
+        coord2region-url: https://dapi.kakao.com/v2/local/geo/coord2regioncode.json
 
 # 9. Sentry (Monitoring)
 sentry:
