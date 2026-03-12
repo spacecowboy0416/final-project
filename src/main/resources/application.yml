@@ -76,6 +76,7 @@ mybatis:
   configuration:
     map-underscore-to-camel-case: true # DB의 snake_case를 Java의 camelCase로 매핑
     jdbc-type-for-null: "NULL"
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
   type-aliases-package: com.finalproject.coordi
 
 # 6. AWS S3 (Cloud AWS)
@@ -106,6 +107,7 @@ external:
       endpoint: ${GEMINI_ENDPOINT:https://generativelanguage.googleapis.com/v1beta}
       model: ${GEMINI_MODEL:gemini-2.0-flash}
       key: ${GEMINI_API_KEY}
+      url: "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
       cache:
         enabled: ${GEMINI_PROMPT_CACHE_ENABLED:true}
         ttl-seconds: ${GEMINI_PROMPT_CACHE_TTL_SECONDS:3600}
@@ -147,10 +149,14 @@ sentry:
   ignored-exceptions-for-type:
     - org.springframework.web.servlet.resource.NoResourceFoundException
 
+# 10. Logging 설정 통합
 logging:
   level:
     root: INFO
     "[com.finalproject.coordi]": DEBUG
+    "[com.finalproject.coordi.closet.mapper]": TRACE
+    "[com.finalproject.coordi.recommend.mapper]": TRACE
+    "[com.finalproject.coordi.errorlog.mapper]": TRACE
 
 # 정적 리소스(JS/CSS) 캐시 끄기
   web:

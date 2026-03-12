@@ -2,13 +2,18 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <th:block th:replace="~{layout/common :: configFragment}"></th:block>
-    <title>HOME</title>
+    <title>서버 오류 발생</title>
 </head>
 <body>
     <div th:replace="~{layout/common :: headerFragment}"></div>
 
-    <main class="main-content">
+    <main class="main-content error-page-wrapper">
+        <p class="error-desc" th:text="${errorMsg}">
+            에러 메시지 렌더링 영역
+        </p>
+        <a th:href="@{/}" class="btn login-btn btn-home">메인으로 돌아가기</a>
     </main>
-    
+
     <footer th:replace="~{layout/common :: footerFragment}"></footer>
 </body>
+</html>
