@@ -15,11 +15,14 @@ public class ClosetController {
 
     private final ClosetService closetService;
 
+    private Long getCurrentUserId() {
+        return 1L; // TODO: 추후 Spring Security 유저 정보로 변경
+    }
+
     @GetMapping
     public String myCloset(Model model) {
-        Long currentUserId = 1L; // 임시 유저 ID (Spring Security 연동 필요)
+        Long currentUserId = getCurrentUserId();
         
-        // 내 옷장에 코디 카드와 단품 옷 리스트 모두 전달
         model.addAttribute("savedCoordis", closetService.getSavedCoordis(currentUserId));
         model.addAttribute("items", closetService.getUserCloset(currentUserId));
         
@@ -29,15 +32,13 @@ public class ClosetController {
     @PostMapping("/add")
     public String addItem(@ModelAttribute ClosetItemDto itemDto, 
                           @RequestParam("imageFile") MultipartFile imageFile) {
-        Long currentUserId = 1L;
-        closetService.addClosetItem(currentUserId, itemDto, imageFile);
+        closetService.addClosetItem(getCurrentUserId(), itemDto, imageFile);
         return "redirect:/closet";
     }
 
     @PostMapping("/delete/{itemId}")
     public String deleteItem(@PathVariable Long itemId) {
-        Long currentUserId = 1L;
-        closetService.removeClosetItem(itemId, currentUserId);
+        closetService.removeClosetItem(itemId, getCurrentUserId());
         return "redirect:/closet";
     }
 }

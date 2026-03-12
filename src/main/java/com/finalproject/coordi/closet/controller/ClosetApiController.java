@@ -15,28 +15,28 @@ public class ClosetApiController {
 
     private final ClosetService closetService;
 
+    private Long getCurrentUserId() {
+        return 1L; // TODO: 추후 Spring Security 유저 정보로 변경
+    }
+
     @PostMapping
     public ResponseEntity<String> saveCoordi(@RequestBody SavedCoordiDto dto) {
-        Long currentUserId = 1L; // TODO: 추후 Spring Security 유저 정보로 변경
-        dto.setUserId(currentUserId);
+        dto.setUserId(getCurrentUserId());
         closetService.saveRecommendation(dto);
-        
         return ResponseEntity.ok("코디가 옷장에 저장되었습니다.");
     }
 
     @PutMapping("/{recId}")
     public ResponseEntity<String> updateCoordi(@PathVariable Long recId, @RequestBody SavedCoordiDto dto) {
-        Long currentUserId = 1L; // TODO: 추후 Spring Security 연동
         dto.setRecId(recId);
-        dto.setUserId(currentUserId);
+        dto.setUserId(getCurrentUserId());
         closetService.updateRecommendation(dto);
         return ResponseEntity.ok("코디 정보가 수정되었습니다.");
     }
 
     @DeleteMapping("/{recId}")
     public ResponseEntity<String> deleteCoordi(@PathVariable Long recId) {
-        Long currentUserId = 1L; // TODO: 추후 Spring Security 연동
-        closetService.deleteSavedCoordi(recId, currentUserId);
+        closetService.deleteSavedCoordi(recId, getCurrentUserId());
         return ResponseEntity.ok("옷장에서 코디가 삭제되었습니다.");
     }
 }

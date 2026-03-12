@@ -2,7 +2,9 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <th:block th:replace="~{layout/common :: configFragment}"></th:block>
+    
     <link rel="stylesheet" th:href="@{/closet/css/closet.css}">
+    
     <title>나의 옷장</title>
 </head>
 <body>
@@ -34,7 +36,7 @@
 
         <hr style="border: 0; border-top: 2px solid #eee; margin-bottom: 40px;">
 
-        <h2 style="margin-bottom: 20px;">나의 옷장 (보유 아이템)</h2>
+        <h2 style="margin-bottom: 20px;">나의 옷장</h2>
         
         <div class="closet-grid">
             <div class="item-card add-item-card" onclick="openAddItemModal()">
@@ -59,16 +61,12 @@
         </div>
     </main>
 
-    <footer th:replace="~{layout/common :: footerFragment}"></footer>
-
     <div id="coordiModal" class="modal-overlay">
         <div class="modal-content">
             <span class="modal-close" onclick="closeCoordiModal()">&times;</span>
             <span id="modalDate" style="color: #999; font-size: 0.8rem;">날짜</span>
             <h3 id="modalTitle" style="margin: 10px 0 20px 0;">코디 제목</h3>
-            
             <p id="modalDesc" style="color: #555; line-height: 1.6; background: #f8f9fa; padding: 15px; border-radius: 8px;"></p>
-            
             <div class="modal-buttons">
                 <button type="button" class="btn-flex" style="background: #28a745; color: white;" onclick="editCoordi()">상/하의 변경</button>
                 <button type="button" class="btn-flex" style="background: #17a2b8; color: white;" onclick="shareCoordi()">자랑하기</button>
@@ -83,7 +81,6 @@
         <div class="modal-content">
             <span class="modal-close" onclick="closeAddItemModal()">&times;</span>
             <h3 style="margin-top: 0; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px;">새로운 옷 등록</h3>
-            
             <form th:action="@{/closet/add}" method="post" enctype="multipart/form-data">
                 <div class="form-group" style="margin-bottom: 15px;">
                     <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #444;">옷 이름 (예: 검정 슬랙스)</label>
@@ -110,6 +107,8 @@
             </form>
         </div>
     </div>
+
+	<footer th:replace="~{layout/common :: footerFragment}"></footer>
 
     <script th:src="@{/closet/js/closet.js}"></script>
 </body>

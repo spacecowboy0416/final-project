@@ -11,15 +11,13 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ClosetItemDto {
-	private Long itemId;
+    private Long itemId;
     private Long userId;
-    private Long categoryId;
+    private Long productId;
     private String name;
-    private String color;
+    private Long categoryId;
     private String season;
-    private Integer thickness;
     private String imageUrl;
     private Boolean isActive;
     private LocalDateTime createdAt;
-    private String categoryName;
 }
