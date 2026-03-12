@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:replace="~{layout/common :: configFragment}"></th:block>
+    <title>관리자 - AI 에러 로그 분석기</title>
+</head>
+<body>
+    <div th:replace="~{layout/common :: headerFragment}"></div>
+
+    <main class="main-content">
+        <h2 class="admin-logs-header">팀 프로젝트 통합 AI 에러 모니터링</h2>
+        <p class="admin-logs-desc">
+            우리 팀 전체에서 발생한 에러를 수집하고 AI가 분석한 결과입니다.<br>
+            <strong>동일한 에러는 AI API를 다시 호출하지 않고 누적 횟수만 카운트하여 비용을 방어합니다.</strong>
+        </p>
+
+        <div th:if="${#lists.isEmpty(logs)}" class="empty-logs-msg">
+            <p>현재 시스템에 수집된 에러가 없습니다!</p>
+        </div>
+
+        <div th:each="log : ${logs}" class="log-card">
+            <div class="log-card-header">
+                <span class="log-type-badge" th:text="${log.errorType}"></span>
+                <span class="log-date" th:text="${#temporals.format(log.lastOccurredAt, 'yyyy-MM-dd HH:mm:ss')}"></span>
+            </div>
+            
+            <h3 class="log-msg" th:text="${log.message}"></h3>
+            
+            <p class="log-location-box">
+                <strong>발생 위치:</strong> <span th:text="${log.stackTrace}"></span> 
+                <br>
+                <strong class="log-count">누적 발생: [[${log.occurrenceCount}]]회</strong>
+            </p>
+
+            <div class="ai-guide-box">
+                <strong class="ai-guide-title">AI 디버깅 가이드:</strong>
+                <div class="ai-guide-content" th:text="${log.aiSolution}"></div>
+            </div>
+        </div>
+    </main>
+
+    <footer th:replace="~{layout/common :: footerFragment}"></footer>
+</body>
+</html>

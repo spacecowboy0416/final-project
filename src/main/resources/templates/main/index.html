@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:replace="~{layout/common :: configFragment}"></th:block>
+    <title>HOME</title>
+    
+    <link rel="stylesheet" th:href="@{/main/css/main.css}">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+    <div th:replace="~{layout/common :: headerFragment}"></div>
+
+    <main class="main-content">
+    	<div th:replace="~{main/main :: mainFragment}"></div>
+    </main>
+    
+    <footer th:replace="~{layout/common :: footerFragment}"></footer>
+    
+ 	<script th:src="@{/main/js/main-config.js}"></script>
+	<script th:src="@{/main/js/main-api.js}"></script>
+	<script th:src="@{/main/js/main-effects.js}"></script>
+	<script th:src="@{/main/js/main-ui.js}"></script>
+	<script th:src="@{/main/js/main-preview.js}"></script>
+	<script th:src="@{/main/js/main.js}"></script>
+</body>
