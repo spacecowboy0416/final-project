@@ -1,6 +1,6 @@
 package com.finalproject.coordi.recommendation.service;
 
-import com.finalproject.coordi.recommendation.dto.api.BlueprintRequestDto;
+import com.finalproject.coordi.recommendation.dto.api.BlueprintInputDto;
 import com.finalproject.coordi.recommendation.dto.api.CoordinationOutputDto;
 import com.finalproject.coordi.recommendation.service.component.*;
 import jakarta.validation.Valid;
@@ -31,9 +31,9 @@ public class Orchestrator {
     private final ItemUpserter itemUpsertService;
     private final BlueprintResponseBuilder blueprintResponseBuilder;
 
-    @Transactional
+    //@Transactional 추후 구간 분리
     // blueprint 추천 요청을 받아 전체 파이프라인을 순차 실행한다.
-    public CoordinationOutputDto coordinate(@Valid BlueprintRequestDto request) {
+    public CoordinationOutputDto coordinate(@Valid BlueprintInputDto request) {
         long pipelineStartedAt = System.nanoTime();
 
         // 1. 날씨 조회
@@ -43,12 +43,12 @@ public class Orchestrator {
 
         // 2. 프롬프트 생성(natural text, image, location(kakao map), scheduleTime, weather)
         long promptStartedAt = System.nanoTime();
-        var prompt = promptBuilder.build(request, weather);
+        var systemUserPrompt = promptBuilder.build(request, weather);
         logStageDuration("promptBuilder.build", promptStartedAt);
 
         // 3.1 AI API 호출하여 blueprint 생성
         long blueprintStartedAt = System.nanoTime();
-        var rawBlueprintJson = blueprintGenerator.generate(request, prompt);
+        var rawBlueprintJson = blueprintGenerator.generate(request, weather, systemUserPrompt);
         logStageDuration("blueprintGenerator.generate", blueprintStartedAt);
 
         // 3.2 옷 사진 S3 업로드 및 메타데이터 저장
@@ -89,9 +89,6 @@ public class Orchestrator {
         logStageDuration("blueprintResponseBuilder.build", responseBuilderStartedAt);
         logStageDuration("recommendationPipeline.total", pipelineStartedAt);
         return response;
-
-        // 8. closet에 저장 및 시간, 위치, 태그 조정으로 재검색
-        
     }
 
     private void logStageDuration(String stageName, long startedAt) {
