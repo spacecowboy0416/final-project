@@ -1,0 +1,31 @@
+package com.finalproject.coordi.recommendation.dto.api;
+
+import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.CategoryType;
+import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.ColorType;
+import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.FitType;
+import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.ItemCategoryType;
+import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.MaterialType;
+import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.PriorityType;
+import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.StyleType;
+
+/**
+ * blueprint 출력 계약 DTO.
+ */
+public record BlueprintOutputDto(
+    CategoryType slotKey,
+    String itemName,
+    String imageUrl,
+    ItemCategoryType category,
+    double matchScore,
+    Integer tempMin,
+    Integer tempMax,
+    PriorityType priority,
+    String reasoning,
+    ColorType color,
+    MaterialType material,
+    FitType fit,
+    StyleType style
+) {
+}
+
+
