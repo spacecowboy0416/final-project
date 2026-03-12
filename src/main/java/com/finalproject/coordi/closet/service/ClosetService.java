@@ -67,8 +67,13 @@ public class ClosetService {
         try {
             ProductDto newProduct = ProductDto.builder()
                     .source("USER_CUSTOM")
-                    .name(itemDto.getName())
                     .categoryId(itemDto.getCategoryId())
+                    .name(itemDto.getName())
+                    .brand(itemDto.getBrand())
+                    .color(itemDto.getColor())
+                    .material(itemDto.getMaterial())
+                    .fit(itemDto.getFit())
+                    .style(itemDto.getStyle())
                     .season(itemDto.getSeason())
                     .imageUrl(imageUrl)
                     .build();
