@@ -1,7 +1,7 @@
 package com.finalproject.coordi.recommendation.service.apiadapter.gemini;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.finalproject.coordi.domain.exception.recommendation.RecommendationException;
+import com.finalproject.coordi.exception.recommendation.RecommendationException;
 import com.finalproject.coordi.recommendation.dto.api.BlueprintInputDto;
 import com.finalproject.coordi.recommendation.dto.api.BlueprintOutputDto;
 import com.finalproject.coordi.recommendation.service.apiport.AiPort;

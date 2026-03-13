@@ -1,6 +1,6 @@
 package com.finalproject.coordi.recommendation.service.apiadapter.gemini;
 
-import com.finalproject.coordi.domain.exception.recommendation.RecommendationException;
+import com.finalproject.coordi.exception.recommendation.RecommendationException;
 import com.finalproject.coordi.recommendation.domain.enums.CodedEnum;
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.ColorType;
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.FitType;

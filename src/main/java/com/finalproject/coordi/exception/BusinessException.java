@@ -1,4 +1,4 @@
-package com.finalproject.coordi.domain.exception;
+package com.finalproject.coordi.exception;
 
 import lombok.Getter;
 
