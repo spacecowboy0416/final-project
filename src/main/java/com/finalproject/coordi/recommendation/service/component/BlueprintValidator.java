@@ -3,7 +3,7 @@ package com.finalproject.coordi.recommendation.service.component;
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.CategoryType;
 import com.finalproject.coordi.recommendation.dto.api.BlueprintOutputDto;
 import com.finalproject.coordi.recommendation.dto.internal.BlueprintValidationDto;
-import com.finalproject.coordi.domain.exception.RecommendationException;
+import com.finalproject.coordi.domain.exception.recommendation.RecommendationException;
 import java.util.Arrays;
 import java.util.EnumMap;
 import org.springframework.stereotype.Component;

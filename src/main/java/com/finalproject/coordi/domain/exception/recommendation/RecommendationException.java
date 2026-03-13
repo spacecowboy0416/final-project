@@ -1,5 +1,7 @@
-package com.finalproject.coordi.domain.exception;
+package com.finalproject.coordi.domain.exception.recommendation;
 
+import com.finalproject.coordi.domain.exception.BusinessException;
+import com.finalproject.coordi.domain.exception.ErrorCode;
 import com.google.genai.errors.ApiException;
 import com.google.genai.errors.ClientException;
 import com.google.genai.errors.GenAiIOException;

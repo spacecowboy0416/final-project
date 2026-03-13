@@ -13,6 +13,8 @@ public enum ErrorCode {
     INVALID_INPUT_VALUE(HttpStatus.BAD_REQUEST, "C001", "입력 값이 올바르지 않습니다."),
     METHOD_NOT_ALLOWED(HttpStatus.METHOD_NOT_ALLOWED, "C002", "지원하지 않는 HTTP 메서드입니다."),
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "C003", "서버 내부에서 처리되지 않은 예외가 발생했습니다."),
+    DATABASE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "C004", "데이터베이스 처리 중 오류가 발생했습니다."),
+    RESOURCE_NOT_FOUND(HttpStatus.NOT_FOUND, "C005", "요청하신 리소스를 찾을 수 없습니다."),
 
     // User
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "U001", "해당 사용자를 찾을 수 없습니다."),
@@ -50,9 +52,14 @@ public enum ErrorCode {
     RECOMMENDATION_GEMINI_INVALID_ARGUMENT(HttpStatus.BAD_REQUEST, "R026", "Gemini 요청 파라미터가 유효하지 않습니다."),
     RECOMMENDATION_GEMINI_PERMISSION_DENIED(HttpStatus.BAD_GATEWAY, "R027", "Gemini API 접근 권한이 없습니다."),
     RECOMMENDATION_GEMINI_RATE_LIMITED(HttpStatus.TOO_MANY_REQUESTS, "R028", "Gemini API 호출 한도를 초과했습니다."),
-    RECOMMENDATION_GEMINI_ENDPOINT_MISCONFIGURED(HttpStatus.INTERNAL_SERVER_ERROR, "R029", "Gemini endpoint 설정이 잘못되었습니다. base URL만 설정하고 버전 경로(/v1, /v1beta)는 포함하지 마세요.");
+    RECOMMENDATION_GEMINI_ENDPOINT_MISCONFIGURED(HttpStatus.INTERNAL_SERVER_ERROR, "R029", "Gemini endpoint 설정이 잘못되었습니다. base URL만 설정하고 버전 경로(/v1, /v1beta)는 포함하지 마세요."),
 
-    // 필요한 도메인별 에러 코드 추가...
+    // 💡 Closet
+    CLOSET_NOT_FOUND(HttpStatus.NOT_FOUND, "M001", "옷장 정보를 찾을 수 없습니다."),
+    IMAGE_UPLOAD_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "M002", "이미지 업로드 중 오류가 발생했습니다."),
+
+    // 💡 Admin
+    ADMIN_AUTH_FAIL(HttpStatus.FORBIDDEN, "A001", "관리자 권한이 없습니다.");
 
     private final HttpStatusCode status;
     private final String code;
