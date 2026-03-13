@@ -12,6 +12,6 @@ public record CoordinationOutputDto(
     TpoType tpoType,
     StyleType styleType,
     String stylingRuleApplied,
-    List<BlueprintOutputDto> blueprint
+    List<CoordinationItemOutputDto> coordination
 ) {
 }

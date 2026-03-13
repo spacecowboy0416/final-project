@@ -1,6 +1,7 @@
 package com.finalproject.coordi.recommendation.service.component;
 
-import com.finalproject.coordi.recommendation.dto.api.BlueprintRequestDto;
+import com.finalproject.coordi.recommendation.dto.api.BlueprintInputDto.WeatherInfo;
+import com.finalproject.coordi.recommendation.dto.api.BlueprintInputDto;
 import com.finalproject.coordi.recommendation.service.apiport.WeatherPort;
 import java.time.OffsetDateTime;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +16,7 @@ public class WeatherFetcher {
      * 프론트 Kakao SDK가 추출해 전달한 districtName과 scheduleTime으로
      * Redis 캐시 서버의 날씨 정보를 조회하는 단계다.
      */
-    public WeatherContext fetch(BlueprintRequestDto request) {
+    public WeatherContext fetch(BlueprintInputDto request) {
         var location = request.location();
         var weatherData = weatherPort.fetchByDistrict(
             location.districtName(),
@@ -54,6 +55,14 @@ public class WeatherFetcher {
         Double longitude,
         String weatherSource
     ) {
+        public WeatherInfo toWeatherInfo() {
+            return new WeatherInfo(
+                temperature,
+                feelsLike,
+                weatherStatus,
+                rainProbability,
+                weatherSource
+            );
+        }
     }
 }
-
