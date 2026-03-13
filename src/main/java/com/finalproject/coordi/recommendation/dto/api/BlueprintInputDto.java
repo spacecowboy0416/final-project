@@ -16,6 +16,7 @@ public record BlueprintInputDto(
     @NotBlank
     @Size(max = 1000)
     String naturalText,
+    GenderType gender,
     @NotNull
     OffsetDateTime scheduleTime,
     @Valid @NotNull
@@ -23,30 +24,10 @@ public record BlueprintInputDto(
     @Valid @NotNull
     ImageData imageData
 ) {
-    /**
-     * Gemini 입력 스키마 계약에서 사용하는 축약 입력 모델.
-     * location 정보는 비즈니스/영속 레이어 전용으로 관리하고 AI 스키마에서는 제외한다.
-     */
-    public record GeminiInputSchema(
-        @NotBlank
-        @Size(max = 1000)
-        String naturalText,
-        @NotNull
-        OffsetDateTime scheduleTime,
-        @Valid @NotNull
-        WeatherInfo weather,
-        @Valid @NotNull
-        ImageData imageData
-    ) {
-    }
-
-    public GeminiInputSchema toGeminiInputSchema(WeatherInfo weather) {
-        return new GeminiInputSchema(
-            naturalText,
-            scheduleTime,
-            weather,
-            imageData
-        );
+    public enum GenderType {
+        MALE,
+        FEMALE,
+        UNISEX
     }
 
     /**
