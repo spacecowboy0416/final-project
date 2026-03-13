@@ -43,12 +43,12 @@ public class Orchestrator {
 
         // 2. 프롬프트 생성(natural text, image, location(kakao map), scheduleTime, weather)
         long promptStartedAt = System.nanoTime();
-        var systemUserPrompt = promptBuilder.build(request, weather);
+        var intergratedPrompt = promptBuilder.build(request, weather);
         logStageDuration("promptBuilder.build", promptStartedAt);
 
         // 3.1 AI API 호출하여 blueprint 생성
         long blueprintStartedAt = System.nanoTime();
-        var rawBlueprintJson = blueprintGenerator.generate(request, weather, systemUserPrompt);
+        var rawBlueprintJson = blueprintGenerator.generate(request, weather, intergratedPrompt);
         logStageDuration("blueprintGenerator.generate", blueprintStartedAt);
 
         // 3.2 옷 사진 S3 업로드 및 메타데이터 저장
