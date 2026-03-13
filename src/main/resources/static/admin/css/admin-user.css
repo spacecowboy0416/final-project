@@ -1,209 +1,55 @@
+/* admin-user.css */
 .user-management-controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  align-items: center;
-  padding: 1.5rem;
-  background-color: rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  margin-bottom: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
 }
 
-.filter-group,
-.search-group {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
+.filter-group, .search-group {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
 }
 
-.search-group {
-  margin-left: auto;
-}
-
-.user-management-controls label {
-  font-weight: 500;
-  color: #e0e0e0;
-}
-
-/* Sort Control in Header */
-.sort-control {
-  display: inline-flex;
-  flex-direction: column;
-  margin-left: 8px;
-  cursor: pointer;
-  vertical-align: middle;
-}
-.sort-arrow {
-  width: 0;
-  height: 0;
-  border-left: 5px solid transparent;
-  border-right: 5px solid transparent;
-  opacity: 0.5;
-  transition: opacity 0.2s;
-}
-.sort-arrow.asc {
-  border-bottom: 6px solid #fff;
-  margin-bottom: 3px;
-}
-.sort-arrow.desc {
-  border-top: 6px solid #fff;
-}
-.sort-arrow.active {
-  opacity: 1;
-}
-
-/* User List Table */
 .user-list-container {
-  overflow-x: auto;
+    overflow-x: auto;
 }
 
 .user-table {
-  width: 100%;
-  border-collapse: collapse;
-  color: #fff;
-  background-color: rgba(0, 0, 0, 0.2);
-  border-radius: 8px;
-  overflow: hidden;
-  table-layout: fixed; /* For predictable column widths */
+    width: 100%;
+    border-collapse: collapse;
+    color: #e2e8f0; /* Brighter text */
 }
 
-.user-table th,
-.user-table td {
-  padding: 1rem 1.25rem;
-  text-align: left;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  vertical-align: middle;
+.user-table th, .user-table td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid #374151;
+    white-space: nowrap;
 }
 
 .user-table th {
-  background-color: rgba(0, 0, 0, 0.3);
-  font-weight: 600;
-  font-size: 0.875rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-.user-table th.sortable {
-  cursor: pointer;
-}
-.user-table th.sortable:hover {
-  background-color: rgba(0, 0, 0, 0.4);
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: #9ca3af;
 }
 
-/* Column Widths */
-.user-table th:nth-child(1) { width: 5%; } /* ID */
-.user-table th:nth-child(2) { width: 7%; } /* 프로필 */
-.user-table th:nth-child(3) { width: 12%; } /* 닉네임 */
-.user-table th:nth-child(4) { width: 20%; } /* 이메일 */
-.user-table th:nth-child(5) { width: 8%; } /* 소셜 */
-.user-table th:nth-child(6) { width: 8%; } /* 역할 */
-.user-table th:nth-child(7) { width: 8%; } /* 상태 */
-.user-table th:nth-child(8),
-.user-table th:nth-child(9) { width: 10%; } /* 가입일, 마지막 로그인 */
-.user-table th:nth-child(10) { width: 22%; } /* 관리 */
-
-.user-table tbody tr:last-child td {
-  border-bottom: none;
-}
-
-.user-table tbody tr:hover {
-  background-color: rgba(255, 255, 255, 0.08);
-}
-
-/* Table Content Styles */
 .user-profile-img {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
 }
 
-.social-icon {
-  width: 24px;
-  height: 24px;
+.role-badge, .status-badge {
+    padding: 0.25rem 0.6rem;
+    border-radius: 0.375rem;
+    font-weight: 600;
+    font-size: 0.75rem;
 }
-
-.role-badge,
-.status-badge {
-  padding: 0.25rem 0.6rem;
-  border-radius: 12px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  display: inline-block;
-  border: 1px solid transparent;
-}
-
-.role-badge-ADMIN {
-  background-color: #ffc107;
-  color: #333;
-  border-color: #ffc107;
-}
-
-.role-badge-MASTER {
-  background-color: #9c27b0;
-  color: #fff;
-  border-color: #9c27b0;
-}
-
-.role-badge-USER {
-  background-color: #03a9f4;
-  color: #fff;
-  border-color: #03a9f4;
-}
-
-.status-badge-ACTIVE {
-  background-color: #4caf50;
-  color: white;
-}
-
-.status-badge-INACTIVE,
-.status-badge-SUSPENDED {
-  background-color: #f44336;
-  color: white;
-}
-
-/* Action buttons in table */
-.user-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.user-actions .form-select,
-.user-actions .btn-save {
-  height: 38px; /* Consistent height */
-  padding: 0.4rem 0.8rem;
-  font-size: 0.875rem;
-  box-sizing: border-box;
-}
-
-.user-actions .form-select {
-  flex: 1; /* Allow selects to grow */
-  min-width: 90px;
-  background-color: rgba(255, 255, 255, 0.2);
-  color: #fff;
-  border-color: rgba(255, 255, 255, 0.3);
-}
-
-.user-actions .form-select option {
-  background-color: #333;
-  color: #fff;
-}
-
-.user-actions .btn-save {
-  background-color: #4caf50;
-  border-color: #4caf50;
-  color: white;
-}
-.user-actions .btn-save:hover {
-  background-color: #5cb85c;
-}
-
-.empty-list-message {
-  text-align: center;
-  padding: 2rem;
-  color: #ccc;
-}
+.role-badge.role-admin { background-color: #c026d3; color: white; }
+.role-badge.role-master { background-color: #f59e0b; color: white; }
+.role-badge.role-user { background-color: #4b5563; color: white; }
+.status-badge.status-active { background-color: #22c55e; color: white; }
+.status-badge.status-inactive, .status-badge.status-suspended { background-color: #ef4444; color: white; }
