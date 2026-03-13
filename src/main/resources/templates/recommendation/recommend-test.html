@@ -136,12 +136,11 @@
                 <h4>입력 제약</h4>
                 <ul class="constraint-list">
                     <li>AI 입력에는 이미지 1장, 자연어 요청, 일정 시각, Redis 날씨 요약이 포함됩니다.</li>
-                    <li><code>scheduleTime</code>은 ISO offset datetime 문자열입니다.</li>
                     <li><code>weather</code>는 <code>temperature</code>, <code>feelsLike</code>, <code>weatherStatus</code>, <code>rainProbability</code>, <code>weatherSource</code>를 가집니다.</li>
                     <li><code>location</code>은 날씨 조회용 요청 필드이며, AI input schema 자체에는 포함되지 않습니다.</li>
                 </ul>
                 <div class="constraint-box">
-                    <strong>현재 입력 키</strong>
+                    <strong>input json schema</strong>
                     <pre>{
   "naturalText": "...",
   "scheduleTime": "...",
@@ -162,15 +161,8 @@
 
             <section class="constraint-section">
                 <h4>출력 제약</h4>
-                <ul class="constraint-list">
-                    <li>최상위 객체는 <code>ai_blueprint</code> 하나만 가집니다.</li>
-                    <li><code>coordination</code>에는 <code>tops</code>, <code>bottoms</code>, <code>outerwear</code>, <code>shoes</code>, <code>accessories</code>가 모두 있어야 합니다.</li>
-                    <li>각 슬롯은 <code>item_name</code>, <code>search_query</code>, <code>category</code>, <code>attributes</code>, <code>temp_range</code>, <code>reasoning</code>, <code>priority</code>를 가집니다.</li>
-                    <li><code>attributes</code>는 <code>color</code>, <code>material</code>, <code>fit</code>, <code>style</code>를 가집니다.</li>
-                    <li><code>temp_range</code>는 정수 2개 배열이어야 합니다.</li>
-                </ul>
                 <div class="constraint-box">
-                    <strong>현재 출력 뼈대</strong>
+                    <strong>output json schema</strong>
                     <pre>{
   "ai_blueprint": {
     "tpoType": "date",
