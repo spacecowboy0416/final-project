@@ -163,7 +163,7 @@
         #050505;
     opacity: 1;
     visibility: visible;
-    transition: opacity .8s ease, visibility .8s ease;
+   transition: opacity .35s ease, visibility .35s ease;
 }
 
 .introOverlay.is-hidden {

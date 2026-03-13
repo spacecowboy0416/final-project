@@ -1,7 +1,7 @@
-package com.finalproject.coordi.domain.exception.main;
+package com.finalproject.coordi.exception.main;
 
-import com.finalproject.coordi.domain.exception.BusinessException;
-import com.finalproject.coordi.domain.exception.ErrorCode;
+import com.finalproject.coordi.exception.BusinessException;
+import com.finalproject.coordi.exception.ErrorCode;
 
 public class CurrentWeatherResponseNullException extends BusinessException {
 

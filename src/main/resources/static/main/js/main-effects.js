@@ -5,8 +5,10 @@ let width = 0;
 let height = 0;
 let animationId = null;
 let fxMode = "none";
+
 let particles = [];
 let thunderNext = 0;
+let fastFirstThunder = false;
 
 function resizeCanvas() {
   if (!canvas) return;
@@ -14,23 +16,34 @@ function resizeCanvas() {
   height = canvas.height = window.innerHeight;
 }
 
+function resetOverlayFx() {
+  const sunRays = document.getElementById("sunRays");
+  const sparkle = document.getElementById("sparkle");
+
+  if (sunRays) sunRays.style.opacity = 0;
+  if (sparkle) sparkle.style.opacity = 0;
+}
+
 function stopFx() {
   fxMode = "none";
   particles = [];
   thunderNext = 0;
+  fastFirstThunder = false;
 
   if (animationId) {
     cancelAnimationFrame(animationId);
     animationId = null;
   }
 
-  const sunRays = document.getElementById("sunRays");
-  const sparkle = document.getElementById("sparkle");
+  resetOverlayFx();
 
-  if (sunRays) sunRays.style.opacity = 0;
-  if (sparkle) sparkle.style.opacity = 0;
+  if (ctx) {
+    ctx.clearRect(0, 0, width, height);
+  }
+}
 
-  if (ctx) ctx.clearRect(0, 0, width, height);
+function createParticles(count, factory) {
+  return Array.from({ length: count }, factory);
 }
 
 function startSunFx() {
@@ -40,7 +53,7 @@ function startSunFx() {
   if (sunRays) sunRays.style.opacity = 1;
   if (sparkle) sparkle.style.opacity = 1;
 
-  particles = Array.from({ length: 45 }, () => ({
+  particles = createParticles(40, () => ({
     x: Math.random() * width,
     y: Math.random() * height,
     r: 0.8 + Math.random() * 1.4,
@@ -50,82 +63,78 @@ function startSunFx() {
 }
 
 function startRainFx() {
-  const count = Math.min(700, Math.floor(width * 0.62));
+  const count = Math.min(650, Math.floor(width * 0.55));
 
-  particles = Array.from({ length: count }, () => ({
+  particles = createParticles(count, () => ({
     x: Math.random() * width,
     y: Math.random() * height,
-    vx: -2 - Math.random() * 1.8,
-    vy: 10 + Math.random() * 8,
-    len: 10 + Math.random() * 14,
-    a: 0.16 + Math.random() * 0.16
+    vx: -2 - Math.random() * 2,
+    vy: 9 + Math.random() * 7,
+    len: 10 + Math.random() * 16
   }));
 }
 
 function startThunderFx() {
   particles = [];
-  thunderNext = performance.now() + 1200 + Math.random() * 1800;
+  fastFirstThunder = true;
+  thunderNext = performance.now() + 120 + Math.random() * 180;
 }
 
 function startThunderRainFx() {
   startRainFx();
-  thunderNext = performance.now() + 1200 + Math.random() * 1800;
+  fastFirstThunder = true;
+  thunderNext = performance.now() + 120 + Math.random() * 180;
 }
 
 function startSnowFx() {
-  const count = Math.min(320, Math.floor(width * 0.26));
+  const count = Math.min(280, Math.floor(width * 0.22));
 
-  particles = Array.from({ length: count }, () => ({
+  particles = createParticles(count, () => ({
     x: Math.random() * width,
     y: Math.random() * height,
     r: 0.8 + Math.random() * 1.8,
     vx: -0.4 + Math.random() * 0.8,
-    vy: 0.7 + Math.random() * 1.3,
+    vy: 0.6 + Math.random() * 1.2,
     a: 0.18 + Math.random() * 0.22
   }));
 }
 
 function startSleetFx() {
-  const count = Math.min(300, Math.floor(width * 0.24));
+  const count = Math.min(240, Math.floor(width * 0.2));
 
-  particles = Array.from({ length: count }, () => ({
+  particles = createParticles(count, () => ({
     x: Math.random() * width,
     y: Math.random() * height,
     vx: -1.2 + Math.random() * 0.8,
-    vy: 4.5 + Math.random() * 3.5,
-    r: 0.8 + Math.random() * 1.0,
-    len: 4 + Math.random() * 5,
-    mix: Math.random() > 0.5,
-    a: 0.14 + Math.random() * 0.14
+    vy: 4 + Math.random() * 3.5,
+    r: 0.8 + Math.random(),
+    len: 4 + Math.random() * 4,
+    mix: Math.random() > 0.5
   }));
 }
 
 function startHailFx() {
-  const count = Math.min(130, Math.floor(width * 0.11));
+  const count = Math.min(120, Math.floor(width * 0.1));
 
-  particles = Array.from({ length: count }, () => ({
+  particles = createParticles(count, () => ({
     x: Math.random() * width,
     y: Math.random() * height,
     vx: -0.7 + Math.random() * 0.5,
     vy: 7 + Math.random() * 4,
-    r: 1.8 + Math.random() * 2,
-    a: 0.2 + Math.random() * 0.18
+    r: 2 + Math.random() * 2.5,
+    a: 0.22 + Math.random() * 0.18
   }));
 }
 
 function startWindFx() {
+  const count = Math.min(50, Math.floor(width * 0.04));
 
-  const count = Math.min(60, Math.floor(width * 0.05));
-
-  particles = Array.from({ length: count }, () => ({
+  particles = createParticles(count, () => ({
     x: Math.random() * width,
-    y: Math.random() * height,
-
-    vx: 9 + Math.random() * 7,   // 속도 증가
+    y: Math.random() * height * 0.8,
+    vx: 9 + Math.random() * 7,
     vy: -0.2 + Math.random() * 0.4,
-
-    len: 40 + Math.random() * 45, // 길이 증가
-
+    len: 40 + Math.random() * 45,
     a: 0.08 + Math.random() * 0.08
   }));
 }
@@ -170,6 +179,7 @@ function startFx(newMode) {
 
 function renderRain() {
   ctx.lineWidth = 1;
+  ctx.strokeStyle = "rgba(255,255,255,0.26)";
   ctx.beginPath();
 
   for (const p of particles) {
@@ -185,18 +195,19 @@ function renderRain() {
     }
   }
 
-  ctx.strokeStyle = "rgba(255,255,255,0.26)";
   ctx.stroke();
 }
 
 function renderThunder() {
   const now = performance.now();
 
-  if (now > thunderNext) {
-    ctx.fillStyle = "rgba(255,255,255,0.24)";
-    ctx.fillRect(0, 0, width, height);
-    thunderNext = now + 1500 + Math.random() * 2400;
-  }
+  if (now <= thunderNext) return;
+
+  ctx.fillStyle = "rgba(255,255,255,0.24)";
+  ctx.fillRect(0, 0, width, height);
+
+  fastFirstThunder = false;
+  thunderNext = now + 1500 + Math.random() * 2400;
 }
 
 function renderSnow() {
@@ -213,6 +224,7 @@ function renderSnow() {
       p.y = -10;
       p.x = Math.random() * width;
     }
+
     if (p.x < -10) p.x = width + 10;
     if (p.x > width + 10) p.x = -10;
   }
@@ -220,9 +232,9 @@ function renderSnow() {
 
 function renderSleet() {
   ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.fillStyle = "rgba(255,255,255,0.24)";
   ctx.strokeStyle = "rgba(255,255,255,0.24)";
+  ctx.fillStyle = "rgba(255,255,255,0.24)";
+  ctx.beginPath();
 
   for (const p of particles) {
     if (p.mix) {
@@ -262,26 +274,25 @@ function renderHail() {
 }
 
 function renderWind() {
-
   ctx.lineWidth = 1.6;
-  ctx.beginPath();
   ctx.strokeStyle = "rgba(255,255,255,0.18)";
+  ctx.beginPath();
 
   for (const p of particles) {
     ctx.moveTo(p.x, p.y);
-	ctx.quadraticCurveTo(
-	  p.x + p.len * 0.5,
-	  p.y - 6,
-	  p.x + p.len,
-	  p.y
-	);
+    ctx.quadraticCurveTo(
+      p.x + p.len * 0.5,
+      p.y - 6,
+      p.x + p.len,
+      p.y
+    );
 
     p.x += p.vx;
     p.y += p.vy;
 
     if (p.x > width + 60) {
       p.x = -60;
-      p.y = Math.random() * height;
+      p.y = Math.random() * height * 0.8;
     }
   }
 
@@ -296,6 +307,7 @@ function renderSun() {
     ctx.fill();
 
     p.y += p.vy;
+
     if (p.y < -10) {
       p.y = height + 10;
       p.x = Math.random() * width;
@@ -309,31 +321,39 @@ function renderFx() {
   ctx.clearRect(0, 0, width, height);
 
   switch (fxMode) {
+    case "sun":
+      renderSun();
+      break;
+
     case "rain":
       renderRain();
       break;
+
     case "thunder":
       renderThunder();
       break;
+
     case "thunder_rain":
       renderRain();
       renderThunder();
       break;
+
     case "snow":
       renderSnow();
       break;
+
     case "sleet":
       renderSleet();
       break;
+
     case "hail":
       renderHail();
       break;
+
     case "wind":
       renderWind();
       break;
-    case "sun":
-      renderSun();
-      break;
+
     default:
       return;
   }

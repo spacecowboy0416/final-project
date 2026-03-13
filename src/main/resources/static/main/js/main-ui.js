@@ -30,13 +30,20 @@ function setBackground(weatherStatus) {
   const body = document.body;
 }
 
-function hideIntroOverlay(delay = 700) {
+function hideIntroOverlay() {
   const overlay = document.getElementById("introOverlay");
   if (!overlay) return;
 
+  const isFirstLoad = !sessionStorage.getItem("mainLoaded");
+
+  const delay = isFirstLoad ? 0 : 180;
+
   setTimeout(() => {
     overlay.classList.add("is-hidden");
+    document.body.classList.remove("is-loading");
   }, delay);
+
+  sessionStorage.setItem("mainLoaded", "true");
 }
 
 function goToRecommend() {

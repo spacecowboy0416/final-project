@@ -7,8 +7,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.finalproject.coordi.domain.exception.main.CurrentWeatherResponseNullException;
-import com.finalproject.coordi.domain.exception.main.ForecastWeatherResponseNullException;
+import com.finalproject.coordi.exception.main.CurrentWeatherResponseNullException;
+import com.finalproject.coordi.exception.main.ForecastWeatherResponseNullException;
 import com.finalproject.coordi.main.dto.OpenWeatherForecastResponse;
 import com.finalproject.coordi.main.dto.OpenWeatherResponse;
 

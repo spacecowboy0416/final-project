@@ -1,28 +1,26 @@
-package com.finalproject.coordi.main.service;
+package com.finalproject.coordi.cache;
 
 import java.time.Duration;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.finalproject.coordi.main.dto.WeatherContextDto;
 
 import lombok.RequiredArgsConstructor;
 
-@Service
 @RequiredArgsConstructor
-public class WeatherCacheService {
+public class RedisWeatherCacheAdapter implements WeatherCachePort {
 
-    private static final Logger log = LoggerFactory.getLogger(WeatherCacheService.class);
-
+    private static final Logger log = LoggerFactory.getLogger(RedisWeatherCacheAdapter.class);
     private static final Duration WEATHER_TTL = Duration.ofMinutes(30);
 
     private final RedisTemplate<String, Object> redisTemplate;
     private final ObjectMapper objectMapper;
 
+    @Override
     public void cacheWeather(String city, String gu, WeatherContextDto dto) {
         String key = buildKey(city, gu);
         redisTemplate.opsForValue().set(key, dto, WEATHER_TTL);
@@ -30,6 +28,7 @@ public class WeatherCacheService {
         log.info("[WEATHER CACHE PUT] key={}, ttlMinutes={}", key, WEATHER_TTL.toMinutes());
     }
 
+    @Override
     public WeatherContextDto getWeather(String city, String gu) {
         String key = buildKey(city, gu);
         Object value = redisTemplate.opsForValue().get(key);
