@@ -1,7 +1,7 @@
-package com.finalproject.coordi.domain.user.dto;
+package com.finalproject.coordi.admin.domain.user.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.finalproject.coordi.domain.user.User;
+import com.finalproject.coordi.admin.domain.user.User;
 import lombok.Getter;
 
 import java.time.LocalDateTime;

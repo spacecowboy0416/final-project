@@ -1,4 +1,4 @@
-package com.finalproject.coordi.domain.user;
+package com.finalproject.coordi.admin.domain.user;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Mapper
-public interface UserRepository {
+public interface UserMapperInter {
 
     List<User> findAll(@Param("role") String role, @Param("searchTerm") String searchTerm, @Param("sort") String sort);
 

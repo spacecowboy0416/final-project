@@ -1,4 +1,4 @@
-package com.finalproject.coordi.domain.user.dto;
+package com.finalproject.coordi.admin.domain.user.dto;
 
 import lombok.Getter;
 import lombok.Setter;

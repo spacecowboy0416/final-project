@@ -3,8 +3,8 @@ package com.finalproject.coordi.admin.controller;
 import com.finalproject.coordi.admin.dto.TagDto;
 
 import com.finalproject.coordi.admin.service.AdminService;
-import com.finalproject.coordi.domain.user.dto.UserResponse;
-import com.finalproject.coordi.domain.user.dto.UserUpdateRequest;
+import com.finalproject.coordi.admin.domain.user.dto.UserResponse;
+import com.finalproject.coordi.admin.domain.user.dto.UserUpdateRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
