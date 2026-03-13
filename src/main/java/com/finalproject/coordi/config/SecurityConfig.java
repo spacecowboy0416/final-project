@@ -49,7 +49,7 @@ public class SecurityConfig {
                 // 관리자 및 슈퍼관리자만
                 .requestMatchers("/admin/**","/admin-management/**").hasAnyRole("ADMIN", "SUPERADMIN")
                 // 누구나 접근 가능
-                .requestMatchers("/", "/login/**", "/oauth2/**", "/static/**", "/css/**", "/js/**").permitAll()
+                .requestMatchers("/", "/login/**", "/oauth2/**", "/static/**", "/css/**", "/js/**", "/common/**").permitAll()
                 // 그 외 모든 요청은 인증 필요
                 .anyRequest().authenticated()
             )
@@ -72,7 +72,6 @@ public class SecurityConfig {
                 .logoutUrl("/logout")
                 .logoutSuccessUrl("/")
                 .deleteCookies("accessToken", "refreshToken")
-                .invalidateHttpSession(true)
             )
             
             // 6. JWT 필터 등록 (UsernamePasswordAuthenticationFilter 이전에 실행)

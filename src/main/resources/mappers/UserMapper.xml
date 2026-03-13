@@ -19,12 +19,13 @@
     </select>
 
     <!-- 저장: role과 status가 null일 경우 DB Default('USER', 'ACTIVE')가 들어가도록 COALESCE 사용 -->
+    <!-- created_at, last_login_at 모두 자바에서 생성한 한국 시간을 명시적으로 저장 -->
     <insert id="save" parameterType="udto" useGeneratedKeys="true" keyProperty="userId">
         INSERT INTO users (
-            provider, provider_user_id, email, nickname, profile_image_url, role, status, created_at,last_login_at
+            provider, provider_user_id, email, nickname, profile_image_url, role, status, created_at, last_login_at
         ) VALUES (
             #{provider}, #{providerUserId}, #{email}, #{nickname}, #{profileImageUrl},
-            COALESCE(#{role}, 'USER'), COALESCE(#{status}, 'ACTIVE'), now(), now()
+            COALESCE(#{role}, 'USER'), COALESCE(#{status}, 'ACTIVE'), #{createdAt}, #{lastLoginAt}
         )
     </insert>
 
