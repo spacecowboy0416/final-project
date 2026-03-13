@@ -1,4 +1,4 @@
-package com.finalproject.coordi.exception;
+package com.finalproject.coordi.domain.exception;
 
 import java.util.List;
 import java.util.Objects;

@@ -1,6 +1,7 @@
 package com.finalproject.coordi.recommendation.service.component;
 
-import com.finalproject.coordi.recommendation.dto.api.BlueprintRequestDto;
+import com.finalproject.coordi.recommendation.dto.api.BlueprintInputDto;
+import com.finalproject.coordi.domain.exception.recommendation.RecommendationException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import org.springframework.beans.factory.annotation.Value;
@@ -9,66 +10,41 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class PromptBuilder {
-    private static final String KOREAN_INPUT_MARKER = "입력값:";
-    private static final String ENGLISH_INPUT_MARKER = "Input:";
+    @Value("${recommendation.prompt.system-template:classpath:prompts/recommendation/system-prompt-eng.txt}")
+    private Resource systemPromptTemplate;
 
-    @Value("${recommendation.prompt.template:classpath:prompts/recommendation/airequest-prompt-kr.txt}")
-    private Resource promptTemplate;
+    @Value("${recommendation.prompt.user-template:classpath:prompts/recommendation/user-prompt-eng.txt}")
+    private Resource userPromptTemplate;
 
     /**
      * recommendation 요청과 Redis에서 조회한 날씨 컨텍스트를 합쳐
-     * Gemini 캐시 가능한 정적 prefix와 요청별 동적 입력 prompt를 분리한다.
+     * Gemini 요청용 프롬프트를 만든다.
      */
-    public PromptPayload build(BlueprintRequestDto request, WeatherFetcher.WeatherContext weather) {
+    public IntegratedPrompt build(BlueprintInputDto request, WeatherFetcher.WeatherContext weather) {
         try {
-            String template = new String(promptTemplate.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-            TemplateSections templateSections = splitTemplate(template);
-            return new PromptPayload(
-                templateSections.cacheablePrompt(),
-                String.format(
-                    templateSections.dynamicPromptTemplate(),
-                    request.naturalText(),
-                    weather.scheduleTime(),
-                    safeDouble(weather.temperature()),
-                    safeDouble(weather.feelsLike()),
-                    safeText(weather.weatherStatus()),
-                    safeText(weather.rainProbability()),
-                    safeText(weather.weatherSource()),
-                    safeText(weather.districtName()),
-                    safeDouble(weather.latitude()),
-                    safeDouble(weather.longitude()),
-                    buildLocationText(weather),
-                    resolveImageInputStatus(request.imageData())
-                )
+            String systemPrompt = readTemplate(systemPromptTemplate);
+            String userTemplate = readTemplate(userPromptTemplate);
+            String userPrompt = String.format(
+                userTemplate,
+                request.naturalText(),
+                weather.scheduleTime(),
+                safeDouble(weather.temperature()),
+                safeDouble(weather.feelsLike()),
+                safeText(weather.weatherStatus()),
+                safeText(weather.rainProbability()),
+                safeText(weather.weatherSource())
+            );
+            return new IntegratedPrompt(
+                systemPrompt,
+                userPrompt
             );
         } catch (IOException exception) {
-            throw new IllegalStateException("AI 프롬프트 템플릿을 읽지 못했습니다.", exception);
+            throw RecommendationException.promptTemplateReadFailed(exception);
         }
     }
 
-    private TemplateSections splitTemplate(String template) {
-        int inputMarkerIndex = template.indexOf(KOREAN_INPUT_MARKER);
-        String marker = KOREAN_INPUT_MARKER;
-        if (inputMarkerIndex < 0) {
-            inputMarkerIndex = template.indexOf(ENGLISH_INPUT_MARKER);
-            marker = ENGLISH_INPUT_MARKER;
-        }
-
-        if (inputMarkerIndex < 0) {
-            return new TemplateSections("", template);
-        }
-
-        return new TemplateSections(
-            template.substring(0, inputMarkerIndex).trim(),
-            template.substring(inputMarkerIndex).replaceFirst("^" + java.util.regex.Pattern.quote(marker), marker)
-        );
-    }
-
-    private String buildLocationText(WeatherFetcher.WeatherContext weather) {
-        String districtName = safeText(weather.districtName());
-        String placeName = safeText(weather.placeName());
-        String addressName = safeText(weather.addressName());
-        return String.join(" | ", districtName, placeName, addressName);
+    private String readTemplate(Resource templateResource) throws IOException {
+        return new String(templateResource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
     }
 
     private String safeText(String value) {
@@ -79,32 +55,9 @@ public class PromptBuilder {
         return value == null ? "" : String.valueOf(value);
     }
 
-    private String resolveImageInputStatus(BlueprintRequestDto.ImageData imageData) {
-        if (imageData == null) {
-            return "missing";
-        }
-
-        byte[] imageBytes = imageData.imageBytes();
-        if (imageBytes == null || imageBytes.length == 0) {
-            return "missing";
-        }
-
-        return "success";
-    }
-
-    /**
-     * 정적 프롬프트 prefix와 요청별 입력 prompt를 분리해 Gemini cachedContents에 활용하기 위한 모델이다.
-     */
-    public record PromptPayload(
-        String cacheablePrompt,
-        String requestPrompt
-    ) {
-    }
-
-    private record TemplateSections(
-        String cacheablePrompt,
-        String dynamicPromptTemplate
+    public record IntegratedPrompt(
+        String systemPrompt,
+        String userPrompt
     ) {
     }
 }
-

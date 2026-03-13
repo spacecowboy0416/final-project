@@ -1,6 +1,6 @@
 package com.finalproject.coordi.recommendation.controller;
 
-import com.finalproject.coordi.recommendation.dto.api.BlueprintRequestDto;
+import com.finalproject.coordi.recommendation.dto.api.BlueprintInputDto;
 import com.finalproject.coordi.recommendation.dto.api.CoordinationOutputDto;
 import com.finalproject.coordi.recommendation.service.Orchestrator;
 import jakarta.validation.Valid;
@@ -25,11 +25,14 @@ public class RecommendationController {
     private final Orchestrator orchestratorService;
     @Value("${external.api.kakao-map.js-key:}")
     private String kakaoMapJsKey;
+    @Value("${external.api.gemini.model:}")
+    private String geminiModel;
 
     // 추천 테스트 페이지를 반환한다.
     @GetMapping("/recommend")
     public String recommendTestPage(Model model) {
         model.addAttribute("kakaoMapApiKey", kakaoMapJsKey);
+        model.addAttribute("geminiModel", geminiModel);
         return "recommendation/recommend-test";
     }
 
@@ -37,7 +40,7 @@ public class RecommendationController {
     @PostMapping("/api/recommendations")
     @ResponseBody
     public ResponseEntity<CoordinationOutputDto> recommend(
-        @Valid @RequestBody BlueprintRequestDto request
+        @Valid @RequestBody BlueprintInputDto request
     ) {
         return ResponseEntity.ok(orchestratorService.coordinate(request));
     }
