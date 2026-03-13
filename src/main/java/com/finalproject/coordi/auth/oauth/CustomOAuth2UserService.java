@@ -17,6 +17,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+// OAuth2 로그인 시 사용자 정보 처리
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -26,27 +27,29 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
-        // 1. 소셜 로그인 시 사용자 정보 가져오기
+        // OAuth2 Provider로부터 사용자 정보(Entity) 가져오기
         OAuth2User oAuth2User = super.loadUser(userRequest);
-        String registrationId = userRequest.getClientRegistration().getRegistrationId();
-        String userNameAttributeName = userRequest.getClientRegistration().getProviderDetails()
-                                           .getUserInfoEndpoint().getUserNameAttributeName();
 
-        log.info("OAuth2 로그인 처리 시작 - 서비스: {}", registrationId);
-        
+        // 사용자 정보 내의 속성값(Attributes)을 Map 형태로 가져오기
         Map<String, Object> attributes = oAuth2User.getAttributes();
+
+        // 소셜 서비스 구분(ex.google, kakao, naver)
+        String registrationId = userRequest.getClientRegistration().getRegistrationId();
+        // 해당 서비스가 고유 식별자로 사용 키값 (ex. google-sub or kakao/naver-id)
+        String userNameAttributeName = userRequest.getClientRegistration().getProviderDetails()
+        .getUserInfoEndpoint().getUserNameAttributeName(); 
         
-        // 2. 서비스별 유저 정보 통합 추출 (Google, Kakao, Naver 대응)
+        // 소셜 서비스별로 제공되는 유저 정보를 공통 UserDto로 변환
         UserDto userDto = extractUserDto(registrationId, attributes);
         
-        // 3. 비즈니스 로직을 통한 DB 저장 또는 업데이트
+        // UserDto를 DB에 저장하거나 업데이트하여 최종 UserDto 반환
         UserDto savedUser = userService.saveOrUpdate(userDto);
         
-        // 4. 권한 정보를 담아 SecurityContext용 OAuth2User 반환
-        // attributes는 불변일 수 있으므로 새로운 Mutable Map 생성하여 정보 전달
+        // attributes는 수정 불가일 수 있으므로 복사해서 필요한 정보(isNewUser) 추가
         Map<String, Object> customAttributes = new HashMap<>(attributes);
         customAttributes.put("isNewUser", savedUser.isNewUser());
 
+        // 최종적으로 Spring Security가 사용할 OAuth2User 객체 생성하여 반환
         return new DefaultOAuth2User(
                 Collections.singleton(new SimpleGrantedAuthority("ROLE_" + savedUser.getRole())),
                 customAttributes,
@@ -54,9 +57,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         );
     }
 
-    /**
-     * 각 소셜 서비스별로 제공되는 유저 정보를 공통 UserDto로 변환합니다.
-     */
+    // 각 소셜 서비스별로 제공되는 유저 정보를 공통 UserDto로 변환
     @SuppressWarnings("unchecked")
     private UserDto extractUserDto(String registrationId, Map<String, Object> attributes) {
         if ("google".equals(registrationId)) {
@@ -87,6 +88,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                     .profileImageUrl((String) response.get("profile_image"))
                     .build();
         }
+        // 지원하지 않는 소셜 서비스인 경우 예외 처리
         throw new AuthFailedException();
     }
 }

@@ -2,23 +2,24 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.finalproject.coordi.user.mapper.UserMapperInter">
 
+    <!-- 이메일로 조회 -->
+    <select id="findByEmail" parameterType="string" resultType="udto">
+        SELECT * FROM users WHERE email = #{email}
+    </select>
+
+    <!-- userId로 조회 -->
+    <select id="findByUserId" parameterType="long" resultType="udto">
+        SELECT * FROM users WHERE user_id = #{userId}
+    </select>
+
     <!-- 소셜 로그인 정보로 조회 -->
     <select id="findByProviderAndProviderUserId" resultType="udto">
         SELECT * FROM users 
         WHERE provider = #{provider} AND provider_user_id = #{providerUserId}
     </select>
 
-    <!-- 이메일로 조회 -->
-    <select id="findByEmail" parameterType="string" resultType="udto">
-        SELECT * FROM users WHERE email = #{email}
-    </select>
-
-    <!-- ID로 조회 -->
-    <select id="findById" parameterType="long" resultType="udto">
-        SELECT * FROM users WHERE user_id = #{userId}
-    </select>
-
-    <!-- 저장: role과 status가 null일 경우 DB Default('USER', 'ACTIVE')가 들어가도록 COALESCE 사용 -->
+    <!-- 저장 -->
+    <!-- role과 status가 null일 경우 DB Default('USER', 'ACTIVE')가 들어가도록 COALESCE 사용 -->
     <!-- created_at, last_login_at 모두 자바에서 생성한 한국 시간을 명시적으로 저장 -->
     <insert id="save" parameterType="udto" useGeneratedKeys="true" keyProperty="userId">
         INSERT INTO users (

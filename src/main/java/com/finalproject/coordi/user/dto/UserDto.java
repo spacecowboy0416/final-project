@@ -23,6 +23,6 @@ public class UserDto {
     private Timestamp createdAt;
     private Timestamp lastLoginAt;
 
-    // DB에 저장되지 않는 필드: 신규 가입 여부 확인용
+    // 신규 가입 여부 확인용
     private boolean isNewUser;
 }

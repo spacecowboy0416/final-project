@@ -25,15 +25,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        // 1. 쿠키에서 AccessToken과 RefreshToken 추출
+        // 쿠키에서 AccessToken과 RefreshToken 추출
         String accessToken = resolveToken(request, "accessToken");
         String refreshToken = resolveToken(request, "refreshToken");
 
-        // 2. AccessToken 유효성 검사
+        // AccessToken 유효성 검사
         if (accessToken != null && jwtProvider.validateToken(accessToken)) {
             setAuthentication(accessToken);
         } 
-        // 3. AccessToken 만료 시 RefreshToken으로 자동 갱신 시도
+        // AccessToken 만료 시 RefreshToken으로 자동 갱신 시도
         else if (refreshToken != null && jwtProvider.validateToken(refreshToken)) {
             log.info("AccessToken 만료 감지. RefreshToken으로 갱신을 시도합니다.");
             
@@ -66,13 +66,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    // SecurityContext에 유저 정보 등록
+    // JWT 토큰에서 인증 정보를 추출하여 SecurityContext에 저장
     private void setAuthentication(String token) {
         Authentication authentication = jwtProvider.getAuthentication(token);
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 
-    //브라우저가 보낸 모든 쿠키 중에서 원하는 이름의 쿠키만 가져오기
+    // 브라우저가 보낸 모든 쿠키 중에서 원하는 이름의 쿠키만 가져오기
     private String resolveToken(HttpServletRequest request, String name) {
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {

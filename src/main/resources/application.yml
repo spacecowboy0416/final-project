@@ -157,6 +157,7 @@ logging:
     "[com.finalproject.coordi.closet.mapper]": TRACE
     "[com.finalproject.coordi.recommend.mapper]": TRACE
     "[com.finalproject.coordi.errorlog.mapper]": TRACE
+    "[com.finalproject.coordi.user.mapper]": TRACE
 
 # 정적 리소스(JS/CSS) 캐시 끄기
   web:
@@ -170,3 +171,7 @@ logging:
       enabled: true
     restart:
       enabled: true # 클래스 파일 변경 시 자동 재시작 (선택 사항)
+
+# JWT 관련 설정
+jwt:
+  secret: ${JWT_SECRET}

@@ -35,6 +35,6 @@ public class LoginUserArgumentResolver implements HandlerMethodArgumentResolver 
         
         // 인증 객체에 담긴 userId를 사용하여 DB 조회 후 객체 반환
         Long userId = Long.parseLong(authentication.getName());
-        return userService.findById(userId);
+        return userService.findByUserId(userId);
     }
 }

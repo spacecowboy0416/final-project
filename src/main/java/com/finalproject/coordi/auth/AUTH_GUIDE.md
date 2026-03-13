@@ -37,7 +37,7 @@ com.finalproject.coordi
 
 - SecurityConfig: 서비스 전체의 보안 정책 설정 (권한 제어, 로그인/로그아웃 경로 등)
 - WebConfig: @LoginUser 어노테이션을 인식하기 위한 리졸버 등록
-- OAuth2SuccessHandler: 소셜 로그인 성공 시 JWT를 생성하여 보안 쿠키에 저장
+- OAuth2SuccessHandler: 소셜 로그인 성공 시 JWT를 발급 받아 보안 쿠키에 저장 후 사용자에게 지급
 - JwtProvider: JWT 생성, 유효성 검증 및 데이터 추출을 담당하는 핵심 컴포넌트
 - JwtAuthenticationFilter: 모든 요청에서 쿠키에 담긴 토큰을 검사하여 인증 처리
 - CustomOAuth2UserService: 구글/카카오/네이버 등에서 받은 유저 데이터를 공통 규격으로 변환

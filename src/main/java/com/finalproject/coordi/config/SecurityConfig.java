@@ -29,9 +29,9 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             // 1. CSRF 및 기본 인증 비활성화
-            .csrf(csrf -> csrf.disable())
-            .formLogin(form -> form.disable())
-            .httpBasic(basic -> basic.disable())
+            .csrf(csrf -> csrf.disable()) // CSRF 보호 비활성화 (API 개발 시 보통 끔)
+            .formLogin(form -> form.disable()) // 기본 로그인 페이지 비활성화
+            .httpBasic(basic -> basic.disable()) // HTTP Basic 인증 비활성화(이거 없애면 로그인 창 뜸)
             
             // 2. 세션 정책 설정: STATELESS (JWT 사용)
             .sessionManagement(session -> session
@@ -44,11 +44,11 @@ public class SecurityConfig {
             
             // 3. 인가 설정
             .authorizeHttpRequests(auth -> auth
-                // 슈퍼관리자만
-                .requestMatchers("/admin/super/**").hasRole("SUPERADMIN")
-                // 관리자 및 슈퍼관리자만
-                .requestMatchers("/admin/**","/admin-management/**").hasAnyRole("ADMIN", "SUPERADMIN")
-                // 누구나 접근 가능
+                // 마스터만
+                .requestMatchers("/admin/super/**").hasRole("MASTER")
+                // 관리자 및 마스터만
+                .requestMatchers("/admin/**","/admin-management/**").hasAnyRole("ADMIN", "MASTER")
+                // 인증 없이 누구나 접근 가능
                 .requestMatchers("/", "/login/**", "/oauth2/**", "/static/**", "/css/**", "/js/**", "/common/**").permitAll()
                 // 그 외 모든 요청은 인증 필요
                 .anyRequest().authenticated()
