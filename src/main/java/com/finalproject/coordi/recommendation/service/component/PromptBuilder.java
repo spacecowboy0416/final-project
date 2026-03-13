@@ -1,7 +1,7 @@
 package com.finalproject.coordi.recommendation.service.component;
 
 import com.finalproject.coordi.recommendation.dto.api.BlueprintInputDto;
-import com.finalproject.coordi.domain.exception.recommendation.RecommendationException;
+import com.finalproject.coordi.exception.recommendation.RecommendationException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import org.springframework.beans.factory.annotation.Value;
