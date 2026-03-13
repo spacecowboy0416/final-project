@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import com.finalproject.coordi.errorlog.mapper.ErrorLogMapper;
 import com.finalproject.coordi.errorlog.dto.SystemErrorLog; // DTO 임포트 추가
 
+import io.sentry.Sentry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -64,6 +65,7 @@ public class AiErrorTrackerService {
 
         } catch (Exception ex) {
             log.error("AI 에러 트래커 자체 동작 중 오류 발생", ex);
+            Sentry.captureException(ex);
         }
     }
 
