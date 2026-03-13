@@ -432,3 +432,13 @@ ALTER TABLE recommendation_item
 ALTER TABLE recommendation
   DROP COLUMN status,
   DROP COLUMN blueprint_source;
+
+-- =========================================================
+-- 2026-03-12, codex, recommendation_item 불필요 컬럼 제거
+-- =========================================================
+
+-- 22) recommendation_item 스코어링/단계/포지션 컬럼 제거
+ALTER TABLE recommendation_item
+  DROP COLUMN position_no,
+  DROP COLUMN selection_stage,
+  DROP COLUMN scoring_details_json;
