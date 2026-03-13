@@ -1,7 +1,7 @@
 package com.finalproject.coordi.recommendation.exception;
 
 import com.finalproject.coordi.recommendation.controller.RecommendationController;
-import com.finalproject.coordi.sentry.exception.GlobalExceptionHandler;
+import com.finalproject.coordi.exception.GlobalExceptionHandler;
 import io.sentry.Sentry;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
