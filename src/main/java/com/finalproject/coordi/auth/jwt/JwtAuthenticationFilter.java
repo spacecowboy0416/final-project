@@ -1,6 +1,6 @@
 package com.finalproject.coordi.auth.jwt;
 
-import com.finalproject.coordi.domain.exception.auth.TokenExpiredException;
+import com.finalproject.coordi.exception.auth.TokenExpiredException;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

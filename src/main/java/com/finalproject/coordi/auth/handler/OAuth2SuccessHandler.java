@@ -1,7 +1,7 @@
 package com.finalproject.coordi.auth.handler;
 
 import com.finalproject.coordi.auth.jwt.JwtProvider;
-import com.finalproject.coordi.domain.exception.user.UserNotFoundException;
+import com.finalproject.coordi.exception.user.UserNotFoundException;
 import com.finalproject.coordi.user.dto.UserDto;
 import com.finalproject.coordi.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;

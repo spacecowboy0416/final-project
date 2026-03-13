@@ -1,6 +1,6 @@
 package com.finalproject.coordi.auth.jwt;
 
-import com.finalproject.coordi.domain.exception.auth.InvalidTokenException;
+import com.finalproject.coordi.exception.auth.InvalidTokenException;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;

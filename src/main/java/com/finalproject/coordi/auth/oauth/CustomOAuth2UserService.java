@@ -1,6 +1,6 @@
 package com.finalproject.coordi.auth.oauth;
 
-import com.finalproject.coordi.domain.exception.auth.AuthFailedException;
+import com.finalproject.coordi.exception.auth.AuthFailedException;
 import com.finalproject.coordi.user.dto.UserDto;
 import com.finalproject.coordi.user.service.UserService;
 import lombok.RequiredArgsConstructor;

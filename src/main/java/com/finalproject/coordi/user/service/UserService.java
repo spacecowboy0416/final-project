@@ -1,6 +1,6 @@
 package com.finalproject.coordi.user.service;
 
-import com.finalproject.coordi.domain.exception.user.EmailDuplicationException;
+import com.finalproject.coordi.exception.user.EmailDuplicationException;
 import com.finalproject.coordi.user.dto.UserDto;
 import com.finalproject.coordi.user.mapper.UserMapperInter;
 import lombok.RequiredArgsConstructor;
