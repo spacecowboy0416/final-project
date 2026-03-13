@@ -442,3 +442,10 @@ ALTER TABLE recommendation_item
   DROP COLUMN position_no,
   DROP COLUMN selection_stage,
   DROP COLUMN scoring_details_json;
+
+-- =========================================================
+-- 2026-03-13, codex, recommendation gender / recommendation_item detail columns 보강
+-- =========================================================
+
+ALTER TABLE product
+  ADD COLUMN gender VARCHAR(20) NULL AFTER category_id;
