@@ -390,7 +390,7 @@ function getSocialIcon(provider) {
   if (!provider) return "N/A";
   const p = provider.toLowerCase();
   if (p === "google") {
-    return `<img src="/images/google-logo.svg" referrerPolicy="no-referer" alt="Google" class="social-icon">`;
+    return `<img src="/admin/images/google-logo.svg" referrerPolicy="no-referer" alt="Google" class="social-icon">`;
   }
   return `<span class="social-icon social-${p}">${p.charAt(0).toUpperCase()}</span>`;
 }

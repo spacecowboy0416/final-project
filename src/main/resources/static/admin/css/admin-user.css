@@ -53,3 +53,11 @@
 .role-badge.role-user { background-color: #4b5563; color: white; }
 .status-badge.status-active { background-color: #22c55e; color: white; }
 .status-badge.status-inactive, .status-badge.status-suspended { background-color: #ef4444; color: white; }
+
+.social-icon {
+    width: 20px;
+    height: 20px;
+    vertical-align: middle;
+    border-radius: 4px;
+}
+
