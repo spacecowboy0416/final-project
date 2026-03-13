@@ -442,3 +442,26 @@ ALTER TABLE recommendation_item
   DROP COLUMN position_no,
   DROP COLUMN selection_stage,
   DROP COLUMN scoring_details_json;
+  
+-- =========================================================
+-- 2026-03-13, jieun, board 기능 보강
+-- =========================================================
+
+ALTER TABLE board_post
+  ADD COLUMN view_count INT NOT NULL DEFAULT 0 AFTER is_public,
+  ADD COLUMN comment_count INT NOT NULL DEFAULT 0 AFTER view_count,
+  ADD COLUMN deleted_at DATETIME NULL AFTER updated_at;
+
+CREATE INDEX idx_post_public_time ON board_post (is_public, created_at);
+CREATE INDEX idx_post_rec ON board_post (rec_id);
+
+ALTER TABLE board_comment
+  ADD COLUMN updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP AFTER created_at,
+  ADD COLUMN deleted_at DATETIME NULL AFTER updated_at;
+
+CREATE INDEX idx_comment_user_time ON board_comment (user_id, created_at);
+
+CREATE INDEX idx_recommendation_style_type ON recommendation (style_type);
+CREATE INDEX idx_recommendation_tpo_type ON recommendation (tpo_type);
+CREATE INDEX idx_recommendation_item_rec_slot ON recommendation_item (rec_id, slot_key);
+CREATE INDEX idx_product_image_meta_product_created ON product_image_metadata (product_id, created_at); 
