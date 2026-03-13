@@ -1,15 +1,15 @@
 package com.finalproject.coordi.recommendation.service.apiport;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.finalproject.coordi.recommendation.dto.api.BlueprintRequestDto;
-import com.finalproject.coordi.recommendation.service.component.PromptBuilder.PromptPayload;
+import com.finalproject.coordi.recommendation.dto.api.BlueprintOutputDto;
+import com.finalproject.coordi.recommendation.dto.api.BlueprintInputDto;
+import com.finalproject.coordi.recommendation.service.component.PromptBuilder.IntegratedPrompt;
 
 /**
  * AI Blueprint 생성을 위한 아웃바운드 포트.
  */
 public interface AiPort {
     /**
-     * 프롬프트 문자열과 업로드 이미지를 기반으로 AI blueprint JSON을 생성한다.
+     * 입력 DTO를 기반으로 AI blueprint 출력 DTO를 생성한다.
      */
-    JsonNode generateBlueprint(PromptPayload promptPayload, BlueprintRequestDto.ImageData imageData);
+    BlueprintOutputDto generateBlueprint(IntegratedPrompt promptPayload, BlueprintInputDto.GeminiInputSchema inputDto);
 }

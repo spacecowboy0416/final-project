@@ -104,16 +104,9 @@ springdoc:
 external:
   api:
     gemini:
-      endpoint: ${GEMINI_ENDPOINT:https://generativelanguage.googleapis.com/v1beta}
-      model: ${GEMINI_MODEL:gemini-2.0-flash}
-      key: ${GEMINI_API_KEY}
-      url: "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
-      cache:
-        enabled: ${GEMINI_PROMPT_CACHE_ENABLED:true}
-        ttl-seconds: ${GEMINI_PROMPT_CACHE_TTL_SECONDS:3600}
-    gemini-jin:
-      endpoint: ${GEMINI_JIN_ENDPOINT:https://generativelanguage.googleapis.com/v1beta}
-      model: ${GEMINI_JIN_MODEL:gemini-2.5-flash}
+      endpoint: ${GEMINI_ENDPOINT:https://generativelanguage.googleapis.com} #SDK 엔드포인트
+      url: ${GEMINI_URL:https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent} #REST API 엔드포인트
+      model: ${GEMINI_MODEL:gemini-3.1-flash-lite-preview}
       key: ${GEMINI_API_KEY}
     shopping:
       endpoint: ${SHOPPING_API_ENDPOINT:https://openapi.naver.com/v1/search/shop.json}
@@ -138,13 +131,6 @@ external:
     image:
       base-url: ${IMAGE_STORAGE_BASE_URL:https://mock-cdn.local/items/}
       extension: ${IMAGE_STORAGE_EXTENSION:.jpg}
-
-recommendation:
-  prompt:
-    template: ${RECOMMENDATION_PROMPT_TEMPLATE:classpath:prompts/recommendation/airequest-prompt-kr.txt}
-  response:
-    status: ${RECOMMENDATION_RESPONSE_STATUS:COMPLETED}
-    source: ${RECOMMENDATION_RESPONSE_SOURCE:AI}
 
 # 9. Sentry (Monitoring)
 sentry:

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.finalproject.coordi.recommendation.domain.WeatherMappingKeyPolicy;
 import com.finalproject.coordi.recommendation.domain.enums.WeatherEnums.WeatherSourceType;
 import com.finalproject.coordi.recommendation.dto.api.WeatherDto;
+import com.finalproject.coordi.exception.recommendation.RecommendationException;
 import com.finalproject.coordi.recommendation.service.apiport.WeatherPort;
 import java.time.OffsetDateTime;
 import lombok.RequiredArgsConstructor;
@@ -41,8 +42,8 @@ public class RedisWeatherAdapter implements WeatherPort {
                 cacheData.rainProbability(),
                 WeatherSourceType.REDIS_CACHE
             );
-        } catch (Exception ignored) {
-            return new WeatherData(null, null, null, null, WeatherSourceType.REDIS_PARSE_ERROR);
+        } catch (Exception exception) {
+            throw RecommendationException.weatherCacheParseFailed(exception);
         }
     }
 }

@@ -8,7 +8,7 @@
     <style>
         body { margin: 0; font-family: sans-serif; }
         main { padding: 16px; }
-        .layout { display: grid; grid-template-columns: minmax(420px, 0.95fr) minmax(520px, 1.25fr); gap: 24px; align-items: start; }
+        .layout { display: grid; grid-template-columns: minmax(360px, 0.9fr) minmax(300px, 0.72fr) minmax(420px, 1.1fr); gap: 24px; align-items: start; }
         .panel { border: 1px solid #ccc; padding: 16px; }
         .panel section { margin-bottom: 24px; }
         textarea, input, select { width: 100%; box-sizing: border-box; margin-top: 4px; margin-bottom: 8px; }
@@ -20,6 +20,13 @@
         .image-preview-box { border: 1px solid #ddd; padding: 12px; min-height: 180px; display: flex; align-items: center; justify-content: center; }
         .image-preview-box img { max-width: 100%; max-height: 220px; display: block; }
         .image-preview-box span { color: #666; }
+        .constraint-section { border-top: 1px solid #e5e5e5; padding-top: 16px; }
+        .constraint-section:first-child { border-top: none; padding-top: 0; }
+        .constraint-section h4 { margin: 0 0 12px; }
+        .constraint-list { margin: 0; padding-left: 18px; }
+        .constraint-list li { margin-bottom: 8px; }
+        .constraint-box { background: #f7f7f7; border: 1px solid #e1e1e1; padding: 10px 12px; margin-top: 8px; }
+        .constraint-box code { font-size: 12px; }
         @media (max-width: 900px) {
             .layout { grid-template-columns: 1fr; }
             .input-grid { grid-template-columns: 1fr; }
@@ -32,6 +39,7 @@
     <section>
         <h2>추천 테스트 페이지</h2>
         <p><a th:href="@{/}">인덱스로 돌아가기</a></p>
+        <p>현재 Gemini 모델: <strong th:text="${geminiModel} ?: '설정되지 않음'">unknown</strong></p>
     </section>
 
     <div class="layout">
@@ -116,6 +124,86 @@
 
             <section>
                 <button id="submitBtn" type="button">입력 버튼</button>
+            </section>
+        </div>
+
+        <div class="panel">
+            <section>
+                <h3>입출력 제약</h3>
+            </section>
+
+            <section class="constraint-section">
+                <h4>입력 제약</h4>
+                <ul class="constraint-list">
+                    <li>AI 입력에는 이미지 1장, 자연어 요청, 일정 시각, Redis 날씨 요약이 포함됩니다.</li>
+                    <li><code>weather</code>는 <code>temperature</code>, <code>feelsLike</code>, <code>weatherStatus</code>, <code>rainProbability</code>, <code>weatherSource</code>를 가집니다.</li>
+                    <li><code>location</code>은 날씨 조회용 요청 필드이며, AI input schema 자체에는 포함되지 않습니다.</li>
+                </ul>
+                <div class="constraint-box">
+                    <strong>input json schema</strong>
+                    <pre>{
+  "naturalText": "...",
+  "scheduleTime": "...",
+  "weather": {
+    "temperature": 0,
+    "feelsLike": 0,
+    "weatherStatus": "clear",
+    "rainProbability": "low",
+    "weatherSource": "redis_cache"
+  },
+  "imageData": {
+    "imageBytes": "base64",
+    "mimeType": "image/jpeg"
+  }
+}</pre>
+                </div>
+            </section>
+
+            <section class="constraint-section">
+                <h4>출력 제약</h4>
+                <div class="constraint-box">
+                    <strong>output json schema</strong>
+                    <pre>{
+  "ai_blueprint": {
+    "tpoType": "date",
+    "styleType": "minimal",
+    "main_item_analysis": {
+      "temp": "mild",
+      "season": "spring",
+      "color": "gray",
+      "type": "top",
+      "style": "minimal"
+    },
+    "coordination": {
+      "tops": {
+        "item_name": "...",
+        "search_query": "...",
+        "category": "top",
+        "attributes": {
+          "color": "gray",
+          "material": "cotton",
+          "fit": "oversized",
+          "style": "minimal"
+        },
+        "temp_range": [10, 18],
+        "reasoning": "...",
+        "priority": "essential"
+      }
+    },
+    "styling_rule_applied": "..."
+  }
+}</pre>
+                </div>
+            </section>
+
+            <section class="constraint-section">
+                <h4>의미 규칙</h4>
+                <ul class="constraint-list">
+                    <li><code>tpoType</code>은 상황 코드이고 스타일 코드가 아닙니다.</li>
+                    <li><code>styleType</code>과 <code>attributes.style</code>은 스타일 코드입니다.</li>
+                    <li><code>item_name</code>은 사용자 노출용 이름이고, <code>search_query</code>는 쇼핑 검색어입니다.</li>
+                    <li><code>reasoning</code>은 각 슬롯이 전체 코디에 왜 맞는지 짧게 설명해야 합니다.</li>
+                </ul>
             </section>
         </div>
 

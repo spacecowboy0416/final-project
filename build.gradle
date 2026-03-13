@@ -48,6 +48,8 @@ dependencies {
 	implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:3.0.5'
 	implementation 'org.springframework.security:spring-security-test'
 	implementation 'org.jsoup:jsoup:1.18.1'
+	implementation 'com.google.genai:google-genai:1.36.0'
+	implementation 'org.jsoup:jsoup:1.18.1'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
