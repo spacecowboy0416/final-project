@@ -82,6 +82,7 @@
             source,
             external_id,
             category_id,
+            gender,
             name,
             brand,
             price,
@@ -100,6 +101,7 @@
             #{source},
             #{externalId},
             #{categoryId},
+            #{gender},
             #{name},
             #{brand},
             #{price},
@@ -114,6 +116,7 @@
             #{tempMax}
         )
         ON DUPLICATE KEY UPDATE
+            gender = VALUES(gender),
             name = VALUES(name),
             brand = VALUES(brand),
             price = VALUES(price),
@@ -156,6 +159,7 @@
             source,
             external_id AS externalId,
             category_id AS categoryId,
+            gender,
             name,
             brand,
             price,

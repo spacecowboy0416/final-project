@@ -50,6 +50,7 @@ public class GeminiSchemaProvider {
         return objectSchema(
             Map.of(
                 "naturalText", stringSchema(1L, 1000L),
+                "gender", stringSchema(1L, null),
                 "scheduleTime", stringSchema(1L, null),
                 "weather", objectSchema(
                     Map.of(
@@ -68,7 +69,7 @@ public class GeminiSchemaProvider {
                     List.of("mimeType")
                 )
             ),
-            List.of("naturalText", "scheduleTime", "weather", "imageData")
+            List.of("naturalText", "gender", "scheduleTime", "weather", "imageData")
         );
     }
 
@@ -112,7 +113,6 @@ public class GeminiSchemaProvider {
         return objectSchema(
             Map.of(
                 "item_name", stringSchema(1L, null),
-                "search_query", stringSchema(1L, null),
                 "category", enumSchema(ItemCategoryType.class),
                 "attributes", objectSchema(
                     Map.of(
@@ -127,7 +127,7 @@ public class GeminiSchemaProvider {
                 "reasoning", stringSchema(1L, null),
                 "priority", enumSchema(PriorityType.class)
             ),
-            List.of("item_name", "search_query", "category", "attributes", "temp_range", "reasoning", "priority")
+            List.of("item_name", "category", "attributes", "temp_range", "reasoning", "priority")
         );
     }
 
