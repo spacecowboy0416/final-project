@@ -51,7 +51,7 @@
                 <div class="item-info">
                     <span class="badge" th:text="${item.season}">계절</span>
                     <h4 style="margin: 5px 0; font-size: 1.1rem; color: #333;" th:text="${item.name}">옷 이름</h4>
-                    <p style="color: #666; font-size: 0.9rem; margin-bottom: 10px;">카테고리: [[${item.categoryId}]]</p>
+                    <p style="color: #666; font-size: 0.9rem; margin-bottom: 10px;">카테고리: [[${item.categoryName != null ? item.categoryName : '미분류'}]]</p>
                     
                     <form th:action="@{/closet/delete/{itemId}(itemId=${item.itemId})}" method="post" onsubmit="return confirm('이 옷을 정말 삭제하시겠습니까?');">
                         <button type="submit" class="btn" style="background: #fff; color: #dc3545; border: 1px solid #dc3545; width: 100%; padding: 8px; border-radius: 6px; font-size: 0.9rem; transition: 0.2s;">삭제</button>
@@ -87,7 +87,7 @@
                     <input type="text" name="name" class="form-control" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px;">
                 </div>
                 <div class="form-group" style="margin-bottom: 15px;">
-                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #444;">카테고리 (1: 상의, 2: 하의 등)</label>
+                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #444;">카테고리</label>
                     <input type="number" name="categoryId" class="form-control" value="1" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px;">
                 </div>
                 <div class="form-group" style="margin-bottom: 15px;">
@@ -108,7 +108,7 @@
         </div>
     </div>
 
-	<footer th:replace="~{layout/common :: footerFragment}"></footer>
+    <footer th:replace="~{layout/common :: footerFragment}"></footer>
 
     <script th:src="@{/closet/js/closet.js}"></script>
 </body>

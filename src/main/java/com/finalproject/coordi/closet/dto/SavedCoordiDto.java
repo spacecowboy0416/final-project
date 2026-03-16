@@ -11,6 +11,8 @@ public class SavedCoordiDto {
     private String inputMode;
     private String inputText;
     private String productOption;
+    private String tpoType;
+    private String styleType;
     private Boolean isSaved;
     private String aiBlueprint;
     private String aiExplanation;

@@ -16,6 +16,7 @@ public class ClosetItemDto {
     private Long productId;
     private String name;
     private Long categoryId;
+    private String categoryName;
     private String season;
     private String imageUrl;
     private Boolean isActive;
