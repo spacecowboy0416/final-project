@@ -23,12 +23,15 @@ public interface ClosetMapper {
     @Insert("INSERT INTO recommendation " +
             "(user_id, weather_id, input_mode, input_text, product_option, tpo_type, style_type, is_saved, ai_blueprint, ai_explanation) " +
             "VALUES (#{userId}, #{weatherId}, #{inputMode}, #{inputText}, #{productOption}, #{tpoType}, #{styleType}, true, #{aiBlueprint}, #{aiExplanation})")
+            "VALUES (#{userId}, #{weatherId}, #{inputMode}, #{inputText}, #{productOption}, #{tpoType}, #{styleType}, true, CAST(#{aiBlueprint} AS JSON), #{aiExplanation})")
     @Options(useGeneratedKeys = true, keyProperty = "recId")
     void insertSavedCoordi(SavedCoordiDto dto);
 
     @Update("UPDATE recommendation " +
             "SET input_text = #{inputText}, tpo_type = #{tpoType}, style_type = #{styleType}, " +
             "ai_explanation = #{aiExplanation}, ai_blueprint = #{aiBlueprint} " +
+            "SET input_text = #{inputText}, product_option = #{productOption}, tpo_type = #{tpoType}, " +
+            "style_type = #{styleType}, ai_explanation = #{aiExplanation}, ai_blueprint = CAST(#{aiBlueprint} AS JSON) " +
             "WHERE rec_id = #{recId} AND user_id = #{userId}")
     void updateSavedCoordi(SavedCoordiDto dto);
 
@@ -42,6 +45,11 @@ public interface ClosetMapper {
             "FROM closet_item c " +
             "LEFT JOIN product p ON c.product_id = p.product_id " +
             "LEFT JOIN category cat ON p.category_id = cat.category_id " +
+    @Select("SELECT c.item_id as itemId, c.user_id as userId, c.product_id as productId, " +
+            "p.category_id as categoryId, p.name, p.brand, p.color, p.material, p.fit, p.style, " +
+            "p.season, p.image_url as imageUrl, c.is_active as isActive, c.created_at as createdAt " +
+            "FROM closet_item c " +
+            "LEFT JOIN product p ON c.product_id = p.product_id " +
             "WHERE c.user_id = #{userId} AND c.is_active = true " +
             "ORDER BY c.created_at DESC")
     List<ClosetItemDto> findItemsByUserId(Long userId);
@@ -49,6 +57,8 @@ public interface ClosetMapper {
     // Product 테이블 필수값인 category_id 추가
     @Insert("INSERT INTO product (source, name, category_id, season, image_url) " +
             "VALUES ('USER_CUSTOM', #{name}, #{categoryId}, #{season}, #{imageUrl})")
+    @Insert("INSERT INTO product (source, category_id, name, brand, image_url, color, material, fit, style, season) " +
+            "VALUES ('USER_CUSTOM', #{categoryId}, #{name}, #{brand}, #{imageUrl}, #{color}, #{material}, #{fit}, #{style}, #{season})")
     @Options(useGeneratedKeys = true, keyProperty = "productId")
     void insertUserProduct(ProductDto product);
 

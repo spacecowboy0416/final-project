@@ -32,6 +32,22 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(NoResourceFoundException.class)
     public Object handleNoResourceFound(NoResourceFoundException e) {
         log.warn("정적 자원 누락 (AI 분석 무시됨): {}", e.getMessage());
+    public ResponseEntity<Void> handleNoResourceFound(NoResourceFoundException e, HttpServletRequest request) {
+        String resourcePath = e.getResourcePath();
+        boolean isStaticResource = resourcePath.contains("/css/") || resourcePath.contains("/js/") || resourcePath.contains("/images/");
+
+        if (isStaticResource) {
+            log.warn("정적 리소스 누락: {}", resourcePath);
+        } else {
+            log.warn("404 Not Found: {}", resourcePath);
+            // 일반 페이지나 API 경로의 404는 Sentry로 전송하여 추적
+            Sentry.withScope(scope -> {
+                scope.setLevel(SentryLevel.WARNING);
+                scope.setTag("api_path", request.getRequestURI());
+                scope.setFingerprint(List.of("404-not-found", request.getRequestURI()));
+                Sentry.captureException(e);
+            });
+        }
         return ResponseEntity.notFound().build(); 
     }
 

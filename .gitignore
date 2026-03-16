@@ -2,8 +2,11 @@
 HELP.md
 GEMINI.md
 .gradle/
+.gradle/
 build/
+*.properties
 !gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
 !gradle/wrapper/gradle-wrapper.properties
 !**/src/main/**/build/
 !**/src/test/**/build/
@@ -53,7 +56,6 @@ antigravity.db
 ### custom files ###
 *.yml
 *.yaml
-*.properties
 .env
 .env.*
 !src/main/resources/application.yml
@@ -64,3 +66,4 @@ local-notes/
 git_status.txt
 build_log.txt
 bootrun.log
+.tmp*

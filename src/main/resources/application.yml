@@ -104,6 +104,7 @@ springdoc:
 external:
   api:
     gemini:
+<<<<<<< HEAD
       endpoint: ${GEMINI_ENDPOINT:https://generativelanguage.googleapis.com/v1beta}
       model: ${GEMINI_MODEL:gemini-2.0-flash}
       key: ${GEMINI_API_KEY}
@@ -114,6 +115,11 @@ external:
     gemini-jin:
       endpoint: ${GEMINI_JIN_ENDPOINT:https://generativelanguage.googleapis.com/v1beta}
       model: ${GEMINI_JIN_MODEL:gemini-2.5-flash}
+=======
+      endpoint: ${GEMINI_ENDPOINT:https://generativelanguage.googleapis.com} #SDK 엔드포인트
+      model: ${GEMINI_MODEL:gemini-3.1-flash-lite-preview}
+      url: ${GEMINI_URL:https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent} #REST API URL
+>>>>>>> develop
       key: ${GEMINI_API_KEY}
     shopping:
       endpoint: ${SHOPPING_API_ENDPOINT:https://openapi.naver.com/v1/search/shop.json}
@@ -133,21 +139,12 @@ external:
       base-url: ${IMAGE_STORAGE_BASE_URL:https://mock-cdn.local/items/}
       extension: ${IMAGE_STORAGE_EXTENSION:.jpg}
 
-recommendation:
-  prompt:
-    template: ${RECOMMENDATION_PROMPT_TEMPLATE:classpath:prompts/recommendation/airequest-prompt-kr.txt}
-  response:
-    status: ${RECOMMENDATION_RESPONSE_STATUS:COMPLETED}
-    source: ${RECOMMENDATION_RESPONSE_SOURCE:AI}
-
 # 9. Sentry (Monitoring)
 sentry:
   dsn: ${SENTRY_DSN_BACKEND}
   dsn-frontend: ${SENTRY_DSN_FRONTEND}
   traces-sample-rate: 1.0 # 추적할 Event의 비율 설정 - 1.0은 100% 추적, 아직 배포 이전이므로 1.0으로 설정
   exception-resolver-order: -2147483647 # Order가 낮을수록 먼저 처리됨, Sentry가 예외를 가장 먼저 처리하도록 설정
-  ignored-exceptions-for-type:
-    - org.springframework.web.servlet.resource.NoResourceFoundException
 
 # 10. Logging 설정 통합
 logging:
