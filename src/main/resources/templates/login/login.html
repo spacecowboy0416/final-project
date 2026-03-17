@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LOGIN</title>
+    <link rel="stylesheet" th:href="@{/login/css/login.css}" />
+  </head>
+  <body>
+    <div class="login-wrapper">
+      <div class="login-container">
+        <div class="login-header">
+          <h2>로그인</h2>
+        </div>
+
+        <div class="social-btn-group">
+          <a href="/oauth2/authorization/google" class="social-btn google-btn"> Google로 시작하기 </a>
+          <a href="/oauth2/authorization/kakao" class="social-btn kakao-btn"> 카카오로 시작하기 </a>
+          <a href="/oauth2/authorization/naver" class="social-btn naver-btn"> 네이버로 시작하기 </a>
+        </div>
+
+        <p class="footer-text">
+          간편하게 소셜 계정으로 <br />
+          COORDI의 모든 서비스를 이용해보세요.
+        </p>
+      </div>
+    </div>
+  </body>
+</html>
