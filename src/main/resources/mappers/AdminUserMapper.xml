@@ -20,10 +20,10 @@
         </where>
         <choose>
             <when test="sort == 'name_asc'">
-                ORDER BY nickname ASC
+                ORDER BY nickname ASC, user_id DESC
             </when>
             <when test="sort == 'name_desc'">
-                ORDER BY nickname DESC
+                ORDER BY nickname DESC, user_id DESC
             </when>
             <otherwise>
                 ORDER BY user_id DESC

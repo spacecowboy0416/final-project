@@ -102,3 +102,52 @@
 
 
 
+/* 닉네임 정렬 관련 스타일 */
+.user-table th.sortable {
+    cursor: pointer;
+    position: relative;
+    user-select: none;
+}
+
+.sort-control {
+    display: inline-flex;
+    flex-direction: column;
+    margin-left: 8px;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.sort-arrow {
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    opacity: 0.3;
+    transition: opacity 0.2s;
+}
+
+.sort-arrow.asc {
+    border-bottom: 5px solid #9ca3af;
+    margin-bottom: 3px;
+}
+
+.sort-arrow.desc {
+    border-top: 5px solid #9ca3af;
+}
+
+.user-table th.sortable:hover .sort-arrow {
+    opacity: 0.7;
+}
+
+.sort-arrow.active {
+    opacity: 1;
+}
+
+.sort-arrow.asc.active {
+    border-bottom-color: #6ee7b7; /* 활성화 시 색상 */
+}
+
+.sort-arrow.desc.active {
+    border-top-color: #6ee7b7; /* 활성화 시 색상 */
+}

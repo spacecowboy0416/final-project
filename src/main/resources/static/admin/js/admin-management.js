@@ -333,17 +333,19 @@ async function fetchAndRenderUsers() {
 function renderUsers(users) {
   const tableBody = document.getElementById("user-table-body");
   const emptyMessage = document.querySelector(
-    "#user-management-template .empty-list-message",
+    "#admin-content-area .empty-list-message",
   );
+
+  if (!tableBody || !emptyMessage) return;
+
   if (!users || users.length === 0) {
     tableBody.innerHTML = "";
-    if (emptyMessage) emptyMessage.style.display = "block";
-    return;
-  }
-  if (emptyMessage) emptyMessage.style.display = "none";
-  tableBody.innerHTML = users
-    .map(
-      (user) => `
+    emptyMessage.style.display = "block";
+  } else {
+    emptyMessage.style.display = "none";
+    tableBody.innerHTML = users
+      .map(
+        (user) => `
         <tr data-user-id="${user.userId}">
             <td>${user.userId}</td>
             <td><img src="${user.profileImageUrl || `https://i.pravatar.cc/150?u=${user.userId}`}" alt="${user.nickname}" class="user-profile-img" referrerPolicy="no-referrer"></td>
@@ -369,8 +371,9 @@ function renderUsers(users) {
             </td>
         </tr>
     `,
-    )
-    .join("");
+      )
+      .join("");
+  }
 }
 
 async function updateUser(userId, role, status) {
