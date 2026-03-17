@@ -6,7 +6,9 @@
     <link rel="stylesheet" th:href="@{/admin/css/admin.css}" />
     <link rel="stylesheet" th:href="@{/admin/css/admin-item.css}" />
     <link rel="stylesheet" th:href="@{/admin/css/admin-user.css}" />
+    <link rel="stylesheet" th:href="@{/admin/css/admin-statistics.css}" />
     <title>관리자 페이지</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </head>
 
   <body>
@@ -116,6 +118,66 @@
           <p class="empty-list-message" style="display: none;">
             해당 조건의 회원이 없습니다.
           </p>
+        </div>
+      </div>
+    </template>
+
+    <template id="community-management-template">
+      <div class="glass-panel">
+        <h1 class="glass-panel-title">커뮤니티 관리</h1>
+        <div class="user-list-container">
+          <table class="user-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>제목</th>
+                <th>작성자</th>
+                <th>작성일</th>
+                <th>댓글수</th>
+                <th>상태</th>
+                <th>관리</th>
+              </tr>
+            </thead>
+            <tbody id="community-table-body">
+              <!-- Community data will be populated here by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </template>
+
+    <template id="system-stats-template">
+      <div class="glass-panel">
+        <h1 class="glass-panel-title">시스템 통계 (Dashboard)</h1>
+        
+        <div class="stats-grid grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div class="stats-card">
+            <h3 class="text-gray-400 text-sm mb-1">총 사용자 / 오늘 신규</h3>
+            <p class="text-2xl font-bold text-white"><span id="stat-total-users">-</span> / <span id="stat-today-users" class="text-green-400">-</span></p>
+          </div>
+          <div class="stats-card">
+            <h3 class="text-gray-400 text-sm mb-1">총 추천 / 오늘 추천</h3>
+            <p class="text-2xl font-bold text-white"><span id="stat-total-recs">-</span> / <span id="stat-today-recs" class="text-blue-400">-</span></p>
+          </div>
+          <div class="stats-card">
+            <h3 class="text-gray-400 text-sm mb-1">24시간 내 에러 건수</h3>
+            <p class="text-2xl font-bold text-red-400"><span id="stat-active-errors">-</span> 건</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-8">
+          <div class="chart-container-card">
+            <h3 class="text-white font-medium mb-6">최근 7일 이용 추이</h3>
+            <div class="h-[300px] relative">
+              <canvas id="daily-trend-chart"></canvas>
+            </div>
+          </div>
+          <div class="chart-container-card">
+            <h3 class="text-white font-medium mb-6">실시간 인기 태그 TOP 10</h3>
+            <div id="popular-tags-list">
+              <!-- Tags will be populated here -->
+            </div>
+          </div>
         </div>
       </div>
     </template>
