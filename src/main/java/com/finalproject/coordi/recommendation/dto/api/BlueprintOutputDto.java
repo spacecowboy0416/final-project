@@ -71,9 +71,6 @@ public record BlueprintOutputDto(
         @JsonProperty("item_name")
         @NotBlank
         String itemName,
-        @JsonProperty("search_query")
-        @NotBlank
-        String searchQuery,
         @NotNull
         ItemCategoryType category,
         @JsonProperty("attributes")

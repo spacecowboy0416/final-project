@@ -2,14 +2,13 @@ package com.finalproject.coordi.recommendation.service.apiadapter.gemini;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.finalproject.coordi.exception.recommendation.RecommendationException;
-import com.finalproject.coordi.recommendation.dto.api.BlueprintInputDto;
 import com.finalproject.coordi.recommendation.dto.api.BlueprintOutputDto;
 import com.finalproject.coordi.recommendation.service.apiport.AiPort;
+import com.finalproject.coordi.recommendation.service.component.FullPromptBuilder.FullPrompt;
 import com.google.genai.errors.ApiException;
 import com.google.genai.errors.ClientException;
 import com.google.genai.errors.GenAiIOException;
 import com.google.genai.errors.ServerException;
-import com.finalproject.coordi.recommendation.service.component.PromptBuilder.IntegratedPrompt;
 import com.google.genai.Client;
 import com.google.genai.types.Blob;
 import com.google.genai.types.Content;
@@ -41,45 +40,45 @@ public class GeminiAdapter implements AiPort {
      * 입력 DTO와 출력 스키마를 사용해 Gemini blueprint 출력 DTO를 반환한다.
      */
     @Override
-    public BlueprintOutputDto generateBlueprint(IntegratedPrompt promptPayload, BlueprintInputDto.GeminiInputSchema inputDto) {
+    public BlueprintOutputDto generateBlueprint(FullPrompt fullPrompt) {
         long requestStartedAt = System.nanoTime();
-        GeminiTarget target = resolveGeminiTarget();
+        GeminiTarget geminiTarget = resolveGeminiTarget();
 
-        GenerateContentConfig config = GenerateContentConfig.builder()
+        GenerateContentConfig generationConfig = GenerateContentConfig.builder()
             .responseMimeType(recommendationResponseMimeType)
-            .systemInstruction(Content.fromParts(Part.fromText(promptPayload.systemPrompt())))
+            .systemInstruction(Content.fromParts(Part.fromText(fullPrompt.systemPrompt())))
             .responseSchema(schemaProvider.getOutputSchema())
             .build();
 
-        Content userContent = Content.fromParts(
-            Part.fromText(promptPayload.userPrompt()),
-            toInlineDataPart(inputDto.imageData().mimeType(), inputDto.imageData().imageBytes())
+        Content requestContent = Content.fromParts(
+            Part.fromText(fullPrompt.userPrompt()),
+            toInlineDataPart(fullPrompt.imageData().mimeType(), fullPrompt.imageData().imageBytes())
         );
 
-        GenerateContentResponse response;
-        try (Client client = createClient(target)) {
-            response = client.models.generateContent(target.model(), userContent, config);
+        GenerateContentResponse geminiResponse;
+        try (Client client = createClient(geminiTarget)) {
+            geminiResponse = client.models.generateContent(geminiTarget.model(), requestContent, generationConfig);
             log.info(
                 "gemini request completed model={} promptChars={} imageBytes={} elapsedMs={}",
-                target.model(),
-                promptPayload.userPrompt() == null ? 0 : promptPayload.userPrompt().length(),
-                inputDto.imageData() == null || inputDto.imageData().imageBytes() == null ? 0 : inputDto.imageData().imageBytes().length,
+                geminiTarget.model(),
+                fullPrompt.userPrompt() == null ? 0 : fullPrompt.userPrompt().length(),
+                fullPrompt.imageData() == null || fullPrompt.imageData().imageBytes() == null ? 0 : fullPrompt.imageData().imageBytes().length,
                 (System.nanoTime() - requestStartedAt) / 1_000_000
             );
         } catch (Exception exception) {
             throw handleGeminiException(exception);
         }
 
-        String responseText = response == null ? null : response.text();
-        if (responseText == null || responseText.isBlank()) {
+        String responseJson = geminiResponse == null ? null : geminiResponse.text();
+        if (responseJson == null || responseJson.isBlank()) {
             throw RecommendationException.llmResponseEmpty();
         }
 
         try {
-            logUsageMetadata(response.usageMetadata().orElse(null));
-            return objectMapper.readValue(responseText, BlueprintOutputDto.class);
+            logUsageMetadata(geminiResponse.usageMetadata().orElse(null));
+            return objectMapper.readValue(responseJson, BlueprintOutputDto.class);
         } catch (Exception exception) {
-            log.error(RecommendationException.geminiBlueprintParseFailedLogMessage(), responseText, exception);
+            log.error(RecommendationException.geminiBlueprintParseFailedLogMessage(), responseJson, exception);
             throw RecommendationException.llmBlueprintParseFailed(exception);
         }
     }
