@@ -29,8 +29,8 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
         // OAuth2 Provider로부터 사용자 정보(Entity) 가져오기
         OAuth2User oAuth2User = super.loadUser(userRequest);
+        
         // 사용자 정보 내의 속성값(Attributes)을 Map 형태로 가져오기
-
         Map<String, Object> attributes = oAuth2User.getAttributes();
 
         // 소셜 서비스 구분(ex.google, kakao, naver)
@@ -70,14 +70,27 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                     .profileImageUrl((String) attributes.get("picture"))
                     .build();
         } else if ("kakao".equals(registrationId)) {
+            // 카카오의 경우 'kakao_account'에 이메일과 프로필 정보가 들어있음
             Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
-            Map<String, Object> profile = (Map<String, Object>) kakaoAccount.get("profile");
+            Map<String, Object> profile = (kakaoAccount != null) ? (Map<String, Object>) kakaoAccount.get("profile") : null;
+
+            // 권한 없거나 동의 안했으면 null
+            String email = (kakaoAccount != null) ? (String) kakaoAccount.get("email") : null;
+            String nickname = (profile != null) ? (String) profile.get("nickname") : "KakaoUser";
+            String profileImageUrl = (profile != null) ? (String) profile.get("profile_image_url") : null;
+            String providerUserId = String.valueOf(attributes.get("id"));
+
+            // 이메일 없을 경우 소셜 ID를 이메일로 대체
+            if (email == null) {
+                email = providerUserId + "@kakao";
+            }
+
             return UsersDto.builder()
                     .provider("kakao")
-                    .providerUserId(String.valueOf(attributes.get("id")))
-                    .email((String) kakaoAccount.get("email"))
-                    .nickname((String) profile.get("nickname"))
-                    .profileImageUrl((String) profile.get("profile_image_url"))
+                    .providerUserId(providerUserId)
+                    .email(email)
+                    .nickname(nickname)
+                    .profileImageUrl(profileImageUrl)
                     .build();
         } else if ("naver".equals(registrationId)) {
             Map<String, Object> response = (Map<String, Object>) attributes.get("response");

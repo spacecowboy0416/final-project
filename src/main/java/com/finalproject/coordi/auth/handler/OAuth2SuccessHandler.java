@@ -31,9 +31,12 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
         Map<String, Object> attributes = oAuth2User.getAttributes();
 
-        // 유저 정보 추출
-        String email = (String) attributes.get("email");
-        UsersDto user = usersService.findByEmail(email);
+        // 유저 정보 추출 (이메일이 없어도 유저를 식별할 수 있도록 서비스명과 고유 ID를 사용)
+        String provider = ((org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken) authentication).getAuthorizedClientRegistrationId();
+        String providerUserId = oAuth2User.getName();
+
+        UsersDto user = usersService.findByProviderAndProviderUserId(provider, providerUserId);
+
         // 유저 정보가 없는 경우 예외 처리
         if (user == null)
             throw new UserNotFoundException();
