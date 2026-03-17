@@ -1,0 +1,63 @@
+/* admin-user.css */
+.user-management-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.filter-group, .search-group {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.user-list-container {
+    overflow-x: auto;
+}
+
+.user-table {
+    width: 100%;
+    border-collapse: collapse;
+    color: #e2e8f0; /* Brighter text */
+}
+
+.user-table th, .user-table td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid #374151;
+    white-space: nowrap;
+}
+
+.user-table th {
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: #9ca3af;
+}
+
+.user-profile-img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.role-badge, .status-badge {
+    padding: 0.25rem 0.6rem;
+    border-radius: 0.375rem;
+    font-weight: 600;
+    font-size: 0.75rem;
+}
+.role-badge.role-admin { background-color: #c026d3; color: white; }
+.role-badge.role-master { background-color: #f59e0b; color: white; }
+.role-badge.role-user { background-color: #4b5563; color: white; }
+.status-badge.status-active { background-color: #22c55e; color: white; }
+.status-badge.status-inactive, .status-badge.status-suspended { background-color: #ef4444; color: white; }
+
+.social-icon {
+    width: 20px;
+    height: 20px;
+    vertical-align: middle;
+    border-radius: 4px;
+}
+

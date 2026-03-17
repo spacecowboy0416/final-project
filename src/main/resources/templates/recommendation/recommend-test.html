@@ -3,34 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <th:block th:replace="~{layout/common :: configFragment}"></th:block>
     <title>Recommendation Test</title>
     <link rel="icon" href="data:,">
     <style>
-        body { margin: 0; font-family: sans-serif; }
-        main { padding: 16px; }
-        .layout { display: grid; grid-template-columns: minmax(360px, 0.9fr) minmax(300px, 0.72fr) minmax(420px, 1.1fr); gap: 24px; align-items: start; }
-        .panel { border: 1px solid #ccc; padding: 16px; }
-        .panel section { margin-bottom: 24px; }
-        textarea, input, select { width: 100%; box-sizing: border-box; margin-top: 4px; margin-bottom: 8px; }
+        body { margin: 0; font-family: sans-serif; overflow-x: auto; }
+        main { padding: 8px; min-width: 1440px; }
+        .log-panel { border: 1px solid #ccc; padding: 8px; margin-bottom: 10px; }
+        .log-grid { display: grid; grid-template-columns: minmax(220px, 0.75fr) minmax(240px, 0.85fr) minmax(320px, 1.2fr); gap: 10px; align-items: start; }
+        .four-column-layout { display: grid; grid-template-columns: repeat(4, minmax(280px, 1fr)); gap: 10px; align-items: start; }
+        .panel { border: 1px solid #ccc; padding: 8px; }
+        .panel section { margin-bottom: 10px; }
+        .panel section:last-child { margin-bottom: 0; }
+        h2, h3, h4, p { margin-top: 0; }
+        h2 { margin-bottom: 6px; }
+        h3 { margin-bottom: 6px; font-size: 16px; }
+        h4 { margin-bottom: 5px; font-size: 14px; }
+        p { margin-bottom: 4px; }
+        textarea, input, select { width: 100%; box-sizing: border-box; margin-top: 1px; margin-bottom: 4px; }
         pre { white-space: pre-wrap; word-break: break-word; }
-        .input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
         .input-grid .full-width { grid-column: 1 / -1; }
-        .result-slot-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .slot-card { border: 1px solid #ddd; padding: 12px; }
-        .image-preview-box { border: 1px solid #ddd; padding: 12px; min-height: 180px; display: flex; align-items: center; justify-content: center; }
-        .image-preview-box img { max-width: 100%; max-height: 220px; display: block; }
+        .result-slot-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+        .slot-card { border: 1px solid #ddd; padding: 8px; }
+        .image-preview-box { border: 1px solid #ddd; padding: 6px; min-height: 88px; display: flex; align-items: center; justify-content: center; }
+        .image-preview-box img { max-width: 100%; max-height: 110px; display: block; }
         .image-preview-box span { color: #666; }
-        .constraint-section { border-top: 1px solid #e5e5e5; padding-top: 16px; }
+        .constraint-section { border-top: 1px solid #e5e5e5; padding-top: 8px; }
         .constraint-section:first-child { border-top: none; padding-top: 0; }
-        .constraint-section h4 { margin: 0 0 12px; }
+        .constraint-section h4 { margin: 0 0 6px; }
         .constraint-list { margin: 0; padding-left: 18px; }
-        .constraint-list li { margin-bottom: 8px; }
-        .constraint-box { background: #f7f7f7; border: 1px solid #e1e1e1; padding: 10px 12px; margin-top: 8px; }
+        .constraint-list li { margin-bottom: 4px; }
+        .constraint-box { background: #f7f7f7; border: 1px solid #e1e1e1; padding: 6px 8px; margin-top: 4px; }
         .constraint-box code { font-size: 12px; }
+        .candidate-section { border-top: 1px solid #e5e5e5; padding-top: 8px; }
+        .candidate-grid { display: grid; grid-template-columns: 1fr; gap: 8px; }
+        .candidate-card { border: 1px solid #ddd; padding: 8px; }
+        .candidate-card h4 { margin: 0 0 8px; }
+        .candidate-card ul { margin: 0; padding-left: 18px; }
+        .candidate-card li { margin-bottom: 6px; }
+        .candidate-item { display: grid; grid-template-columns: 60px 1fr; gap: 8px; align-items: start; }
+        .candidate-item img { width: 60px; height: 60px; object-fit: cover; border: 1px solid #ddd; }
+        .candidate-item a { color: inherit; text-decoration: none; }
+        .candidate-item strong { display: block; margin-bottom: 2px; }
+        .shopping-debug-form { display: grid; grid-template-columns: 1fr 80px 96px; gap: 6px; align-items: end; }
+        .shopping-debug-result { margin-top: 6px; }
+        .query-list { margin: 0; padding-left: 18px; }
+        .query-list li { margin-bottom: 4px; }
+        .timing-list { margin: 0; padding-left: 18px; }
+        .timing-list li { margin-bottom: 4px; }
+        .compact-note { margin-bottom: 4px; font-size: 12px; color: #555; }
+        .compact-button { padding: 4px 8px; }
+        .status-line { font-size: 12px; color: #555; margin-bottom: 4px; }
         @media (max-width: 900px) {
-            .layout { grid-template-columns: 1fr; }
+            .log-grid { grid-template-columns: 1fr; }
             .input-grid { grid-template-columns: 1fr; }
             .result-slot-grid { grid-template-columns: 1fr; }
+            .shopping-debug-form { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -42,7 +71,28 @@
         <p>현재 Gemini 모델: <strong th:text="${geminiModel} ?: '설정되지 않음'">unknown</strong></p>
     </section>
 
-    <div class="layout">
+    <div class="log-panel">
+        <section>
+            <h3>처리 로그</h3>
+            <div class="log-grid">
+                <div>
+                    <p id="statusText">대기 중</p>
+                    <p id="elapsedTimeText">소요 시간: -</p>
+                    <pre id="errorText">에러 없음</pre>
+                </div>
+                <div>
+                    <h4>Stage Timings</h4>
+                    <ul id="timingList" class="timing-list"></ul>
+                </div>
+                <div>
+                    <h4>Debug Output</h4>
+                    <pre id="resultBox">디버그 응답 없음</pre>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div class="four-column-layout">
         <div class="panel">
             <section>
                 <h3>입력</h3>
@@ -67,7 +117,15 @@
                 <div class="input-grid">
                     <div class="full-width">
                         <label for="naturalText">자연어 요청</label>
-                        <textarea id="naturalText" rows="4">봄철 데이트에 입고 나갈 깔끔하고 편한 코디를 만들어줘</textarea>
+                        <textarea id="naturalText" rows="3">봄철 데이트에 입고 나갈 깔끔하고 편한 코디를 만들어줘</textarea>
+                    </div>
+                    <div>
+                        <label for="gender">대상</label>
+                        <select id="gender">
+                            <option value="MALE">남성</option>
+                            <option value="FEMALE">여성</option>
+                            <option value="UNISEX">공용</option>
+                        </select>
                     </div>
                 </div>
             </section>
@@ -84,10 +142,10 @@
 
             <section>
                 <h3>카카오 지도</h3>
-                <p>지도를 클릭하면 위도/경도가 입력됩니다.</p>
-                <div id="map" style="width:100%;height:320px;border:1px solid #ccc;"></div>
-                <p id="mapStatus">지도를 불러오는 중입니다.</p>
-                <button id="useCurrentLocationBtn" type="button">현재 위치 사용</button>
+                <p class="compact-note">지도 클릭으로 좌표 입력</p>
+                <div id="map" style="width:100%;height:120px;border:1px solid #ccc;"></div>
+                <p id="mapStatus" class="status-line">지도를 불러오는 중입니다.</p>
+                <button id="useCurrentLocationBtn" class="compact-button" type="button">현재 위치 사용</button>
                 <div class="input-grid">
                     <div>
                         <label for="districtName">구/군</label>
@@ -113,43 +171,39 @@
             </section>
 
             <section>
-                <h3>날씨 조회 기준</h3>
-                <div class="input-grid">
-                    <div class="full-width">
-                        <p>입력한 구/군과 일시를 기준으로 Redis 캐시 서버에서 날씨 정보를 조회합니다.</p>
-                        <pre id="weatherPreview"></pre>
-                    </div>
-                </div>
+                <button id="submitBtn" class="compact-button" type="button">입력 버튼</button>
             </section>
 
-            <section>
-                <button id="submitBtn" type="button">입력 버튼</button>
+            <section class="constraint-section">
+                <h3>전송 Payload</h3>
+                <pre id="payloadPreview"></pre>
             </section>
         </div>
 
         <div class="panel">
             <section>
-                <h3>입출력 제약</h3>
+                <h3>입출력 스키마</h3>
             </section>
 
             <section class="constraint-section">
                 <h4>입력 제약</h4>
                 <ul class="constraint-list">
-                    <li>AI 입력에는 이미지 1장, 자연어 요청, 일정 시각, Redis 날씨 요약이 포함됩니다.</li>
-                    <li><code>weather</code>는 <code>temperature</code>, <code>feelsLike</code>, <code>weatherStatus</code>, <code>rainProbability</code>, <code>weatherSource</code>를 가집니다.</li>
-                    <li><code>location</code>은 날씨 조회용 요청 필드이며, AI input schema 자체에는 포함되지 않습니다.</li>
+                    <li>AI 입력에는 이미지 1장, 자연어 요청, 대상 성별, 일정 시각이 포함됩니다.</li>
+                    <li><code>location</code>은 서버가 날씨를 조회할 때만 쓰는 요청 필드입니다.</li>
+                    <li>날씨 요약은 서버 내부에서 붙고, 이 테스트 페이지에서는 별도 설명 블록으로 노출하지 않습니다.</li>
                 </ul>
                 <div class="constraint-box">
                     <strong>input json schema</strong>
                     <pre>{
   "naturalText": "...",
+  "gender": "male",
   "scheduleTime": "...",
-  "weather": {
-    "temperature": 0,
-    "feelsLike": 0,
-    "weatherStatus": "clear",
-    "rainProbability": "low",
-    "weatherSource": "redis_cache"
+  "location": {
+    "districtName": "중구",
+    "placeName": "서울특별시청",
+    "addressName": "서울특별시 중구 세종대로 110",
+    "latitude": 37.5665,
+    "longitude": 126.978
   },
   "imageData": {
     "imageBytes": "base64",
@@ -177,7 +231,6 @@
     "coordination": {
       "tops": {
         "item_name": "...",
-        "search_query": "...",
         "category": "top",
         "attributes": {
           "color": "gray",
@@ -201,7 +254,8 @@
                 <ul class="constraint-list">
                     <li><code>tpoType</code>은 상황 코드이고 스타일 코드가 아닙니다.</li>
                     <li><code>styleType</code>과 <code>attributes.style</code>은 스타일 코드입니다.</li>
-                    <li><code>item_name</code>은 사용자 노출용 이름이고, <code>search_query</code>는 쇼핑 검색어입니다.</li>
+                    <li><code>item_name</code>은 사용자 노출용 이름입니다.</li>
+                    <li>쇼핑용 <code>search_query</code>는 AI 출력이 아니라 서버 비즈니스 로직에서 속성값으로 조합합니다.</li>
                     <li><code>reasoning</code>은 각 슬롯이 전체 코디에 왜 맞는지 짧게 설명해야 합니다.</li>
                 </ul>
             </section>
@@ -209,77 +263,45 @@
 
         <div class="panel">
             <section>
-                <h3>출력</h3>
-                <p id="statusText">대기 중</p>
-                <p id="elapsedTimeText">소요 시간: -</p>
-                <pre id="errorText">에러 없음</pre>
+                <h3>Blueprint와 Search Query</h3>
             </section>
 
             <section>
-                <h3>전송 Payload</h3>
-                <pre id="payloadPreview"></pre>
+                <h4>Gemini Response</h4>
+                <pre id="geminiResponseBox">Gemini 응답 없음</pre>
             </section>
 
             <section>
-                <h3>결과 뼈대</h3>
-                <section id="resultSkeleton">
-                    <div>
-                        <h4>추천 메타</h4>
-                        <p>tpoType: <span id="resultTpo">미정</span></p>
-                        <p>styleType: <span id="resultStyle">미정</span></p>
-                    </div>
+                <h4>Extracted Search Queries</h4>
+                <ul id="queryList" class="query-list"></ul>
+            </section>
+        </div>
 
-                    <div>
-                        <h4>추천 슬롯</h4>
-                        <div class="result-slot-grid">
-                            <div class="slot-card">
-                                <strong>tops</strong>
-                                <img id="slotTopsImage" alt="tops 이미지" style="max-width:100%;max-height:140px;display:none;margin:8px 0;">
-                                <p id="slotTopsName">아이템명 대기</p>
-                                <p id="slotTopsReason">추천 사유 대기</p>
-                                <p id="slotTopsScore">점수 대기</p>
-                            </div>
-                            <div class="slot-card">
-                                <strong>bottoms</strong>
-                                <img id="slotBottomsImage" alt="bottoms 이미지" style="max-width:100%;max-height:140px;display:none;margin:8px 0;">
-                                <p id="slotBottomsName">아이템명 대기</p>
-                                <p id="slotBottomsReason">추천 사유 대기</p>
-                                <p id="slotBottomsScore">점수 대기</p>
-                            </div>
-                            <div class="slot-card">
-                                <strong>outerwear</strong>
-                                <img id="slotOuterwearImage" alt="outerwear 이미지" style="max-width:100%;max-height:140px;display:none;margin:8px 0;">
-                                <p id="slotOuterwearName">아이템명 대기</p>
-                                <p id="slotOuterwearReason">추천 사유 대기</p>
-                                <p id="slotOuterwearScore">점수 대기</p>
-                            </div>
-                            <div class="slot-card">
-                                <strong>shoes</strong>
-                                <img id="slotShoesImage" alt="shoes 이미지" style="max-width:100%;max-height:140px;display:none;margin:8px 0;">
-                                <p id="slotShoesName">아이템명 대기</p>
-                                <p id="slotShoesReason">추천 사유 대기</p>
-                                <p id="slotShoesScore">점수 대기</p>
-                            </div>
-                            <div class="slot-card">
-                                <strong>accessories</strong>
-                                <img id="slotAccessoriesImage" alt="accessories 이미지" style="max-width:100%;max-height:140px;display:none;margin:8px 0;">
-                                <p id="slotAccessoriesName">아이템명 대기</p>
-                                <p id="slotAccessoriesReason">추천 사유 대기</p>
-                                <p id="slotAccessoriesScore">점수 대기</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div>
-                        <h4>Blueprint 메타</h4>
-                        <pre id="blueprintBox">blueprint 대기</pre>
-                    </div>
-                </section>
+        <div class="panel">
+            <section>
+                <h3>네이버 쇼핑 결과</h3>
             </section>
 
-            <section>
-                <h3>응답</h3>
-                <pre id="resultBox">응답 없음</pre>
+            <section class="candidate-section">
+                <h4>Pipeline Shopping Candidates</h4>
+                <div id="candidateGrid" class="candidate-grid"></div>
+            </section>
+
+            <section class="candidate-section">
+                <h4>Naver Shopping Debug</h4>
+                <div class="shopping-debug-form">
+                    <div>
+                        <label for="shoppingDebugQuery">검색어</label>
+                        <input id="shoppingDebugQuery" type="text" placeholder="예: 그레이 오버핏 반팔티">
+                    </div>
+                    <div>
+                        <label for="shoppingDebugLimit">개수</label>
+                        <input id="shoppingDebugLimit" type="number" min="1" max="50" value="10">
+                    </div>
+                    <button id="shoppingDebugBtn" type="button">쇼핑 검색</button>
+                </div>
+                <p id="shoppingDebugStatus">대기 중</p>
+                <div id="shoppingDebugResult" class="shopping-debug-result candidate-grid"></div>
             </section>
         </div>
     </div>
@@ -310,14 +332,19 @@
     const imagePreviewEmpty = document.getElementById("imagePreviewEmpty");
     const payloadPreview = document.getElementById("payloadPreview");
     const resultBox = document.getElementById("resultBox");
+    const geminiResponseBox = document.getElementById("geminiResponseBox");
     const statusText = document.getElementById("statusText");
     const elapsedTimeText = document.getElementById("elapsedTimeText");
     const errorText = document.getElementById("errorText");
-    const weatherPreview = document.getElementById("weatherPreview");
     const mapStatus = document.getElementById("mapStatus");
-    const resultTpo = document.getElementById("resultTpo");
-    const resultStyle = document.getElementById("resultStyle");
-    const blueprintBox = document.getElementById("blueprintBox");
+    const candidateGrid = document.getElementById("candidateGrid");
+    const shoppingDebugQueryInput = document.getElementById("shoppingDebugQuery");
+    const shoppingDebugLimitInput = document.getElementById("shoppingDebugLimit");
+    const shoppingDebugBtn = document.getElementById("shoppingDebugBtn");
+    const shoppingDebugStatus = document.getElementById("shoppingDebugStatus");
+    const shoppingDebugResult = document.getElementById("shoppingDebugResult");
+    const timingList = document.getElementById("timingList");
+    const queryList = document.getElementById("queryList");
     const kakaoSdkUrl = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${kakaoMapApiKey}&autoload=false&libraries=services`;
     const sampleImageState = {
         imageBytes: null,
@@ -326,39 +353,13 @@
         sourceUrl: TEST_SAMPLE_IMAGE_URL
     };
 
-    function updateSlot(slotKey, imageUrl, itemName, reason, scoreText) {
-        const normalizedKey = slotKey.charAt(0).toUpperCase() + slotKey.slice(1);
-        const imageElement = document.getElementById(`slot${normalizedKey}Image`);
-        const nameElement = document.getElementById(`slot${normalizedKey}Name`);
-        const reasonElement = document.getElementById(`slot${normalizedKey}Reason`);
-        const scoreElement = document.getElementById(`slot${normalizedKey}Score`);
-        if (imageElement) {
-            if (imageUrl) {
-                imageElement.src = imageUrl;
-                imageElement.style.display = "block";
-            } else {
-                imageElement.removeAttribute("src");
-                imageElement.style.display = "none";
-            }
-        }
-        if (nameElement) {
-            nameElement.textContent = itemName || "아이템명 대기";
-        }
-        if (reasonElement) {
-            reasonElement.textContent = reason || "추천 사유 대기";
-        }
-        if (scoreElement) {
-            scoreElement.textContent = scoreText || "점수 대기";
-        }
-    }
-
     function resetResultSkeleton() {
-        resultTpo.textContent = "미정";
-        resultStyle.textContent = "미정";
-        blueprintBox.textContent = "blueprint 메타 대기";
-        ["tops", "bottoms", "outerwear", "shoes", "accessories"].forEach(slotKey => {
-            updateSlot(slotKey, "", "", "", "");
-        });
+        geminiResponseBox.textContent = "Gemini 응답 없음";
+        candidateGrid.innerHTML = "";
+        shoppingDebugResult.innerHTML = "";
+        shoppingDebugStatus.textContent = "대기 중";
+        timingList.innerHTML = "";
+        queryList.innerHTML = "";
     }
 
     function resetOutputStatus() {
@@ -367,27 +368,173 @@
     }
 
     function updateResultSkeleton(response) {
-        resultTpo.textContent = response?.tpoType || "미정";
-        resultStyle.textContent = response?.styleType || "미정";
-        blueprintBox.textContent = response
-            ? JSON.stringify({
-                stylingRuleApplied: response.stylingRuleApplied
-            }, null, 2)
-            : "blueprint 메타 없음";
+        geminiResponseBox.textContent = response?.geminiBlueprint
+            ? JSON.stringify(response.geminiBlueprint, null, 2)
+            : "Gemini 응답 없음";
 
-        const blueprintItems = Array.isArray(response?.blueprint) ? response.blueprint : [];
-        const slotMap = new Map();
-        blueprintItems.forEach(item => {
-            if (item?.slotKey) {
-                slotMap.set(String(item.slotKey).toLowerCase(), item);
+        updateQueryList(response?.slotSearchQueries || {});
+        updateCandidateGrid(response?.slotCandidates || {});
+        updateTimingList(response?.stageTimings || {});
+    }
+
+    function updateQueryList(slotSearchQueries) {
+        queryList.innerHTML = "";
+        const slotKeys = ["tops", "bottoms", "outerwear", "shoes", "accessories"];
+
+        slotKeys.forEach(slotKey => {
+            const item = document.createElement("li");
+            const searchQuery = slotSearchQueries?.[slotKey] || "";
+            item.textContent = `${slotKey}: ${searchQuery || "query 없음"}`;
+            queryList.appendChild(item);
+        });
+    }
+
+    function updateCandidateGrid(slotCandidates) {
+        candidateGrid.innerHTML = "";
+        const slotKeys = ["tops", "bottoms", "outerwear", "shoes", "accessories"];
+
+        slotKeys.forEach(slotKey => {
+            const candidates = Array.isArray(slotCandidates?.[slotKey]) ? slotCandidates[slotKey] : [];
+            const card = document.createElement("div");
+            card.className = "candidate-card";
+
+            const title = document.createElement("h4");
+            title.textContent = `${slotKey} (${candidates.length})`;
+            card.appendChild(title);
+
+            if (candidates.length === 0) {
+                const empty = document.createElement("p");
+                empty.textContent = "candidate 없음";
+                card.appendChild(empty);
+                candidateGrid.appendChild(card);
+                return;
             }
+
+            const list = document.createElement("ul");
+            candidates.forEach(candidate => {
+                const item = document.createElement("li");
+                const wrapper = document.createElement("div");
+                wrapper.className = "candidate-item";
+                const image = document.createElement("img");
+                image.alt = candidate.productName || "candidate image";
+                if (candidate.productImageUrl) {
+                    image.src = candidate.productImageUrl;
+                } else {
+                    image.style.visibility = "hidden";
+                }
+                const content = document.createElement(candidate.productDetailUrl ? "a" : "div");
+                if (candidate.productDetailUrl) {
+                    content.href = candidate.productDetailUrl;
+                    content.target = "_blank";
+                    content.rel = "noopener noreferrer";
+                }
+                const title = document.createElement("strong");
+                const priceText = candidate.salePrice ? `${candidate.salePrice.toLocaleString()}원` : "가격 없음";
+                title.textContent = candidate.productName || "이름 없음";
+                const meta = document.createElement("span");
+                meta.textContent = `${candidate.brandName || "브랜드 없음"} / ${priceText}`;
+                content.appendChild(title);
+                content.appendChild(meta);
+                wrapper.appendChild(image);
+                wrapper.appendChild(content);
+                item.appendChild(wrapper);
+                list.appendChild(item);
+            });
+            card.appendChild(list);
+            candidateGrid.appendChild(card);
+        });
+    }
+
+    function renderShoppingDebugCandidates(candidates) {
+        shoppingDebugResult.innerHTML = "";
+        const normalized = Array.isArray(candidates) ? candidates : [];
+
+        if (normalized.length === 0) {
+            const empty = document.createElement("p");
+            empty.textContent = "candidate 없음";
+            shoppingDebugResult.appendChild(empty);
+            return;
+        }
+
+        const card = document.createElement("div");
+        card.className = "candidate-card";
+        const title = document.createElement("h4");
+        title.textContent = `검색 결과 (${normalized.length})`;
+        card.appendChild(title);
+        const list = document.createElement("ul");
+
+        normalized.forEach(candidate => {
+            const item = document.createElement("li");
+            const wrapper = document.createElement("div");
+            wrapper.className = "candidate-item";
+            const image = document.createElement("img");
+            image.alt = candidate.productName || "candidate image";
+            if (candidate.productImageUrl) {
+                image.src = candidate.productImageUrl;
+            } else {
+                image.style.visibility = "hidden";
+            }
+            const content = document.createElement(candidate.productDetailUrl ? "a" : "div");
+            if (candidate.productDetailUrl) {
+                content.href = candidate.productDetailUrl;
+                content.target = "_blank";
+                content.rel = "noopener noreferrer";
+            }
+            const titleElement = document.createElement("strong");
+            titleElement.textContent = candidate.productName || "이름 없음";
+            const meta = document.createElement("span");
+            const priceText = candidate.salePrice ? `${candidate.salePrice.toLocaleString()}원` : "가격 없음";
+            meta.textContent = `${candidate.brandName || "브랜드 없음"} / ${priceText}`;
+            content.appendChild(titleElement);
+            content.appendChild(meta);
+            wrapper.appendChild(image);
+            wrapper.appendChild(content);
+            item.appendChild(wrapper);
+            list.appendChild(item);
         });
 
-        ["tops", "bottoms", "outerwear", "shoes", "accessories"].forEach(slotKey => {
-            const item = slotMap.get(slotKey);
-            const scoreText = item ? `match=${item.matchScore}` : "";
-            updateSlot(slotKey, item?.imageUrl, item?.itemName, item?.reasoning, scoreText);
+        card.appendChild(list);
+        shoppingDebugResult.appendChild(card);
+    }
+
+    function updateTimingList(stageTimings) {
+        timingList.innerHTML = "";
+        Object.entries(stageTimings).forEach(([stageName, elapsedMs]) => {
+            const item = document.createElement("li");
+            item.textContent = `${stageName}: ${elapsedMs}ms`;
+            timingList.appendChild(item);
         });
+    }
+
+    async function runShoppingDebugSearch() {
+        const query = String(shoppingDebugQueryInput.value || "").trim();
+        const limit = Number(shoppingDebugLimitInput.value || 10);
+        if (!query) {
+            shoppingDebugStatus.textContent = "검색어를 입력하세요.";
+            shoppingDebugResult.innerHTML = "";
+            return;
+        }
+
+        shoppingDebugStatus.textContent = "쇼핑 검색 중";
+        shoppingDebugResult.innerHTML = "";
+
+        try {
+            const params = new URLSearchParams({
+                query,
+                limit: String(limit)
+            });
+            const response = await fetch(`/api/recommendations/debug/shopping?${params.toString()}`);
+            const responseText = await response.text();
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status} - ${responseText}`);
+            }
+            const parsed = JSON.parse(responseText);
+            renderShoppingDebugCandidates(parsed);
+            shoppingDebugStatus.textContent = `완료 (${Array.isArray(parsed) ? parsed.length : 0}건)`;
+        } catch (error) {
+            shoppingDebugStatus.textContent = `실패: ${error.message || error}`;
+            shoppingDebugResult.innerHTML = "";
+        }
     }
 
     function roundToThirtyMinutes(date) {
@@ -431,12 +578,7 @@
     }
 
     function updateWeatherPreview() {
-        const preview = {
-            scheduleTime: toOffsetDateTime(scheduleTimeInput.value),
-            location: readLocationFields(),
-            weatherSource: "REDIS_CACHE_SERVER"
-        };
-        weatherPreview.textContent = JSON.stringify(preview, null, 2);
+        // 위치/시간 변경은 내부 payload와 지도 상태에만 반영한다.
     }
 
     function updatePayloadPreview(payload) {
@@ -447,6 +589,7 @@
         const activeImage = resolveActiveImage(file);
         return {
             naturalText: document.getElementById("naturalText").value,
+            gender: document.getElementById("gender").value,
             scheduleTime: toOffsetDateTime(scheduleTimeInput.value),
             location: readLocationFields(),
             imageData: {
@@ -475,6 +618,7 @@
 
         const payload = {
             naturalText: document.getElementById("naturalText").value,
+            gender: document.getElementById("gender").value,
             scheduleTime: toOffsetDateTime(scheduleTimeInput.value),
             location: readLocationFields(),
             imageData: {
@@ -639,6 +783,7 @@
     resetOutputStatus();
     updatePayloadPreview({
         naturalText: document.getElementById("naturalText").value,
+        gender: document.getElementById("gender").value,
         scheduleTime: toOffsetDateTime(scheduleTimeInput.value),
         location: readLocationFields(),
         imageData: {
@@ -673,7 +818,15 @@
         reader.readAsDataURL(file);
     });
 
-    ["scheduleTime", "districtName", "placeName", "addressName", "latitude", "longitude"].forEach(id => {
+    shoppingDebugBtn.addEventListener("click", runShoppingDebugSearch);
+    shoppingDebugQueryInput.addEventListener("keydown", event => {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            runShoppingDebugSearch();
+        }
+    });
+
+    ["scheduleTime", "districtName", "placeName", "addressName", "latitude", "longitude", "gender"].forEach(id => {
         document.getElementById(id).addEventListener("input", updateWeatherPreview);
         document.getElementById(id).addEventListener("change", updateWeatherPreview);
     });
@@ -685,7 +838,7 @@
             resetResultSkeleton();
             resetOutputStatus();
             const payload = await buildPayload();
-            const response = await fetch("/api/recommendations", {
+            const response = await fetch("/api/recommendations/debug", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload)
@@ -696,7 +849,11 @@
             }
             const parsed = JSON.parse(responseText);
             updateResultSkeleton(parsed);
-            resultBox.textContent = JSON.stringify(parsed, null, 2);
+            resultBox.textContent = JSON.stringify({
+                slotSearchQueries: parsed.slotSearchQueries,
+                slotCandidates: parsed.slotCandidates,
+                stageTimings: parsed.stageTimings
+            }, null, 2);
             statusText.textContent = "완료";
             elapsedTimeText.textContent = `소요 시간: ${Date.now() - requestStartedAt}ms`;
         } catch (error) {
