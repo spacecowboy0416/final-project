@@ -1,4 +1,13 @@
 /* 공통 레이아웃 설정 */
+.main-content { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
+.section-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px; }
+.section-title { margin: 0; font-size: 1.5rem; font-weight: 800; color: #111; }
+.section-divider { border: 0; border-top: 1px solid #eee; margin: 50px 0; }
+
+/* 검은색 버튼 */
+.btn-black-pill { background: #111; color: #fff; padding: 12px 24px; border-radius: 30px; font-size: 0.9rem; font-weight: bold; border: none; cursor: pointer; text-decoration: none; transition: 0.2s; display: inline-block; }
+.btn-black-pill:hover { background: #333; }
+
 .slider-container { display: flex; overflow-x: auto; gap: 20px; padding: 10px 5px 20px 5px; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; }
 .slider-container::-webkit-scrollbar { height: 6px; }
 .slider-container::-webkit-scrollbar-track { background: #f9f9f9; border-radius: 10px; }
@@ -11,22 +20,39 @@
 .coordi-card p { font-size: 0.9rem; color: #666; line-height: 1.5; flex-grow: 1; margin: 0; }
 .date-badge { font-size: 0.75rem; color: #aaa; margin-bottom: 12px; display: block; font-weight: 600; }
 .ai-desc-text { overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
-.empty-msg-box { background: #f8f9fa; padding: 50px 20px; border-radius: 20px; text-align: center; margin-bottom: 40px; border: 1px dashed #ddd; }
+.empty-msg-box { background: #fff; padding: 60px 20px; border-radius: 20px; text-align: center; margin-bottom: 40px; border: 1px dashed #ddd; }
+.empty-msg-box p { color: #aaa; margin: 0; font-size: 1rem; font-weight: 500; }
 
-/* 옷장 그리드 레이아웃 */
+/* 옷장 그리드 및 카드 디자인 추가 설정 */
 .closet-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 24px; margin-top: 20px; }
 .item-card { border: 1px solid #eee; border-radius: 16px; padding: 12px; text-align: center; background: #fff; transition: 0.2s; display: flex; flex-direction: column; }
-.item-card:hover { box-shadow: 0 8px 16px rgba(0,0,0,0.05); }
+.item-card:hover { box-shadow: 0 8px 16px rgba(0,0,0,0.05); transform: translateY(-3px); }
 .item-image { width: 100%; height: 240px; object-fit: cover; border-radius: 12px; background: #f8f9fa; }
 .item-image-empty { display: flex; align-items: center; justify-content: center; color: #aaa; font-size: 0.9rem; height: 240px; }
-.item-info { margin-top: 15px; text-align: left; padding: 0 5px; flex-grow: 1; }
+
+/* 개별 옷 카드 상세 정보 UI 설정 */
+.item-info { display: flex; flex-direction: column; margin-top: 15px; text-align: left; padding: 0 5px; flex-grow: 1; }
+.item-meta-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.item-category { color: #888; font-size: 0.8rem; font-weight: 600; }
+.item-brand { font-size: 0.75rem; color: #555; font-weight: 800; margin-bottom: 4px; text-transform: uppercase; }
+.item-name { margin: 0 0 12px 0; font-size: 1.05rem; font-weight: 700; color: #111; word-break: keep-all; }
 .badge { display: inline-block; padding: 4px 10px; background: #f0f0f0; color: #555; font-size: 0.75rem; font-weight: bold; border-radius: 6px; }
+
+/* 상세정보 태그 칩스 디자인 */
+.item-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 15px; }
+.info-tag { background: #f4f5f7; color: #666; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; }
+
+/* 모달 내 상세 정보 2단 그리드 입력 폼 */
+.form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+.form-row-2 .form-group { margin-bottom: 10px; }
+.form-row-2 .closet-input { padding: 12px; font-size: 0.9rem; }
 
 /* 코디 세트 내부 아이템 리스트 레이아웃 */
 .set-items-list { display: flex; flex-direction: column; gap: 10px; flex-grow: 1; text-align: left; }
 .set-item-row { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 8px; background: #f8f9fa; }
 .set-item-img { width: 40px; height: 40px; border-radius: 6px; object-fit: cover; background: #eee; }
 .set-item-name { font-size: 0.9rem; color: #444; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.set-title { margin: 0 0 15px 0; font-size: 1.1rem; color: #111; font-weight: 800; }
 
 /* 공통 버튼 디자인 */
 .btn-delete-item { background: #fff; color: #aaa; border: 1px solid #eee; width: 100%; padding: 8px; border-radius: 8px; font-size: 0.85rem; font-weight: bold; cursor: pointer; transition: 0.2s; margin-top: auto; }

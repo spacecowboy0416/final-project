@@ -10,7 +10,7 @@ import java.util.List;
 @Mapper
 public interface ClosetMapper {
 
-    // 저장된 전체 코디 목록 조회 (서브 쿼리로 구성품 목록 포함)
+    // 저장된 전체 코디 목록 조회
     @Select("SELECT rec_id as recId, user_id as userId, weather_id as weatherId, " +
             "input_mode as inputMode, input_text as inputText, product_option as productOption, " +
             "tpo_type as tpoType, style_type as styleType, " +
@@ -25,7 +25,7 @@ public interface ClosetMapper {
     })
     List<SavedCoordiDto> findSavedCoordis(Long userId);
 
-    // 특정 코디에 속한 상세 아이템 정보 및 이미지, 상품명 조회
+    // 특정 코디에 속한 상세 아이템 정보 조회
     @Select("SELECT ri.rec_item_id as recItemId, ri.slot_key as slotKey, ri.source_type as sourceType, " +
             "ri.closet_item_id as closetItemId, ri.product_id as productId, " +
             "COALESCE(p1.image_url, p2.image_url) as imageUrl, " +
@@ -56,10 +56,6 @@ public interface ClosetMapper {
             "WHERE rec_id = #{recId} AND user_id = #{userId}")
     void updateSavedCoordi(SavedCoordiDto dto);
 
-    // 코디 세트 삭제 (논리 삭제)
-    @Update("UPDATE recommendation SET is_saved = false WHERE rec_id = #{recId} AND user_id = #{userId}")
-    void unsaveCoordi(@Param("recId") Long recId, @Param("userId") Long userId);
-
     // 개별 옷장 아이템 목록 조회
     @Select("SELECT c.item_id as itemId, c.user_id as userId, c.product_id as productId, " +
             "p.category_id as categoryId, cat.name as categoryName, p.name, p.brand, p.color, p.material, p.fit, p.style, " +
@@ -82,7 +78,35 @@ public interface ClosetMapper {
     @Options(useGeneratedKeys = true, keyProperty = "itemId")
     void insertClosetItem(ClosetItemDto closetItemDto);
 
-    // 옷장 아이템 삭제 (논리 삭제)
-    @Update("UPDATE closet_item SET is_active = false WHERE item_id = #{itemId} AND user_id = #{userId}")
-    void deleteItem(@Param("itemId") Long itemId, @Param("userId") Long userId);
+    // 1. 코디 세트의 입력 모드 확인 (AI 코디인지 사용자가 만든 수동 세트인지 구분용)
+    @Select("SELECT input_mode FROM recommendation WHERE rec_id = #{recId}")
+    String findInputModeByRecId(@Param("recId") Long recId);
+
+    // 2. 특정 아이템의 Product ID 찾기
+    @Select("SELECT product_id FROM closet_item WHERE item_id = #{itemId} AND user_id = #{userId}")
+    Long findProductIdByItemId(@Param("itemId") Long itemId, @Param("userId") Long userId);
+
+    // 3. 코디 세트에 묶인 옷장 아이템 ID 목록 찾기
+    @Select("SELECT closet_item_id FROM recommendation_item WHERE rec_id = #{recId}")
+    List<Long> findClosetItemIdsByRecId(@Param("recId") Long recId);
+
+    // 4. [삭제] 아이템과 코디 연결 고리 삭제
+    @Delete("DELETE FROM recommendation_item WHERE closet_item_id = #{itemId}")
+    void deleteRecItemsByClosetItemId(@Param("itemId") Long itemId);
+
+    // 5. [삭제] 코디 세트 안의 모든 옷 연결 고리 일괄 삭제
+    @Delete("DELETE FROM recommendation_item WHERE rec_id = #{recId}")
+    void deleteRecItemsByRecId(@Param("recId") Long recId);
+
+    // 6. [삭제] 옷장 아이템 삭제
+    @Delete("DELETE FROM closet_item WHERE item_id = #{itemId}")
+    void deleteClosetItemById(@Param("itemId") Long itemId);
+
+    // 7. [삭제] 유저가 올린 실제 사진(상품) 정보 삭제
+    @Delete("DELETE FROM product WHERE product_id = #{productId} AND source = 'USER_CUSTOM'")
+    void deleteUserCustomProduct(@Param("productId") Long productId);
+
+    // 8. [삭제] 코디 세트 데이터 완전 삭제
+    @Delete("DELETE FROM recommendation WHERE rec_id = #{recId} AND user_id = #{userId}")
+    void deleteRecommendationById(@Param("recId") Long recId, @Param("userId") Long userId);
 }

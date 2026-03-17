@@ -7,7 +7,7 @@ function openCoordiModal(element) {
     document.getElementById('modalTitle').innerText = element.getAttribute('data-title');
     document.getElementById('modalDesc').innerText = element.getAttribute('data-desc');
     document.getElementById('modalDate').innerText = element.getAttribute('data-date');
-    document.getElementById('deleteCoordiForm').action = '/api/closet/recommendations/' + currentCoordiId;
+    document.getElementById('deleteCoordiForm').action = '/closet/delete-set/' + currentCoordiId;
     document.getElementById('coordiModal').style.display = 'flex';
 }
 
@@ -161,41 +161,33 @@ document.getElementById('setImageInput').addEventListener('change', function(e) 
             const div = document.createElement('div');
             div.className = 'set-dynamic-item';
             
-            const img = document.createElement('img');
-            img.src = event.target.result;
-            img.className = 'set-dynamic-preview';
-
-            const inputWrapper = document.createElement('div');
-            inputWrapper.className = 'set-dynamic-inputs';
-
-            const nameInput = document.createElement('input');
-            nameInput.type = 'text';
-            nameInput.name = 'setItemNames';
-            nameInput.placeholder = '상품명 입력';
-            nameInput.className = 'set-dynamic-input';
-            nameInput.required = true;
-
-            const categorySelect = document.createElement('select');
-            categorySelect.name = 'setCategoryIds';
-            categorySelect.className = 'set-dynamic-select';
-            categorySelect.innerHTML = `
-                <option value="1">상의</option>
-                <option value="2">하의</option>
-                <option value="3">아우터</option>
-                <option value="4">신발</option>
-                <option value="5">가방</option>
-                <option value="6">모자</option>
-                <option value="7">기타</option>
+            // 세트 구성품 상세 정보를 입력할 수 있는 2단 폼 HTML 주입
+            div.innerHTML = `
+                <img src="${event.target.result}" class="set-dynamic-preview" alt="미리보기">
+                <div class="set-dynamic-inputs">
+                    <input type="text" name="setItemNames" class="set-dynamic-input" placeholder="상품명 (필수)" required>
+                    <select name="setCategoryIds" class="set-dynamic-select">
+                        <option value="1">상의</option>
+                        <option value="2">하의</option>
+                        <option value="3">아우터</option>
+                        <option value="4">신발</option>
+                        <option value="5">가방</option>
+                        <option value="6">모자</option>
+                        <option value="7">기타</option>
+                    </select>
+                    <div class="form-row-2" style="margin-top: 5px;">
+                        <input type="text" name="setBrands" class="set-dynamic-input" placeholder="브랜드">
+                        <input type="text" name="setColors" class="set-dynamic-input" placeholder="색상">
+                        <input type="text" name="setMaterials" class="set-dynamic-input" placeholder="소재">
+                        <input type="text" name="setFits" class="set-dynamic-input" placeholder="핏">
+                        <input type="text" name="setStyles" class="set-dynamic-input" placeholder="스타일" style="grid-column: span 2;">
+                    </div>
+                </div>
+                <button type="button" class="image-remove-btn">&times;</button>
             `;
 
-            inputWrapper.appendChild(nameInput);
-            inputWrapper.appendChild(categorySelect);
-
-            const removeBtn = document.createElement('button');
-            removeBtn.className = 'image-remove-btn';
-            removeBtn.innerHTML = '&times;';
-            removeBtn.type = 'button';
-            removeBtn.onclick = function() {
+            // 삭제 버튼 이벤트 바인딩
+            div.querySelector('.image-remove-btn').onclick = function() {
                 div.remove();
                 const index = setFiles.indexOf(file);
                 if (index > -1) {
@@ -204,9 +196,6 @@ document.getElementById('setImageInput').addEventListener('change', function(e) 
                 }
             };
 
-            div.appendChild(img);
-            div.appendChild(inputWrapper);
-            div.appendChild(removeBtn);
             container.appendChild(div);
         };
         reader.readAsDataURL(file);
