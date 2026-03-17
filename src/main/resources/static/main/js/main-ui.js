@@ -60,6 +60,7 @@ function applyCategoryCard(cardId, iconId, hintId, category) {
   setText(hintId, category.hint);
 }
 
+// 서버에서 받은 MainResponse를 메인 화면 DOM에 반영한다.
 function applyMainSummary(summary) {
 	console.log("summary =", summary);
 	console.log("weatherStateKo =", summary.weatherStateKo);

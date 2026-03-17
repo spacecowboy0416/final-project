@@ -16,10 +16,18 @@ import com.finalproject.coordi.main.dto.WeatherContextDto;
 import com.finalproject.coordi.recommendation.domain.enums.WeatherEnums.RainProbabilityType;
 import com.finalproject.coordi.recommendation.domain.enums.WeatherEnums.WeatherStatusType;
 
+/**
+ * OpenWeather 현재 날씨/예보 응답을 내부 표준 날씨 DTO(WeatherContextDto)로 조립한다.
+ * 날씨 상태 분류, 강수 확률, 오늘 강수 여부 등을 계산한다.
+ */
 @Component
 public class WeatherContextAssembler {
 
     private static final ZoneId KOREA_ZONE = ZoneId.of("Asia/Seoul");
+    
+    /**
+     * 외부 API 응답을 내부 공통 날씨 컨텍스트로 변환한다.
+     */
 
     public WeatherContextDto assemble(
             OpenWeatherResponse current,

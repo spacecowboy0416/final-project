@@ -14,6 +14,10 @@ import com.finalproject.coordi.main.dto.OpenWeatherResponse;
 
 import lombok.RequiredArgsConstructor;
 
+/**
+ * OpenWeather API 호출 전용 클라이언트
+ * 현재 날씨와 예보 데이터를 각각 조회한다.
+ */
 @Component
 @RequiredArgsConstructor
 public class OpenWeatherClient {
@@ -28,7 +32,8 @@ public class OpenWeatherClient {
 
     @Value("${external.api.weather.forecast-url}")
     private String forecastUrl;
-
+    
+    //현재 날씨 조회
     public OpenWeatherResponse getCurrentWeather(double lat, double lon) {
 
         URI uri = UriComponentsBuilder
@@ -49,7 +54,7 @@ public class OpenWeatherClient {
 
         return response;
     }
-
+    //예보 날씨 조회
     public OpenWeatherForecastResponse getForecast(double lat, double lon) {
 
         URI uri = UriComponentsBuilder

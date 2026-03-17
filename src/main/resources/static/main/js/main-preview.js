@@ -1,3 +1,4 @@
+// 개발용 미리보기 날씨 데이터 생성
 async function createPreviewWeather(weatherStatus) {
   const locationText = window.CoordiConfig.DEFAULT_LOCATION.name || "서울";
   
@@ -187,7 +188,9 @@ async function fetchPreviewSummary(weather) {
   return response.json();
 }
 
+// 개발용 날씨 상태 버튼 클릭 시 preview API를 호출해 메인 UI를 테스트한다.
 function bindDevPreview() {
+  if (!window.CoordiConfig.DEV_WEATHER_PREVIEW) return;
   const panel = document.getElementById("devWeatherPanel");
   if (!panel) return;
 

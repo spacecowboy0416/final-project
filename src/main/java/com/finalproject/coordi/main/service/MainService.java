@@ -8,6 +8,10 @@ import com.finalproject.coordi.main.dto.WeatherResponse;
 
 import lombok.RequiredArgsConstructor;
 
+/**
+ * 메인페이지에 필요한 최종 응답(MainResponse)을 생성하는 서비스
+ * 날씨 정보와 추천 카테고리를 UI 표시용 형태로 가공한다.
+ */
 @Service
 @RequiredArgsConstructor
 public class MainService {
@@ -22,7 +26,14 @@ public class MainService {
         WeatherResponse weather = weatherService.getToday(lat, lon);
         return buildMainResponse(weather, isDefault);
     }
-
+    
+    /**
+     * [카테고리 추천]
+     * 날씨 상태에 따라 상의/하의/아우터/악세서리 추천을 결정한다.
+     * 
+     * WeatherResponse를 메인 화면 표시용 MainResponse로 변환한다.
+     * 날씨 상태 한글명, 아이콘, 설명문, 효과 모드, 카테고리 추천을 함께 구성한다.
+     */
     private MainResponse buildMainResponse(WeatherResponse weather, boolean isDefault) {
         String main = safeMain(weather.getWeatherMainRaw());
         String weatherStatus = safeWeatherStatus(weather.getWeatherStatus());

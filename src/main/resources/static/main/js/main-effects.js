@@ -44,6 +44,7 @@ function createParticles(count, factory) {
   return Array.from({ length: count }, factory);
 }
 
+// 날씨 상태에 따라 배경 효과(해, 비, 눈, 바람, 번개)
 function startSunFx() {
   const sunRays = document.getElementById("sunRays");
   const sparkle = document.getElementById("sparkle");

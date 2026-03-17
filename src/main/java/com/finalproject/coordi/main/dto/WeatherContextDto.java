@@ -10,6 +10,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+/**
+ * 캐시 및 공통 재사용을 위한 내부 날씨 컨텍스트 DTO
+ */
 @Getter
 @Builder
 @NoArgsConstructor

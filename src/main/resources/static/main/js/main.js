@@ -1,3 +1,4 @@
+// 메인페이지 초기화: 위치 조회 → summary API 호출 → UI 반영
 async function initMainPage() {
   document.body.classList.add("is-loading");
   resizeCanvas();

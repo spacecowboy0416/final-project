@@ -27,7 +27,10 @@ public class LocationService {
 
     @Value("${external.api.kakao.local.coord2region-url}")
     private String coord2regionUrl;
-
+    
+    /**
+     * 위도/경도를 카카오 로컬 API로 변환하여 행정구역 정보(city/gu/dong)를 반환한다.
+     */
     public LocationResponse getRegion(double lat, double lon) {
         URI uri = UriComponentsBuilder
                 .fromUriString(coord2regionUrl)

@@ -11,6 +11,13 @@ import com.finalproject.coordi.main.dto.WeatherResponse;
 
 import lombok.RequiredArgsConstructor;
 
+/**
+ * [날씨 캐싱 구조]
+ * - Redis에 city+gu 기준으로 날씨 데이터를 캐싱한다.
+ * - 캐시가 존재하면 API 호출 없이 재사용한다.
+ * - 캐시가 없으면 OpenWeather API 호출 후 캐시에 저장한다.
+ * - Redis 비활성화 시 NoOp 캐시로 동작 (항상 API 호출)
+ */
 @Service
 @RequiredArgsConstructor
 public class WeatherService {
@@ -19,12 +26,20 @@ public class WeatherService {
     private final LocationService locationService;
     private final WeatherContextAssembler assembler;
     private final WeatherCachePort weatherCachePort;
-
+    
+    /**
+     * 1. 지역 기준 Redis 캐시 조회
+     * 2. 캐시 없으면 OpenWeather 현재 날씨/예보 호출
+     * 3. WeatherContextDto 조립 후 캐시에 저장
+     */
     public WeatherContextDto getWeatherContext(double lat, double lon) {
         LocationResponse region = locationService.getRegion(lat, lon);
         return getWeatherContext(lat, lon, region);
     }
-
+    
+    /**
+     * 메인페이지에서 사용할 날씨 정보를 WeatherResponse 형태로 반환한다.
+     */
     public WeatherResponse getToday(double lat, double lon) {
         LocationResponse region = locationService.getRegion(lat, lon);
         WeatherContextDto context = getWeatherContext(lat, lon, region);

@@ -11,10 +11,15 @@ import com.finalproject.coordi.main.dto.WeatherContextDto;
 
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Redis 기반 날씨 캐시 구현체
+ * city + gu 기준으로 날씨 정보를 Redis에 저장하고 재사용한다.
+ */
 @RequiredArgsConstructor
 public class RedisWeatherCacheAdapter implements WeatherCachePort {
 
     private static final Logger log = LoggerFactory.getLogger(RedisWeatherCacheAdapter.class);
+    // 날씨 캐시 TTL: 30분
     private static final Duration WEATHER_TTL = Duration.ofMinutes(30);
 
     private final RedisTemplate<String, Object> redisTemplate;

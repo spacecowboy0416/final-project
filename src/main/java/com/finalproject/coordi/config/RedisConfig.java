@@ -12,10 +12,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
+/**
+ * Redis 캐시를 사용할 때만 RedisTemplate Bean을 등록한다.
+ * application.yml의 app.cache.redis-enabled=true 인 경우에만 활성화된다.
+ */
 @Configuration
 @ConditionalOnProperty(name = "app.cache.redis-enabled", havingValue = "true")
 public class RedisConfig {
-
+	
+	/**
+	 * WeatherContextDto 등을 JSON 형태로 Redis에 저장하기 위한 RedisTemplate 설정
+	 */
     @Bean
     public RedisTemplate<String, Object> redisTemplate(
             RedisConnectionFactory connectionFactory) {
