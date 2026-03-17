@@ -26,8 +26,10 @@ public class ClosetService {
 
     public void saveRecommendation(SavedCoordiDto dto) {
         try {
-            if (dto.getInputMode() == null) dto.setInputMode("TEXT");
-            if (dto.getProductOption() == null) dto.setProductOption("NONE");
+            if (dto.getInputMode() == null)
+                dto.setInputMode("TEXT");
+            if (dto.getProductOption() == null)
+                dto.setProductOption("NONE");
             closetMapper.insertSavedCoordi(dto);
             log.info("코디 저장 성공 - userId: {}", dto.getUserId());
         } catch (Exception e) {
@@ -49,14 +51,15 @@ public class ClosetService {
         return closetMapper.findItemsByUserId(userId);
     }
 
+    @SuppressWarnings("null")
     @Transactional
     public void addClosetItem(Long userId, ClosetItemDto itemDto, MultipartFile imageFile) {
         String imageUrl = null;
-        
+
         // 1. S3 이미지 업로드
         try {
             if (imageFile != null && !imageFile.isEmpty()) {
-                imageUrl = uploadImageToS3(imageFile); 
+                imageUrl = uploadImageToS3(imageFile);
             }
         } catch (Exception e) {
             log.error("옷장 이미지 S3 업로드 실패 - 파일명: {}", imageFile.getOriginalFilename(), e);
@@ -83,7 +86,7 @@ public class ClosetService {
 
             // Closet_item 테이블 INSERT (연결)
             closetMapper.insertClosetItem(userId, newProduct.getProductId());
-            
+
             log.info("나의 옷장 아이템 등록 성공 - userId: {}, productId: {}", userId, newProduct.getProductId());
         } catch (Exception e) {
             log.error("옷장 아이템 DB 저장 실패 - userId: {}", userId, e);

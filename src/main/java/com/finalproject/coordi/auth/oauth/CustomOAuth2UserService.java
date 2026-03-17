@@ -1,8 +1,8 @@
 package com.finalproject.coordi.auth.oauth;
 
 import com.finalproject.coordi.exception.auth.AuthFailedException;
-import com.finalproject.coordi.user.dto.UserDto;
-import com.finalproject.coordi.user.service.UserService;
+import com.finalproject.coordi.users.dto.UsersDto;
+import com.finalproject.coordi.users.service.UsersService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -23,27 +23,28 @@ import java.util.Map;
 @Slf4j
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
-    private final UserService userService;
+    private final UsersService usersService;
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
         // OAuth2 Provider로부터 사용자 정보(Entity) 가져오기
         OAuth2User oAuth2User = super.loadUser(userRequest);
-
         // 사용자 정보 내의 속성값(Attributes)을 Map 형태로 가져오기
+
         Map<String, Object> attributes = oAuth2User.getAttributes();
 
         // 소셜 서비스 구분(ex.google, kakao, naver)
         String registrationId = userRequest.getClientRegistration().getRegistrationId();
+
         // 해당 서비스가 고유 식별자로 사용 키값 (ex. google-sub or kakao/naver-id)
         String userNameAttributeName = userRequest.getClientRegistration().getProviderDetails()
-        .getUserInfoEndpoint().getUserNameAttributeName(); 
-        
+                                           .getUserInfoEndpoint().getUserNameAttributeName();
+
         // 소셜 서비스별로 제공되는 유저 정보를 공통 UserDto로 변환
-        UserDto userDto = extractUserDto(registrationId, attributes);
+        UsersDto usersDto = extractUsersDto(registrationId, attributes);
         
         // UserDto를 DB에 저장하거나 업데이트하여 최종 UserDto 반환
-        UserDto savedUser = userService.saveOrUpdate(userDto);
+        UsersDto savedUser = usersService.saveOrUpdate(usersDto);
         
         // attributes는 수정 불가일 수 있으므로 복사해서 필요한 정보(isNewUser) 추가
         Map<String, Object> customAttributes = new HashMap<>(attributes);
@@ -59,9 +60,9 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     // 각 소셜 서비스별로 제공되는 유저 정보를 공통 UserDto로 변환
     @SuppressWarnings("unchecked")
-    private UserDto extractUserDto(String registrationId, Map<String, Object> attributes) {
+    private UsersDto extractUsersDto(String registrationId, Map<String, Object> attributes) {
         if ("google".equals(registrationId)) {
-            return UserDto.builder()
+            return UsersDto.builder()
                     .provider("google")
                     .providerUserId((String) attributes.get("sub"))
                     .email((String) attributes.get("email"))
@@ -71,7 +72,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         } else if ("kakao".equals(registrationId)) {
             Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
             Map<String, Object> profile = (Map<String, Object>) kakaoAccount.get("profile");
-            return UserDto.builder()
+            return UsersDto.builder()
                     .provider("kakao")
                     .providerUserId(String.valueOf(attributes.get("id")))
                     .email((String) kakaoAccount.get("email"))
@@ -80,7 +81,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                     .build();
         } else if ("naver".equals(registrationId)) {
             Map<String, Object> response = (Map<String, Object>) attributes.get("response");
-            return UserDto.builder()
+            return UsersDto.builder()
                     .provider("naver")
                     .providerUserId((String) response.get("id"))
                     .email((String) response.get("email"))

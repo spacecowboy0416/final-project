@@ -21,6 +21,7 @@ public class ProductDto {
     private String source;
     private String externalId;
     private Long categoryId;
+    private String gender;
     private String name;
     private String brand;
     private Integer price;

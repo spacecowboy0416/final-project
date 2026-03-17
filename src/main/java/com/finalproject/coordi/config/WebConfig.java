@@ -1,6 +1,6 @@
 package com.finalproject.coordi.config;
 
-import com.finalproject.coordi.user.annotation.LoginUserArgumentResolver;
+import com.finalproject.coordi.users.annotation.LoginUserArgumentResolver;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;

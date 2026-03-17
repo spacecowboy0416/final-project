@@ -28,12 +28,12 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            // 1. CSRF 및 기본 인증 비활성화
-            .csrf(csrf -> csrf.disable()) // CSRF 보호 비활성화 (API 개발 시 보통 끔)
-            .formLogin(form -> form.disable()) // 기본 로그인 페이지 비활성화
-            .httpBasic(basic -> basic.disable()) // HTTP Basic 인증 비활성화(이거 없애면 로그인 창 뜸)
+            // CSRF 및 기본 인증 비활성화
+            .csrf(csrf -> csrf.disable()) //CSRF 보호 비활성화 (REST API 개발 시 보통 끔)
+            .formLogin(form -> form.disable()) // 기본 로그인 페이지 비활성화 (Form 기반 로그인 사용 안 함)
+            .httpBasic(basic -> basic.disable()) // 기본 로그인 페이지 비활성화 (Form 기반 로그인 사용 안 함)
             
-            // 2. 세션 정책 설정: STATELESS (JWT 사용)
+            // 세션 정책 설정: STATELESS (JWT 사용)
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
@@ -42,7 +42,7 @@ public class SecurityConfig {
                 .requireExplicitSave(false)
             )
             
-            // 3. 인가 설정
+            // 인가 설정
             .authorizeHttpRequests(auth -> auth
                 // 마스터만
                 .requestMatchers("/admin/super/**").hasRole("MASTER")
@@ -54,7 +54,7 @@ public class SecurityConfig {
                 .anyRequest().authenticated()
             )
             
-            // 4. OAuth2 로그인 설정
+            // OAuth2 로그인 설정
             .oauth2Login(oauth2 -> oauth2
                 .loginPage("/login")
                 .userInfoEndpoint(userInfo -> userInfo
@@ -67,14 +67,14 @@ public class SecurityConfig {
                 })
             )
             
-            // 5. 로그아웃 설정
+            // 로그아웃 설정
             .logout(logout -> logout
                 .logoutUrl("/logout")
                 .logoutSuccessUrl("/")
                 .deleteCookies("accessToken", "refreshToken")
             )
             
-            // 6. JWT 필터 등록 (UsernamePasswordAuthenticationFilter 이전에 실행)
+            // JWT 필터 등록 (UsernamePasswordAuthenticationFilter 이전에 실행)
             .addFilterBefore(new JwtAuthenticationFilter(jwtProvider), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

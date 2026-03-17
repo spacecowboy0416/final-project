@@ -2,8 +2,8 @@ package com.finalproject.coordi.auth.handler;
 
 import com.finalproject.coordi.auth.jwt.JwtProvider;
 import com.finalproject.coordi.exception.user.UserNotFoundException;
-import com.finalproject.coordi.user.dto.UserDto;
-import com.finalproject.coordi.user.service.UserService;
+import com.finalproject.coordi.users.dto.UsersDto;
+import com.finalproject.coordi.users.service.UsersService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -24,16 +24,16 @@ import java.util.Map;
 public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     private final JwtProvider jwtProvider;
-    private final UserService userService;
+    private final UsersService usersService;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
         Map<String, Object> attributes = oAuth2User.getAttributes();
-        
+
         // 유저 정보 추출
         String email = (String) attributes.get("email");
-        UserDto user = userService.findByEmail(email);
+        UsersDto user = usersService.findByEmail(email);
         // 유저 정보가 없는 경우 예외 처리
         if (user == null)
             throw new UserNotFoundException();

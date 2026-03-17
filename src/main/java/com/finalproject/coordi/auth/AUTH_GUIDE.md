@@ -1,5 +1,4 @@
-## 🏗️ 1. 모듈 구조 (Module Structure)
-
+[1. 모듈 구조 (Module Structure)]
 com.finalproject.coordi
 ├── config
 │ ├── SecurityConfig.java # [보안 설정] 시큐리티 정책 및 접근 권한 제어 총괄
@@ -24,17 +23,17 @@ com.finalproject.coordi
 ├── auth # 인증 관련 커스텀 예외들
 └── user # 사용자 관련 커스텀 예외들
 
-## 🔄 2. 주요 프로세스 흐름 (Process Flow)
 
-1. 소셜 로그인: 구글/카카오 로그인 성공 시 유저 정보 추출 (CustomOAuth2UserService)
-2. 회원 관리: 이메일 중복 체크 및 신규 가입/기존 유저 업데이트 (UserService, UserMapperInter)
-3. JWT 발급 및 저장: Access Token(30분)과 Refresh Token(7일)을 생성함. 보안을 위해 HttpOnly 및 SameSite=Lax 속성이 적용된 브라우저 쿠키에 토큰 저장 (OAuth2SuccessHandler, JwtProvider)
-4. 인증 유지: 브라우저 요청 시 쿠키에 담긴 JWT를 검사하여 로그인 상태 유지 (JwtAuthenticationFilter, JwtProvider)
-5. 자동 토큰 재발급: Access Token 만료 시 Refresh Token을 확인하여 자동으로 새 토큰을 발급(JwtAuthenticationFilter, JwtProvider)
-6. 로그아웃: /logout 요청 시 모든 토큰 쿠키를 삭제하여 인증을 해제 (SecurityConfig)
+[2. 주요 프로세스 흐름 (Process Flow)]
+1) 소셜 로그인: 구글/카카오 로그인 성공 시 유저 정보 추출 (CustomOAuth2UserService)
+2) 회원 관리: 이메일 중복 체크 및 신규 가입/기존 유저 업데이트 (UserService, UserMapperInter)
+3) JWT 발급 및 저장: Access Token(30분)과 Refresh Token(7일)을 생성함. 보안을 위해 HttpOnly 및 SameSite=Lax 속성이 적용된 브라우저 쿠키에 토큰 저장 (OAuth2SuccessHandler, JwtProvider)
+4) 인증 유지: 브라우저 요청 시 쿠키에 담긴 JWT를 검사하여 로그인 상태 유지 (JwtAuthenticationFilter, JwtProvider)
+5) 자동 토큰 재발급: Access Token 만료 시 Refresh Token을 확인하여 자동으로 새 토큰을 발급(JwtAuthenticationFilter, JwtProvider)
+6) 로그아웃: /logout 요청 시 모든 토큰 쿠키를 삭제하여 인증을 해제 (SecurityConfig)
 
-## 📄 3. 파일별 상세 역할
 
+[3. 파일별 상세 역할]
 - SecurityConfig: 서비스 전체의 보안 정책 설정 (권한 제어, 로그인/로그아웃 경로 등)
 - WebConfig: @LoginUser 어노테이션을 인식하기 위한 리졸버 등록
 - OAuth2SuccessHandler: 소셜 로그인 성공 시 JWT를 발급 받아 보안 쿠키에 저장 후 사용자에게 지급
@@ -44,7 +43,3 @@ com.finalproject.coordi
 - UserService: DB와 연동하여 회원가입, 정보 수정 및 중복 가입 방지 로직 수행
 - UserDto: 시스템 내에서 유저 정보를 전달하기 위한 데이터 객체
 - UserMapperInter: MyBatis를 사용하여 실제 DB 쿼리를 실행하는 인터페이스
-
-> 💡 팀원 가이드:
->
-> - 컨트롤러에서 유저 정보가 필요하면 @LoginUser UserDto user를 사용하세요.
