@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.finalproject.coordi.admin.mapper.AdminMapper">
+<mapper namespace="com.finalproject.coordi.admin.tag.mapper.TagMapper">
 
     <select id="selectTagTypes" resultType="java.lang.String">
         SELECT DISTINCT type
@@ -9,7 +9,7 @@
         ORDER BY FIELD(type, 'TPO', 'STYLE', 'SEASON', 'SLOT', 'FIT', 'MATERIAL', 'COLOR');
     </select>
 
-    <select id="selectTagsByType" resultType="com.finalproject.coordi.admin.dto.TagDto">
+    <select id="selectTagsByType" resultType="com.finalproject.coordi.admin.tag.dto.TagDto">
         SELECT
             tag_id as tagId,
             type,
@@ -22,7 +22,7 @@
             name;
     </select>
 
-    <insert id="insertTag" parameterType="com.finalproject.coordi.admin.dto.TagDto" useGeneratedKeys="true" keyProperty="tagId">
+    <insert id="insertTag" parameterType="com.finalproject.coordi.admin.tag.dto.TagDto" useGeneratedKeys="true" keyProperty="tagId">
         INSERT INTO tag (type, name)
         VALUES (#{type}, #{name})
     </insert>
