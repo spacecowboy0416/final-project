@@ -64,9 +64,6 @@ public class WeatherService {
         WeatherContextDto context = assembler.assemble(
                 current,
                 forecast,
-                region,
-                lat,
-                lon,
                 "kakao-rest"
         );
 

@@ -27,7 +27,6 @@ function setBackground(weatherStatus) {
     window.CoordiConfig.BG[weatherStatus] || window.CoordiConfig.BG.CLOUDY;
   bgImage.style.backgroundImage = `url('${url}')`;
 
-  const body = document.body;
 }
 
 function hideIntroOverlay() {

@@ -13,8 +13,8 @@ public class WeatherResponse {
 
     private String locationText;
 
-    private String weatherMainRaw;   // OpenWeather raw
-    private String weatherStatus;    // enum 코드 (CLEAR, CLOUDY 등)
+    private String weatherMainRaw;   
+    private String weatherStatus;    
 
     private String conditionText;
     private String weatherStateKo;

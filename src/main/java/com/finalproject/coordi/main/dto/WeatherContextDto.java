@@ -3,7 +3,6 @@ package com.finalproject.coordi.main.dto;
 import java.time.LocalDateTime;
 
 import com.finalproject.coordi.recommendation.domain.enums.WeatherEnums.RainProbabilityType;
-import com.finalproject.coordi.recommendation.domain.enums.WeatherEnums.SeasonType;
 import com.finalproject.coordi.recommendation.domain.enums.WeatherEnums.WeatherStatusType;
 
 import lombok.AllArgsConstructor;

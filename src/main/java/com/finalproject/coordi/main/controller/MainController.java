@@ -24,8 +24,7 @@ public class MainController {
     public MainResponse getSummary(
             @RequestParam("lat") double lat,
             @RequestParam("lon") double lon,
-            @RequestParam(name = "isDefault", defaultValue = "false") boolean isDefault
-    ) {
+            @RequestParam(name = "isDefault", defaultValue = "false") boolean isDefault) {
         return mainService.getSummary(lat, lon, isDefault);
     }
 

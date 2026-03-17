@@ -2,8 +2,9 @@ window.CoordiConfig = {
   DEV_WEATHER_PREVIEW: true, // 배포 시 false
 
   DEFAULT_LOCATION: {
-    lat: 37.498095,
-    lon: 127.027610
+	lat: 37.5636,
+	lon: 126.9976,
+	name: "서울 중구"
   },
 
   BG: {

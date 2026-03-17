@@ -8,7 +8,6 @@ let fxMode = "none";
 
 let particles = [];
 let thunderNext = 0;
-let fastFirstThunder = false;
 
 function resizeCanvas() {
   if (!canvas) return;
@@ -28,7 +27,6 @@ function stopFx() {
   fxMode = "none";
   particles = [];
   thunderNext = 0;
-  fastFirstThunder = false;
 
   if (animationId) {
     cancelAnimationFrame(animationId);
@@ -76,13 +74,11 @@ function startRainFx() {
 
 function startThunderFx() {
   particles = [];
-  fastFirstThunder = true;
   thunderNext = performance.now() + 120 + Math.random() * 180;
 }
 
 function startThunderRainFx() {
   startRainFx();
-  fastFirstThunder = true;
   thunderNext = performance.now() + 120 + Math.random() * 180;
 }
 
@@ -206,7 +202,6 @@ function renderThunder() {
   ctx.fillStyle = "rgba(255,255,255,0.24)";
   ctx.fillRect(0, 0, width, height);
 
-  fastFirstThunder = false;
   thunderNext = now + 1500 + Math.random() * 2400;
 }
 

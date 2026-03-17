@@ -32,9 +32,6 @@ public class KakaoCoord2RegionResponse {
         @JsonProperty("region_3depth_name")
         private String region3depthName;
 
-        @JsonProperty("region_4depth_name")
-        private String region4depthName;
-
         private String code;
         private String x;
         private String y;

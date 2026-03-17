@@ -18,8 +18,7 @@ public class WeatherCacheConfig {
     @ConditionalOnBean(RedisTemplate.class)
     public WeatherCachePort redisWeatherCachePort(
             RedisTemplate<String, Object> redisTemplate,
-            ObjectMapper objectMapper
-    ) {
+            ObjectMapper objectMapper) {
         return new RedisWeatherCacheAdapter(redisTemplate, objectMapper);
     }
 

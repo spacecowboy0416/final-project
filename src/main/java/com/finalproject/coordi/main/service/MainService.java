@@ -168,7 +168,7 @@ public class MainService {
 
         return CategoryRecommendationDto.builder()
                 .title("하의")
-                .hint(weather.getTemperature() <= 8 ? "두꺼운 긴바지" : "기본 긴바지")
+                .hint(weather.getTemperature() <= 8 ? "두꺼운 긴바지" : "긴바지")
                 .icon("/main/images/clothes-icons/bottom_longpants.png")
                 .visible(true)
                 .build();

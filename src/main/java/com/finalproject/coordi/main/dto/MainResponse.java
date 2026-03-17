@@ -11,15 +11,15 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class MainResponse {
 
-    private String locationText;     // 예: 서울 강남구 역삼동
-    private String locationSubText;  // 예: 현재 위치 / 기본 위치
+    private String locationText;     
+    private String locationSubText;  
     
     private String weatherStatus;
-    private String weatherMain;      // Clear, Clouds ...
-    private String weatherStateKo;   // 맑음, 흐림 ...
-    private String weatherIcon;      // ☼, ☁ ...
-    private String weatherDesc;      // 설명문
-
+    private String weatherMain;      
+    private String weatherStateKo;   
+    private String weatherIcon;      
+    private String weatherDesc;      
+    
     private double temperature;
     private double feelsLike;
     private int humidity;
@@ -27,7 +27,7 @@ public class MainResponse {
     private double precipMm;
     private boolean todayRain;
 
-    private String fxMode;           // sun, rain, thunder, snow, none
+    private String fxMode;          
 
     private CategoryRecommendationDto top;
     private CategoryRecommendationDto bottom;

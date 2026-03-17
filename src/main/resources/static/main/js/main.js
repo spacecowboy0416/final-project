@@ -14,7 +14,7 @@ async function initMainPage() {
     const summary = await fetchMainSummary(lat, lon, isDefault);
 
     applyMainSummary(summary);
-    hideIntroOverlay(0);
+    hideIntroOverlay();
   } catch (e) {
     console.error("초기 로딩 실패:", e);
 

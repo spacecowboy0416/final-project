@@ -1,33 +1,6 @@
-async function fetchRegionName(lat, lon) {
-  const response = await fetch(`/api/location/region?lat=${lat}&lon=${lon}`);
-
-  if (!response.ok) {
-    throw new Error("Region API request failed");
-  }
-
-  const data = await response.json();
-
-  if (!data) {
-    return "서울";
-  }
-
-  const city = data.city ?? "서울";
-  const gu = data.gu ?? "";
-
-  return gu ? `${city} ${gu}` : city;
-}
-
 async function createPreviewWeather(weatherStatus) {
-  const { lat, lon } = window.CoordiConfig.DEFAULT_LOCATION;
-
-  let locationText = "서울";
-
-  try {
-    locationText = await fetchRegionName(lat, lon);
-  } catch (e) {
-    console.error("지역명 조회 실패:", e);
-  }
-
+  const locationText = window.CoordiConfig.DEFAULT_LOCATION.name || "서울";
+  
   const base = {
     locationText,
     weatherStatus,
@@ -228,7 +201,7 @@ function bindDevPreview() {
         const summary = await fetchPreviewSummary(weather);
 
         applyMainSummary(summary);
-        hideIntroOverlay(0);
+        hideIntroOverlay();
       } catch (e) {
         console.error("preview 실패:", e);
       }

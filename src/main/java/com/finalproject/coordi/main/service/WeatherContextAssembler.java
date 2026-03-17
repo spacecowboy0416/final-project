@@ -24,11 +24,7 @@ public class WeatherContextAssembler {
     public WeatherContextDto assemble(
             OpenWeatherResponse current,
             OpenWeatherForecastResponse forecast,
-            LocationResponse region,
-            double latitude,
-            double longitude,
-            String resolvedBy
-    ) {
+            String resolvedBy) {
         String rawMain = extractWeatherMain(current);
         String rawDescription = extractWeatherDescription(current);
 
