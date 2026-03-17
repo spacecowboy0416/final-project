@@ -9,5 +9,4 @@ Semantic rules:
 - `main_item_analysis.type` is an item category code, not a free-text garment name.
 - `main_item_analysis.style` is a style code, not a sentence.
 - `item_name` is a short user-facing display name.
-- `search_query` is a short shopping search phrase.
 - `reasoning` is a brief explanation for why the slot item fits the outfit.

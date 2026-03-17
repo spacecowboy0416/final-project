@@ -105,8 +105,8 @@ external:
   api:
     gemini:
       endpoint: ${GEMINI_ENDPOINT:https://generativelanguage.googleapis.com} #SDK 엔드포인트
-      url: ${GEMINI_URL:https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent} #REST API 엔드포인트
       model: ${GEMINI_MODEL:gemini-3.1-flash-lite-preview}
+      url: ${GEMINI_URL:https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent} #REST API URL
       key: ${GEMINI_API_KEY}
     shopping:
       endpoint: ${SHOPPING_API_ENDPOINT:https://openapi.naver.com/v1/search/shop.json}

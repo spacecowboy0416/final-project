@@ -11,7 +11,7 @@ import java.util.Map;
 import org.springframework.stereotype.Component;
 
 @Component
-public class BlueprintResponseBuilder {
+public class CoordinationBuilder {
     /**
      * 검증된 blueprint 출력 DTO를 기반으로 최종 coordination 응답 DTO를 만든다.
      * TODO: 현재는 blueprint 값을 그대로 응답에 옮기는 임시 빌더다.
@@ -28,18 +28,26 @@ public class BlueprintResponseBuilder {
             aiBlueprint.tpoType(),
             aiBlueprint.styleType(),
             aiBlueprint.stylingRuleApplied(),
-            buildBlueprintOutputs(validatedBlueprint)
+            buildCoordinationOutputs(validatedBlueprint, matchedItemsBySlot)
         );
     }
 
-    private List<CoordinationItemOutputDto> buildBlueprintOutputs(BlueprintValidationDto.ValidatedBlueprint validatedBlueprint) {
-        // TODO: 현재는 매칭 결과가 아니라 blueprint slot 원본만 응답용 DTO로 변환한다.
+    private List<CoordinationItemOutputDto> buildCoordinationOutputs(
+        BlueprintValidationDto.ValidatedBlueprint validatedBlueprint,
+        Map<CategoryType, ItemMatcher.MatchedItem> matchedItemsBySlot
+    ) {
         return Arrays.stream(CategoryType.values())
-            .map(categoryType -> toBlueprintOutput(validatedBlueprint.slotsByCategory().get(categoryType)))
+            .map(categoryType -> toCoordinationOutput(
+                validatedBlueprint.slotsByCategory().get(categoryType),
+                matchedItemsBySlot == null ? null : matchedItemsBySlot.get(categoryType)
+            ))
             .toList();
     }
 
-    private CoordinationItemOutputDto toBlueprintOutput(BlueprintValidationDto.Slot slot) {
+    private CoordinationItemOutputDto toCoordinationOutput(
+        BlueprintValidationDto.Slot slot,
+        ItemMatcher.MatchedItem matchedItem
+    ) {
         if (slot == null || slot.raw() == null) {
             return new CoordinationItemOutputDto(
                 slot == null ? null : slot.slotKey(),
@@ -60,13 +68,18 @@ public class BlueprintResponseBuilder {
 
         BlueprintOutputDto.CoordinationSlot slotData = slot.raw();
         BlueprintOutputDto.Attributes attributes = slotData.attributes();
-        // TODO: imageUrl, matchScore는 실제 상품 매칭 결과 반영 전까지 임시값(null/0.0)으로 둔다.
+        var matchedProduct = matchedItem == null ? null : matchedItem.product();
+        String itemName = matchedProduct != null && matchedProduct.productName() != null && !matchedProduct.productName().isBlank()
+            ? matchedProduct.productName()
+            : slotData.itemName();
+        String imageUrl = matchedProduct == null ? null : matchedProduct.productImageUrl();
+        double matchScore = matchedItem == null ? 0.0 : matchedItem.matchScore();
         return new CoordinationItemOutputDto(
             slot.slotKey(),
-            slotData.itemName(),
-            null,
+            itemName,
+            imageUrl,
             slotData.category(),
-            0.0,
+            matchScore,
             readTempRangeValue(slotData.tempRange(), 0),
             readTempRangeValue(slotData.tempRange(), 1),
             slotData.priority(),

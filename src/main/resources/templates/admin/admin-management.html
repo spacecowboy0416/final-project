@@ -182,7 +182,56 @@
             <div id="popular-tags-list">
               <!-- Tags will be populated here -->
             </div>
+        </div>
+    </template>
+
+    <template id="user-management-template">
+      <div class="glass-panel">
+        <h1 class="glass-panel-title">회원 관리</h1>
+        <div class="user-management-controls">
+          <div class="filter-group">
+            <label for="role-filter">권한:</label>
+            <select id="role-filter" class="form-select">
+              <option value="ALL">전체</option>
+              <option value="USER">일반 사용자</option>
+              <option value="ADMIN">관리자</option>
+              <option value="MASTER">마스터 관리자</option>
+            </select>
           </div>
+          <div class="search-group">
+            <input type="text" id="user-search-input" class="form-input" placeholder="닉네임 또는 이메일로 검색">
+            <button id="search-user-btn" class="btn btn-primary">검색</button>
+          </div>
+        </div>
+        <div class="user-list-container">
+          <table class="user-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>프로필</th>
+                <th id="nickname-sort-header" class="sortable">
+                  닉네임
+                  <span class="sort-control">
+                    <span class="sort-arrow asc"></span>
+                    <span class="sort-arrow desc"></span>
+                  </span>
+                </th>
+                <th>이메일</th>
+                <th>소셜</th>
+                <th>역할</th>
+                <th>상태</th>
+                <th>가입일</th>
+                <th>마지막 로그인</th>
+                <th>관리</th>
+              </tr>
+            </thead>
+            <tbody id="user-table-body">
+              <!-- User data will be populated here by JS -->
+            </tbody>
+          </table>
+          <p class="empty-list-message" style="display: none;">
+            해당 조건의 회원이 없습니다.
+          </p>
         </div>
       </div>
     </template>
