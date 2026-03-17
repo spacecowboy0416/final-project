@@ -27,11 +27,9 @@ public class GlobalExceptionHandler {
     private final AiErrorTrackerService aiErrorTrackerService;
 
     /**
-     * 단순 정적 자원 누락 에러는 무시
+     * 단순 정적 자원 누락 에러는 무시 및 Sentry 처리
      */
     @ExceptionHandler(NoResourceFoundException.class)
-    public Object handleNoResourceFound(NoResourceFoundException e) {
-        log.warn("정적 자원 누락 (AI 분석 무시됨): {}", e.getMessage());
     public ResponseEntity<Void> handleNoResourceFound(NoResourceFoundException e, HttpServletRequest request) {
         String resourcePath = e.getResourcePath();
         boolean isStaticResource = resourcePath.contains("/css/") || resourcePath.contains("/js/") || resourcePath.contains("/images/");

@@ -5,20 +5,13 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta http-equiv="X-UA-Compatible" content="ie=edge">
-<<<<<<< HEAD
-        <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+        <meta name="referrer" content="no-referrer-when-downgrade">
+
+        <link rel="icon" th:href="@{/admin/images/favicon.ico}">
 
         <script src="https://browser.sentry-cdn.com/8.0.0/bundle.tracing.replay.min.js" crossorigin="anonymous"></script>
         <script th:inline="javascript">
-            const sentryDsn = /*[[${@environment.getProperty('sentry.dsn.frontend')}]]*/ '';
-=======
-        <meta name="referrer" content="no-referrer-when-downgrade">
-
-        <script src="https://browser.sentry-cdn.com/8.0.0/bundle.tracing.replay.min.js"
-            crossorigin="anonymous"></script>
-        <script th:inline="javascript">
             const sentryDsn = /*[[${SENTRY_DSN_FRONTEND}]]*/ '';
->>>>>>> develop
             if (sentryDsn) {
                 Sentry.init({
                     dsn: sentryDsn,
@@ -34,10 +27,6 @@
         </script>
 
         <link rel="stylesheet" th:href="@{/common/css/common.css}">
-<<<<<<< HEAD
-=======
-        <link rel="icon" th:href="@{/admin/images/favicon.ico}">
->>>>>>> develop
         <script th:src="@{/webjars/jquery/jquery.min.js}"></script>
     </th:block>
 

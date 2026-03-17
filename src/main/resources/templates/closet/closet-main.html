@@ -2,9 +2,7 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <th:block th:replace="~{layout/common :: configFragment}"></th:block>
-    
     <link rel="stylesheet" th:href="@{/closet/css/closet.css}">
-    
     <title>나의 옷장</title>
 </head>
 <body>
@@ -13,12 +11,12 @@
     <main class="main-content">
         
         <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 15px;">
-            <h2 style="margin: 0;">내 코디 룩북</h2>
-            <a th:href="@{/recommend}" class="btn" style="background: #333; color: white; padding: 8px 15px; border-radius: 20px; font-size: 0.9rem;">+ 새 코디 추천받기</a>
+            <h2 style="margin: 0; font-weight: 800;">AI 코디 룩북</h2>
+            <a th:href="@{/recommend}" class="btn" style="background: #111; color: white; padding: 10px 18px; border-radius: 20px; font-size: 0.9rem; font-weight: bold;">새 코디 추천받기</a>
         </div>
         
-        <div th:if="${#lists.isEmpty(savedCoordis)}" class="empty-msg-box" style="background: #f8f9fa; padding: 40px; text-align: center; border-radius: 12px;">
-            <p style="color: #888; margin: 0; font-size: 1.1rem;">아직 저장된 코디가 없습니다.</p>
+        <div th:if="${#lists.isEmpty(savedCoordis)}" class="empty-msg-box">
+            <p style="color: #888; margin: 0; font-size: 1.1rem;">저장된 AI 추천 코디가 없습니다.</p>
         </div>
 
         <div th:unless="${#lists.isEmpty(savedCoordis)}" class="slider-container" style="margin-bottom: 50px;">
@@ -30,35 +28,56 @@
                  onclick="openCoordiModal(this)">
                 <span class="date-badge" th:text="${#temporals.format(coordi.createdAt, 'yyyy-MM-dd HH:mm')}">날짜</span>
                 <h5 th:text="${coordi.inputText}">입력 텍스트</h5>
-                <p class="ai-desc-text" style="overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;" th:text="${coordi.aiExplanation}"></p>
+                <p class="ai-desc-text" th:text="${coordi.aiExplanation}"></p>
             </div>
         </div>
 
-        <hr style="border: 0; border-top: 2px solid #eee; margin-bottom: 40px;">
+        <hr style="border: 0; border-top: 1px solid #eee; margin-bottom: 40px;">
 
-        <h2 style="margin-bottom: 20px;">나의 옷장</h2>
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 15px;">
+            <h2 style="margin: 0; font-weight: 800;">나의 코디 세트</h2>
+            <button class="btn" style="background: #111; color: white; padding: 10px 18px; border-radius: 20px; border:none; cursor: pointer; font-size: 0.9rem; font-weight: bold;" onclick="openAddSetModal()">코디 세트 등록</button>
+        </div>
+
+        <div th:if="${#lists.isEmpty(manualSets)}" class="empty-msg-box">
+            <p style="color: #888; margin: 0; font-size: 1.1rem;">직접 등록한 코디 세트가 없습니다.</p>
+        </div>
+
+        <div th:unless="${#lists.isEmpty(manualSets)}" class="closet-grid" style="margin-bottom: 50px;">
+            <div class="item-card" th:each="set : ${manualSets}">
+                <h5 style="margin: 0 0 15px 0; font-size: 1.1rem; color: #111; font-weight: 800;" th:text="${set.inputText}">세트 이름</h5>
+                <div class="set-items-list">
+                    <div class="set-item-row" th:each="cItem : ${set.coordiItems}">
+                        <img th:src="${cItem.imageUrl}" class="set-item-img" alt="세트 이미지">
+                        <span class="set-item-name" th:text="${cItem.name}">상품명</span>
+                    </div>
+                </div>
+                <form th:action="@{/api/closet/recommendations/{recId}(recId=${set.recId})}" method="post" onsubmit="return confirm('이 세트를 삭제하시겠습니까?');" style="margin-top: 15px;">
+                    <input type="hidden" name="_method" value="delete"/>
+                    <button type="submit" class="btn-delete-item">세트 삭제</button>
+                </form>
+            </div>
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid #eee; margin-bottom: 40px;">
+
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 15px;">
+            <h2 style="margin: 0; font-weight: 800;">나의 옷장 (개별)</h2>
+            <button class="btn" style="background: #111; color: white; padding: 10px 18px; border-radius: 20px; border:none; cursor: pointer; font-size: 0.9rem; font-weight: bold;" onclick="openAddItemModal()">개별 옷 등록</button>
+        </div>
         
         <div class="closet-grid">
-            <div class="item-card add-item-card" onclick="openAddItemModal()">
-                <div class="plus-icon">+</div>
-                <div class="add-item-text">새로운 옷 등록하기</div>
-            </div>
-
             <div class="item-card clickable-card" th:each="item : ${items}">
                 <img th:if="${item.imageUrl != null}" th:src="${item.imageUrl}" class="item-image" alt="옷 이미지">
                 <div th:unless="${item.imageUrl != null}" class="item-image item-image-empty">이미지 없음</div>
                 
                 <div class="item-info">
                     <span class="badge" th:text="${item.season}">계절</span>
-                    <h4 style="margin: 5px 0; font-size: 1.1rem; color: #333;" th:text="${item.name}">옷 이름</h4>
-<<<<<<< HEAD
-                    <p style="color: #666; font-size: 0.9rem; margin-bottom: 10px;">카테고리: [[${item.categoryName != null ? item.categoryName : '미분류'}]]</p>
-=======
-                    <p style="color: #666; font-size: 0.9rem; margin-bottom: 10px;">카테고리: [[${item.categoryId}]]</p>
->>>>>>> develop
+                    <h4 style="margin: 8px 0 4px 0; font-size: 1.05rem; font-weight: bold; color: #111;" th:text="${item.name}">옷 이름</h4>
+                    <p style="color: #777; font-size: 0.85rem; margin-bottom: 10px;">[[${item.categoryName != null ? item.categoryName : '미분류'}]]</p>
                     
                     <form th:action="@{/closet/delete/{itemId}(itemId=${item.itemId})}" method="post" onsubmit="return confirm('이 옷을 정말 삭제하시겠습니까?');">
-                        <button type="submit" class="btn" style="background: #fff; color: #dc3545; border: 1px solid #dc3545; width: 100%; padding: 8px; border-radius: 6px; font-size: 0.9rem; transition: 0.2s;">삭제</button>
+                        <button type="submit" class="btn-delete-item">삭제</button>
                     </form>
                 </div>
             </div>
@@ -66,62 +85,122 @@
     </main>
 
     <div id="coordiModal" class="modal-overlay">
-        <div class="modal-content">
-            <span class="modal-close" onclick="closeCoordiModal()">&times;</span>
-            <span id="modalDate" style="color: #999; font-size: 0.8rem;">날짜</span>
-            <h3 id="modalTitle" style="margin: 10px 0 20px 0;">코디 제목</h3>
-            <p id="modalDesc" style="color: #555; line-height: 1.6; background: #f8f9fa; padding: 15px; border-radius: 8px;"></p>
-            <div class="modal-buttons">
-                <button type="button" class="btn-flex" style="background: #28a745; color: white;" onclick="editCoordi()">상/하의 변경</button>
-                <button type="button" class="btn-flex" style="background: #17a2b8; color: white;" onclick="shareCoordi()">자랑하기</button>
+        <div class="closet-modal-content">
+            <div class="closet-modal-header">
+                <h3 style="margin: 0; font-size: 1.2rem;">코디 상세 정보</h3>
+                <span class="closet-modal-close" onclick="closeCoordiModal()">&times;</span>
+            </div>
+            <div class="closet-modal-body">
+                <span id="modalDate" style="color: #999; font-size: 0.85rem;">날짜</span>
+                <h3 id="modalTitle" style="margin: 10px 0 20px 0; font-weight: 800;">코디 제목</h3>
+                <div id="modalDesc" class="closet-desc-box"></div>
+            </div>
+            <div class="closet-modal-footer">
+                <button type="button" class="btn-closet outline" onclick="editCoordi()">변경하기</button>
+                <button type="button" class="btn-closet primary" onclick="shareCoordi()">자랑하기</button>
                 <form id="deleteCoordiForm" method="post" style="flex: 1; display: flex;">
-                    <button type="submit" class="btn-flex" style="background: #dc3545; color: white; width: 100%;" onclick="return confirm('이 코디를 삭제하시겠습니까?');">삭제</button>
+                    <button type="submit" class="btn-closet danger" onclick="return confirm('이 코디를 삭제하시겠습니까?');">삭제</button>
                 </form>
             </div>
         </div>
     </div>
 
     <div id="addItemModal" class="modal-overlay">
-        <div class="modal-content">
-            <span class="modal-close" onclick="closeAddItemModal()">&times;</span>
-            <h3 style="margin-top: 0; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px;">새로운 옷 등록</h3>
-            <form th:action="@{/closet/add}" method="post" enctype="multipart/form-data">
-                <div class="form-group" style="margin-bottom: 15px;">
-                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #444;">옷 이름 (예: 검정 슬랙스)</label>
-                    <input type="text" name="name" class="form-control" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px;">
+        <div class="closet-modal-content">
+            <div class="closet-modal-header">
+                <h3 style="margin: 0; font-size: 1.2rem;">개별 옷 등록</h3>
+                <span class="closet-modal-close" onclick="closeAddItemModal()">&times;</span>
+            </div>
+            <form th:action="@{/closet/add}" method="post" enctype="multipart/form-data" id="addItemForm" style="display: contents;">
+                <div class="closet-modal-body">
+                    <div class="form-group">
+                        <label class="closet-label">옷 이름</label>
+                        <input type="text" name="name" class="closet-input" placeholder="예: 무탠다드 쿨 스웨트 셔츠" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="closet-label">카테고리</label>
+                        <div class="closet-pill-container" id="categoryPillGroup">
+                            <button type="button" class="closet-pill active" data-id="1">상의</button>
+                            <button type="button" class="closet-pill" data-id="2">하의</button>
+                            <button type="button" class="closet-pill" data-id="3">아우터</button>
+                            <button type="button" class="closet-pill" data-id="4">신발</button>
+                            <button type="button" class="closet-pill" data-id="5">가방</button>
+                            <button type="button" class="closet-pill" data-id="6">모자</button>
+                            <button type="button" class="closet-pill" data-id="7">기타</button>
+                        </div>
+                        <input type="hidden" name="categoryId" id="selectedCategoryId" value="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="closet-label">계절</label>
+                        <div class="closet-pill-container" id="seasonPillGroup">
+                            <button type="button" class="closet-pill active" data-val="SPRING">봄</button>
+                            <button type="button" class="closet-pill" data-val="SUMMER">여름</button>
+                            <button type="button" class="closet-pill" data-val="FALL">가을</button>
+                            <button type="button" class="closet-pill" data-val="WINTER">겨울</button>
+                        </div>
+                        <input type="hidden" name="season" id="selectedSeason" value="SPRING" required>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 10px;">
+                        <label class="closet-label">사진 등록</label>
+                        <div class="closet-upload-box" onclick="document.getElementById('imageInput').click()">
+                            <div class="upload-placeholder">
+                                <span style="font-size: 1.5rem; margin-bottom: 5px;">+</span>
+                                <span>사진 추가하기 (여러 장 가능)</span>
+                            </div>
+                        </div>
+                        <input type="file" name="imageFiles" id="imageInput" accept="image/*" multiple style="display: none;">
+                        <div id="imagePreviewContainer" class="image-preview-container"></div>
+                    </div>
                 </div>
-                <div class="form-group" style="margin-bottom: 15px;">
-<<<<<<< HEAD
-                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #444;">카테고리</label>
-=======
-                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #444;">카테고리 (1: 상의, 2: 하의 등)</label>
->>>>>>> develop
-                    <input type="number" name="categoryId" class="form-control" value="1" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px;">
+                <div class="closet-modal-footer">
+                    <button type="submit" class="btn-closet primary full-width">옷장에 추가하기</button>
                 </div>
-                <div class="form-group" style="margin-bottom: 15px;">
-                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #444;">계절</label>
-                    <select name="season" class="form-control" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px;">
-                        <option value="SPRING">봄</option>
-                        <option value="SUMMER">여름</option>
-                        <option value="FALL">가을</option>
-                        <option value="WINTER">겨울</option>
-                    </select>
-                </div>
-                <div class="form-group" style="margin-bottom: 25px;">
-                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #444;">옷 사진</label>
-                    <input type="file" name="imageFile" class="form-control" accept="image/*" style="width: 100%;">
-                </div>
-                <button type="submit" class="btn-flex" style="background: #007bff; color: white; width: 100%;">옷장에 추가하기</button>
             </form>
         </div>
     </div>
 
-<<<<<<< HEAD
-    <footer th:replace="~{layout/common :: footerFragment}"></footer>
-=======
-	<footer th:replace="~{layout/common :: footerFragment}"></footer>
->>>>>>> develop
+    <div id="addSetModal" class="modal-overlay">
+        <div class="closet-modal-content">
+            <div class="closet-modal-header">
+                <h3 style="margin: 0; font-size: 1.2rem;">코디 세트 등록</h3>
+                <span class="closet-modal-close" onclick="closeAddSetModal()">&times;</span>
+            </div>
+            <form th:action="@{/closet/add-set}" method="post" enctype="multipart/form-data" id="addSetForm" style="display: contents;">
+                <div class="closet-modal-body">
+                    <div class="form-group">
+                        <label class="closet-label">코디 세트 이름</label>
+                        <input type="text" name="setName" class="closet-input" placeholder="예: 봄맞이 데이트룩" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="closet-label">세트 계절</label>
+                        <div class="closet-pill-container" id="setSeasonPillGroup">
+                            <button type="button" class="closet-pill active" data-val="SPRING">봄</button>
+                            <button type="button" class="closet-pill" data-val="SUMMER">여름</button>
+                            <button type="button" class="closet-pill" data-val="FALL">가을</button>
+                            <button type="button" class="closet-pill" data-val="WINTER">겨울</button>
+                        </div>
+                        <input type="hidden" name="season" id="setSelectedSeason" value="SPRING" required>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 10px;">
+                        <label class="closet-label">세트 구성품 사진 등록</label>
+                        <div class="closet-upload-box" onclick="document.getElementById('setImageInput').click()">
+                            <div class="upload-placeholder">
+                                <span style="font-size: 1.5rem; margin-bottom: 5px;">+</span>
+                                <span>구성품 사진 추가하기</span>
+                            </div>
+                        </div>
+                        <input type="file" name="imageFiles" id="setImageInput" accept="image/*" multiple style="display: none;">
+                        <div id="setPreviewContainer" style="margin-top: 15px; display: flex; flex-direction: column; gap: 15px;"></div>
+                    </div>
+                </div>
+                <div class="closet-modal-footer">
+                    <button type="submit" class="btn-closet primary full-width">세트로 저장하기</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
+    <footer th:replace="~{layout/common :: footerFragment}"></footer>
     <script th:src="@{/closet/js/closet.js}"></script>
 </body>
 </html>

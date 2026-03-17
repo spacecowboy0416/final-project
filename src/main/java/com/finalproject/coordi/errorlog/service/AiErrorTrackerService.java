@@ -4,12 +4,9 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import com.finalproject.coordi.errorlog.mapper.ErrorLogMapper;
-import com.finalproject.coordi.errorlog.dto.SystemErrorLog; // DTO 임포트 추가
+import com.finalproject.coordi.errorlog.dto.SystemErrorLog;
 
-<<<<<<< HEAD
-=======
 import io.sentry.Sentry;
->>>>>>> develop
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
