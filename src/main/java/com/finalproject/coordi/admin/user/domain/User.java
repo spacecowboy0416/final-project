@@ -1,4 +1,4 @@
-package com.finalproject.coordi.admin.domain.user;
+package com.finalproject.coordi.admin.user.domain;
 
 import java.time.LocalDateTime;
 

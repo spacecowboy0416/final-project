@@ -2,9 +2,9 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.finalproject.coordi.admin.domain.user.UserMapperInter">
+<mapper namespace="com.finalproject.coordi.admin.user.mapper.UserMapperInter">
 
-    <select id="findAll" resultType="com.finalproject.coordi.admin.domain.user.User">
+    <select id="findAll" resultType="com.finalproject.coordi.admin.user.domain.User">
         SELECT
             user_id, provider, provider_user_id, email, nickname, profile_image_url,
             role, status, created_at, last_login_at
@@ -31,7 +31,7 @@
         </choose>
     </select>
 
-    <select id="findById" parameterType="long" resultType="com.finalproject.coordi.admin.domain.user.User">
+    <select id="findById" parameterType="long" resultType="com.finalproject.coordi.admin.user.domain.User">
         SELECT
             user_id, provider, provider_user_id, email, nickname, profile_image_url,
             role, status, created_at, last_login_at

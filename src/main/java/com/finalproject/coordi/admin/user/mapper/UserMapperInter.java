@@ -1,5 +1,6 @@
-package com.finalproject.coordi.admin.domain.user;
+package com.finalproject.coordi.admin.user.mapper;
 
+import com.finalproject.coordi.admin.user.domain.User;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 

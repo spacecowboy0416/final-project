@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.finalproject.coordi.admin.community.mapper.CommunityMapper">
+
+    <select id="selectBoardPostList" resultType="com.finalproject.coordi.admin.community.dto.AdminCommunityDto">
+        SELECT
+            p.post_id as postId,
+            p.title,
+            u.nickname as authorNickname,
+            u.email as authorEmail,
+            p.created_at as createdAt,
+            p.is_public as isPublic,
+            p.rec_id as recId,
+            (SELECT COUNT(*) FROM board_comment c WHERE c.post_id = p.post_id) as commentCount
+        FROM board_post p
+        JOIN users u ON p.user_id = u.user_id
+        ORDER BY p.created_at DESC
+    </select>
+
+    <update id="updatePostVisibility">
+        UPDATE board_post
+        SET is_public = #{isPublic}
+        WHERE post_id = #{postId}
+    </update>
+
+    <delete id="deletePost">
+        DELETE FROM board_post WHERE post_id = #{postId}
+    </delete>
+
+</mapper>

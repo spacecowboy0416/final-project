@@ -7,6 +7,13 @@
     <link rel="stylesheet" th:href="@{/admin/css/admin-item.css}" />
     <link rel="stylesheet" th:href="@{/admin/css/admin-user.css}" />
     <title>관리자 페이지</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+      .stats-card { background: rgba(31, 41, 55, 0.4); border: 1px solid rgba(75, 85, 99, 0.5); border-radius: 0.75rem; padding: 1.5rem; transition: transform 0.2s; }
+      .tag-rank-item { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem; background: rgba(55, 65, 81, 0.3); border-radius: 0.5rem; border-left: 4px solid #6366f1; margin-bottom: 0.5rem; }
+      .tag-rank-name { font-weight: 500; color: #f3f4f6; }
+      .tag-rank-count { font-size: 0.875rem; color: #9ca3af; }
+    </style>
   </head>
 
   <body>
@@ -116,6 +123,66 @@
           <p class="empty-list-message" style="display: none;">
             해당 조건의 회원이 없습니다.
           </p>
+        </div>
+      </div>
+    </template>
+
+    <template id="community-management-template">
+      <div class="glass-panel">
+        <h1 class="glass-panel-title">커뮤니티 관리</h1>
+        <div class="user-list-container">
+          <table class="user-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>제목</th>
+                <th>작성자</th>
+                <th>작성일</th>
+                <th>댓글수</th>
+                <th>상태</th>
+                <th>관리</th>
+              </tr>
+            </thead>
+            <tbody id="community-table-body">
+              <!-- Community data will be populated here by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </template>
+
+    <template id="system-stats-template">
+      <div class="glass-panel">
+        <h1 class="glass-panel-title">시스템 통계 (Dashboard)</h1>
+        
+        <div class="stats-grid grid grid-cols-1 md:grid-cols-3 gap-6 mb-8" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 2rem;">
+          <div class="stats-card">
+            <h3 style="color: #9ca3af; font-size: 0.875rem; margin-bottom: 0.25rem;">총 사용자 / 오늘 신규</h3>
+            <p style="font-size: 1.5rem; font-weight: 700; color: #fff;"><span id="stat-total-users">-</span> / <span id="stat-today-users" style="color: #34d399;">-</span></p>
+          </div>
+          <div class="stats-card">
+            <h3 style="color: #9ca3af; font-size: 0.875rem; margin-bottom: 0.25rem;">총 추천 / 오늘 추천</h3>
+            <p style="font-size: 1.5rem; font-weight: 700; color: #fff;"><span id="stat-total-recs">-</span> / <span id="stat-today-recs" style="color: #60a5fa;">-</span></p>
+          </div>
+          <div class="stats-card">
+            <h3 style="color: #9ca3af; font-size: 0.875rem; margin-bottom: 0.25rem;">24시간 내 에러 건수</h3>
+            <p style="font-size: 1.5rem; font-weight: 700; color: #f87171;"><span id="stat-active-errors">-</span> 건</p>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+          <div style="background: rgba(31, 41, 55, 0.2); padding: 1.5rem; border-radius: 0.75rem; border: 1px solid rgba(75, 85, 99, 0.3);">
+            <h3 style="color: #fff; font-weight: 500; margin-bottom: 1.5rem;">최근 7일 이용 추이</h3>
+            <div style="height: 300px; position: relative;">
+              <canvas id="daily-trend-chart"></canvas>
+            </div>
+          </div>
+          <div style="background: rgba(31, 41, 55, 0.2); padding: 1.5rem; border-radius: 0.75rem; border: 1px solid rgba(75, 85, 99, 0.3);">
+            <h3 style="color: #fff; font-weight: 500; margin-bottom: 1.5rem;">실시간 인기 태그 TOP 10</h3>
+            <div id="popular-tags-list">
+              <!-- Tags will be populated here -->
+            </div>
+          </div>
         </div>
       </div>
     </template>

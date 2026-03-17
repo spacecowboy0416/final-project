@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.finalproject.coordi.admin.statistics.mapper.StatisticsMapper">
+
+    <!-- 시스템 통계 -->
+    <select id="selectSystemSummary" resultType="com.finalproject.coordi.admin.statistics.dto.AdminStatisticsDto">
+        SELECT
+            (SELECT COUNT(*) FROM users) as totalUsers,
+            (SELECT COUNT(*) FROM users WHERE DATE(created_at) = CURDATE()) as todayNewUsers,
+            (SELECT COUNT(*) FROM recommendation) as totalRecommendations,
+            (SELECT COUNT(*) FROM recommendation WHERE DATE(created_at) = CURDATE()) as todayRecommendations,
+            (SELECT COUNT(*) FROM closet_item) as totalClosetItems,
+            (SELECT COUNT(*) FROM system_error_log WHERE last_occurred_at > DATE_SUB(NOW(), INTERVAL 24 HOUR)) as activeErrors
+    </select>
+
+    <select id="selectDailyTrends" resultType="map">
+        SELECT 
+            d.date,
+            IFNULL(u.user_count, 0) as user_count,
+            IFNULL(r.rec_count, 0) as rec_count
+        FROM (
+            SELECT CURDATE() - INTERVAL (a.a + (10 * b.a)) DAY as date
+            FROM (SELECT 0 as a UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) a
+            CROSS JOIN (SELECT 0 as a UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) b
+        ) d
+        LEFT JOIN (
+            SELECT DATE(created_at) as date, COUNT(*) as user_count
+            FROM users
+            GROUP BY DATE(created_at)
+        ) u ON d.date = u.date
+        LEFT JOIN (
+            SELECT DATE(created_at) as date, COUNT(*) as rec_count
+            FROM recommendation
+            GROUP BY DATE(created_at)
+        ) r ON d.date = r.date
+        WHERE d.date BETWEEN DATE_SUB(CURDATE(), INTERVAL 6 DAY) AND CURDATE()
+        ORDER BY d.date ASC
+    </select>
+
+    <select id="selectPopularTags" resultType="com.finalproject.coordi.admin.statistics.dto.AdminStatisticsDto$PopularTagDto">
+        SELECT 
+            t.name as tagName,
+            t.type as tagType,
+            COUNT(rt.tag_id) as usageCount
+        FROM tag t
+        JOIN recommendation_tag rt ON t.tag_id = rt.tag_id
+        GROUP BY t.tag_id, t.name, t.type
+        ORDER BY usageCount DESC
+        LIMIT #{limit}
+    </select>
+</mapper>

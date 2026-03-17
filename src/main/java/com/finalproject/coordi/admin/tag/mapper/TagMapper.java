@@ -1,13 +1,13 @@
-package com.finalproject.coordi.admin.mapper;
+package com.finalproject.coordi.admin.tag.mapper;
 
-import com.finalproject.coordi.admin.dto.TagDto;
+import com.finalproject.coordi.admin.tag.dto.TagDto;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
 @Mapper
-public interface AdminMapper {
+public interface TagMapper {
 
     List<String> selectTagTypes();
 
