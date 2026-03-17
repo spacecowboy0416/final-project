@@ -9,5 +9,4 @@
 - `main_item_analysis.type`은 자유 텍스트 옷 이름이 아니라 아이템 카테고리 코드입니다.
 - `main_item_analysis.style`은 문장이 아니라 스타일 코드입니다.
 - `item_name`은 사용자에게 보여줄 짧은 이름입니다.
-- `search_query`는 상품 검색용 짧은 검색어입니다.
 - `reasoning`은 해당 슬롯 아이템이 코디에 왜 맞는지에 대한 짧은 설명입니다.
