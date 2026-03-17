@@ -24,7 +24,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtProvider jwtProvider;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
         // 쿠키에서 AccessToken과 RefreshToken 추출
         String accessToken = resolveToken(request, "accessToken");
         String refreshToken = resolveToken(request, "refreshToken");
@@ -32,11 +33,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // AccessToken 유효성 검사
         if (accessToken != null && jwtProvider.validateToken(accessToken)) {
             setAuthentication(accessToken);
-        } 
+        }
         // AccessToken 만료 시 RefreshToken으로 자동 갱신 시도
         else if (refreshToken != null && jwtProvider.validateToken(refreshToken)) {
             log.info("AccessToken 만료 감지. RefreshToken으로 갱신을 시도합니다.");
-            
+
             // RefreshToken에서 정보 추출
             Claims claims = jwtProvider.parseClaims(refreshToken);
             Long userId = Long.parseLong(claims.getSubject());
@@ -44,7 +45,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             // 새 AccessToken 생성
             String newAccessToken = jwtProvider.createAccessToken(userId, role);
-            
+
             // 새 쿠키를 브라우저에 다시 전달
             ResponseCookie newCookie = ResponseCookie.from("accessToken", newAccessToken)
                     .path("/")
