@@ -6,7 +6,6 @@ import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.Ite
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.MaterialType;
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.StyleType;
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.TpoType;
-import com.finalproject.coordi.recommendation.dto.api.BlueprintInputDto;
 
 /**
  * Naver Shopping 검색어 조합 규칙을 구성하는 토큰 타입 정의.
@@ -40,14 +39,14 @@ public final class ShoppingQueryEnums {
     }
 
     public enum GenderKeyword {
-        MALE(BlueprintInputDto.GenderType.MALE, "남성"),
-        FEMALE(BlueprintInputDto.GenderType.FEMALE, "여성"),
-        UNISEX(BlueprintInputDto.GenderType.UNISEX, "공용");
+        MALE(GenderType.MALE, "남성"),
+        FEMALE(GenderType.FEMALE, "여성"),
+        UNISEX(GenderType.UNISEX, "공용");
 
-        private final BlueprintInputDto.GenderType source;
+        private final GenderType source;
         private final String keyword;
 
-        GenderKeyword(BlueprintInputDto.GenderType source, String keyword) {
+        GenderKeyword(GenderType source, String keyword) {
             this.source = source;
             this.keyword = keyword;
         }
@@ -56,7 +55,7 @@ public final class ShoppingQueryEnums {
             return keyword;
         }
 
-        public static String from(BlueprintInputDto.GenderType source) {
+        public static String from(GenderType source) {
             if (source == null) {
                 return null;
             }

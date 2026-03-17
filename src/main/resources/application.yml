@@ -60,8 +60,8 @@ spring:
   # 4. File Upload (S3)
   servlet:
     multipart:
-      max-file-size: 10MB
-      max-request-size: 10MB
+      max-file-size: ${recommendation.image.max-size:5MB}
+      max-request-size: ${recommendation.image.max-size:5MB}
       
   devtools:
     livereload:
@@ -69,6 +69,10 @@ spring:
     restart:
       enabled: true
       additional-paths: src/main/resources/templates
+  web:
+    resources:
+      chain:
+        cache: false
 
 # 5. MyBatis 설정
 mybatis:
@@ -79,26 +83,12 @@ mybatis:
     log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
   type-aliases-package: com.finalproject.coordi
 
-# 6. AWS S3 (Cloud AWS)
-cloud:
-  aws:
-    credentials:
-      access-key: ${AWS_ACCESS_KEY}
-      secret-key: ${AWS_SECRET_KEY}
-    region:
-      static: ap-northeast-2
-      auto: false
-    s3:
-      bucket: ${AWS_S3_BUCKET}
+# 6. Doc 관리 
 
-# 7. Swagger (SpringDoc)
-springdoc:
-  api-docs:
-    path: /api-docs
-  swagger-ui:
-    path: /swagger-ui.html
-    groups-order: ASC
-    operations-sorter: method
+# 7. Recommendation 입력 이미지 제한
+recommendation:
+  image:
+    max-size: 5MB
 
 # 8. 커스텀 API 키 관리 (Gemini, OpenWeatherMap)
 external:
@@ -123,8 +113,13 @@ external:
       auth-scheme: ${KAKAO_MAP_AUTH_SCHEME:KakaoAK}
   storage:
     image:
-      base-url: ${IMAGE_STORAGE_BASE_URL:https://mock-cdn.local/items/}
+      bucket: ${AWS_S3_BUCKET}
+      region: ${AWS_REGION:ap-northeast-2}
+      access-key: ${AWS_ACCESS_KEY:}
+      secret-key: ${AWS_SECRET_KEY:}
+      base-url: ${IMAGE_STORAGE_BASE_URL:}
       extension: ${IMAGE_STORAGE_EXTENSION:.jpg}
+      recommendation-path: ${IMAGE_STORAGE_RECOMMENDATION_PATH:recommendations}
 
 # 9. Sentry (Monitoring)
 sentry:
@@ -141,16 +136,3 @@ logging:
     "[com.finalproject.coordi.closet.mapper]": TRACE
     "[com.finalproject.coordi.recommend.mapper]": TRACE
     "[com.finalproject.coordi.errorlog.mapper]": TRACE
-
-# 정적 리소스(JS/CSS) 캐시 끄기
-  web:
-    resources:
-      chain:
-        cache: false
-
-# DevTools 및 LiveReload 활성화
-  devtools:
-    livereload:
-      enabled: true
-    restart:
-      enabled: true # 클래스 파일 변경 시 자동 재시작 (선택 사항)

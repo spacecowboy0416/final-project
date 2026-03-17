@@ -51,6 +51,7 @@ dependencies {
 	implementation 'com.google.genai:google-genai:1.36.0'
 	implementation 'org.jsoup:jsoup:1.18.1'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+  implementation 'org.springframework.boot:spring-boot-starter-aop'
 }
 
 tasks.named('test') {

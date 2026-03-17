@@ -2,6 +2,7 @@ package com.finalproject.coordi.recommendation.service.apiadapter.gemini;
 
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums;
 import com.finalproject.coordi.recommendation.domain.enums.WeatherEnums;
+import com.finalproject.coordi.recommendation.infra.gemini.GeminiSchemaProvider;
 import com.google.genai.types.Schema;
 import java.util.List;
 import java.util.Map;
@@ -41,9 +42,20 @@ class GeminiSchemaProviderTest {
 
         List<String> tpoEnum = getEnum(outputSchema, "ai_blueprint", "tpoType");
         List<String> seasonEnum = getEnum(outputSchema, "ai_blueprint", "main_item_analysis", "season");
+        List<String> slotKeyEnum = getEnum(outputSchema, "ai_blueprint", "coordination", "tops", "slot_key");
 
         assertEquals(tpoExpected, tpoEnum);
         assertEquals(seasonExpected, seasonEnum);
+        assertEquals(
+            List.of(
+                CoordinationEnums.CategoryType.TOPS.code(),
+                CoordinationEnums.CategoryType.BOTTOMS.code(),
+                CoordinationEnums.CategoryType.OUTERWEAR.code(),
+                CoordinationEnums.CategoryType.SHOES.code(),
+                CoordinationEnums.CategoryType.ACCESSORIES.code()
+            ),
+            slotKeyEnum
+        );
         assertTrue(tpoEnum.stream().noneMatch(value -> value.equals(value.toUpperCase())));
     }
 

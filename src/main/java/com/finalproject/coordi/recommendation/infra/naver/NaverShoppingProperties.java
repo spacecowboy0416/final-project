@@ -1,0 +1,33 @@
+package com.finalproject.coordi.recommendation.infra.naver;
+
+import com.finalproject.coordi.exception.ErrorCode;
+import com.finalproject.coordi.exception.recommendation.RecommendationException;
+import jakarta.annotation.PostConstruct;
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
+
+@Component
+@Getter
+@Setter
+@ConfigurationProperties(prefix = "external.api.shopping")
+public class NaverShoppingProperties {
+    private String endpoint;
+    private String clientId;
+    private String clientSecret;
+
+    @PostConstruct
+    void validate() {
+        if (!StringUtils.hasText(endpoint)
+            || !StringUtils.hasText(clientId)
+            || !StringUtils.hasText(clientSecret)) {
+            throw new RecommendationException.AdapterException(
+                "Naver Shopping 설정이 누락되었습니다.",
+                ErrorCode.RECOMMENDATION_NAVER_SHOPPING_CONFIG_MISSING
+            );
+        }
+    }
+}
+

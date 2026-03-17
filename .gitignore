@@ -67,3 +67,4 @@ git_status.txt
 build_log.txt
 bootrun.log
 .tmp*
+AGENT.md
