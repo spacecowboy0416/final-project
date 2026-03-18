@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<body>
+	<th:block th:fragment="mainFragment">
+
+		<!-- background -->
+		<div id="bgImage"></div>
+		<div id="bgOverlay"></div>
+		<div id="sunRays"></div>
+		<div class="sparkle" id="sparkle"></div>
+		<canvas id="fxCanvas"></canvas>
+
+		<section class="wrap">
+			<div id="introOverlay" class="introOverlay">
+				<div class="introOverlay__content">
+					<div class="introOverlay__eyebrow">WEATHER BASED CATEGORY RECOMMENDATION</div>
+					<h1 class="introOverlay__title">Coordi</h1>
+					<p class="introOverlay__desc">
+						오늘의 날씨를 기반으로<br> 지금 필요한 옷차림을 추천합니다
+					</p>
+				</div>
+			</div>
+
+			<div class="mainCard w-full max-w-6xl space-y-5 rounded-3xl p-5 md:p-8">
+			
+				<!-- 코디 추천 검색창 -->
+				<section class="searchSection rounded-2xl p-5">
+					<div class="flex flex-col md:flex-row gap-3">
+						<input id="nlq"
+							class="w-full rounded-xl px-4 py-3 text-black/90 outline-none"
+							placeholder="예: 내일 소개팅인데 비 와. 뭘 입지?" />
+						<button id="goSearch"
+							class="rounded-xl px-5 py-3 transition font-semibold">
+							코디 추천</button>
+					</div>
+				</section>
+				
+				<!-- 카테고리 추천  -->
+				<section class="space-y-5">
+					<div class="categorySection rounded-2xl p-6">
+					
+						<div class="flex items-center justify-between mb-5">
+							<h2 class="sectionTitle">오늘의 추천</h2>
+						</div>
+
+						<div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-5">
+						
+							<div class="catCard">
+								<div class="iconBubble">
+									<img id="topIcon"
+										th:src="@{/main/images/clothes-icons/top_long_sleeve.png}"
+										alt="상의 아이콘">
+								</div>
+								<div class="catTitle">상의</div>
+								<div id="topHint" class="catHint">-</div>
+							</div>
+
+							<div class="catCard">
+								<div class="iconBubble">
+									<img id="bottomIcon"
+										th:src="@{/main/images/clothes-icons/bottom_longpants.png}"
+										alt="하의 아이콘">
+								</div>
+								<div class="catTitle">하의</div>
+								<div id="bottomHint" class="catHint">-</div>
+							</div>
+
+							<div id="outerCard" class="catCard hidden">
+								<div class="iconBubble">
+									<img id="outerIcon"
+										th:src="@{/main/images/clothes-icons/outer_jacket.png}"
+										alt="아우터 아이콘">
+								</div>
+								<div class="catTitle">아우터</div>
+								<div id="outerHint" class="catHint">-</div>
+							</div>
+
+							<div id="accCard" class="catCard hidden">
+								<div class="iconBubble">
+									<img id="accIcon"
+										th:src="@{/main/images/clothes-icons/acc_scarf.png}"
+										alt="악세서리 아이콘">
+								</div>
+								<div class="catTitle">악세서리</div>
+								<div id="accHint" class="catHint">-</div>
+							</div>
+
+						</div>
+						
+					</div>
+					
+					<!-- 날씨 정보 -->
+					<div class="weatherCard">
+						<div class="weatherHero__top">
+							<span class="weatherBadge">TODAY WEATHER</span>
+							<div class="weatherLocation">
+								<span id="weatherLocationLine"></span>
+								<span class="weatherLocationSub"></span>
+							</div>
+						</div>
+
+						<div class="weatherLayout">
+							<div class="weatherLeft">
+								<div id="panelTemp" class="weatherHero__temp"></div>
+
+								<div class="weatherHero__meta">
+									<div id="panelState" class="weatherHero__state"></div>
+									<div id="panelDesc" class="weatherHero__desc"></div>
+								</div>
+							</div>
+
+							<div class="weatherRight">
+								<div class="weatherDetailRow">
+									<span class="weatherDetailRow__label">체감온도</span> 
+									<strong id="feels" class="weatherDetailRow__value">-</strong>
+								</div>
+
+								<div class="weatherDetailRow">
+									<span class="weatherDetailRow__label">습도</span> 
+									<strong id="humid" class="weatherDetailRow__value">-</strong>
+								</div>
+
+								<div class="weatherDetailRow">
+									<span class="weatherDetailRow__label">바람</span> 
+									<strong id="wind" class="weatherDetailRow__value">-</strong>
+								</div>
+
+								<div class="weatherDetailRow">
+									<span class="weatherDetailRow__label">강수량</span> 
+									<strong id="precip" class="weatherDetailRow__value">-</strong>
+								</div>
+							</div>
+						</div>
+					</div>
+
+				</section>
+
+				<div class="text-center pageGuideText">* 위치 권한이 없을 시 서울 중구 기준</div>
+			</div>
+
+			<!-- 테스트용  -->
+			<div id="devWeatherPanel" class="fixed bottom-4 right-4 z-50 hidden">
+				<div class="glass-strong rounded-2xl p-3 space-y-2">
+					<div class="text-xs text-white/70">DEV · 날씨 미리보기</div>
+					<div class="flex flex-wrap gap-2">
+						<button data-w="CLEAR" class="px-3 py-1 rounded-xl text-sm">CLEAR</button>
+						<button data-w="PARTLY_CLOUDY" class="px-3 py-1 rounded-xl text-sm">PARTLY_CLOUDY</button>
+						<button data-w="CLOUDY" class="px-3 py-1 rounded-xl text-sm">CLOUDY</button>
+						<button data-w="WINDY" class="px-3 py-1 rounded-xl text-sm">WINDY</button>
+						<button data-w="RAIN" class="px-3 py-1 rounded-xl text-sm">RAIN</button>
+						<button data-w="CLOUDY_RAIN" class="px-3 py-1 rounded-xl text-sm">CLOUDY_RAIN</button>
+						<button data-w="THUNDERSTORM" class="px-3 py-1 rounded-xl text-sm">THUNDERSTORM</button>
+						<button data-w="THUNDERSTORM_RAIN" class="px-3 py-1 rounded-xl text-sm">THUNDERSTORM_RAIN</button>
+						<button data-w="SNOW" class="px-3 py-1 rounded-xl text-sm">SNOW</button>
+						<button data-w="CLOUDY_SNOW" class="px-3 py-1 rounded-xl text-sm">CLOUDY_SNOW</button>
+						<button data-w="SLEET" class="px-3 py-1 rounded-xl text-sm">SLEET</button>
+						<button data-w="HAIL" class="px-3 py-1 rounded-xl text-sm">HAIL</button>
+					</div>
+				</div>
+			</div>
+
+		</section>
+
+	</th:block>
+</body>
+</html>
