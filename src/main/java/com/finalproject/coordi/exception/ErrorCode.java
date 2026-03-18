@@ -68,7 +68,16 @@ public enum ErrorCode {
     IMAGE_UPLOAD_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "M101", "이미지 업로드 중 오류가 발생했습니다."),
 
     // 💡 Admin
-    ADMIN_AUTH_FAIL(HttpStatus.FORBIDDEN, "A100", "관리자 권한이 없습니다.");
+    ADMIN_AUTH_FAIL(HttpStatus.FORBIDDEN, "A100", "관리자 권한이 없습니다."),
+
+    // Auth
+    AUTH_FAILED(HttpStatus.UNAUTHORIZED, "T100", "인증에 실패하였습니다."),
+    TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "T101", "만료된 토큰입니다."),
+    INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "T102", "유효하지 않은 토큰입니다."),
+	
+	//weather
+	CURRENT_WEATHER_RESPONSE_NULL(HttpStatus.INTERNAL_SERVER_ERROR, "W001", "현재 날씨 응답이 비어 있습니다."),
+	FORECAST_WEATHER_RESPONSE_NULL(HttpStatus.INTERNAL_SERVER_ERROR, "W002", "예보 날씨 응답이 비어 있습니다.");
 
     private final HttpStatusCode status;
     private final String code;
