@@ -41,7 +41,7 @@
                 <li><a th:href="@{/closet}">나의옷장</a></li>
                 <li><a th:href="@{/board}">커뮤니티</a></li>
                 <li sec:authorize="hasRole('ADMIN')">
-                    <a th:href="@{/admin/logs}" style="color: #dc3545; font-weight: 800;">관리자 메뉴</a>
+                    <a th:href="@{/admin-management}" style="color: #dc3545; font-weight: 800;">관리자 메뉴</a>
                 </li>
                 <li sec:authorize="isAnonymous()">
                     <a th:href="@{/login}" class="btn login-btn">로그인 / 회원가입</a>

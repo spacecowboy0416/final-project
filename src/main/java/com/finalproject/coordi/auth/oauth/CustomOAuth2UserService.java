@@ -61,13 +61,17 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     // 각 소셜 서비스별로 제공되는 유저 정보를 공통 UserDto로 변환
     @SuppressWarnings("unchecked")
     private UsersDto extractUsersDto(String registrationId, Map<String, Object> attributes) {
+        // 기본 프로필 이미지 경로
+        String defaultProfileImage = "/login/images/default-profile.png";
+
         if ("google".equals(registrationId)) {
+            String picture = (String) attributes.get("picture");
             return UsersDto.builder()
                     .provider("google")
                     .providerUserId((String) attributes.get("sub"))
                     .email((String) attributes.get("email"))
                     .nickname((String) attributes.get("name"))
-                    .profileImageUrl((String) attributes.get("picture"))
+                    .profileImageUrl(picture != null ? picture : defaultProfileImage)
                     .build();
         } else if ("kakao".equals(registrationId)) {
             // 카카오의 경우 'kakao_account'에 이메일과 프로필 정보가 들어있음
@@ -90,16 +94,17 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                     .providerUserId(providerUserId)
                     .email(email)
                     .nickname(nickname)
-                    .profileImageUrl(profileImageUrl)
+                    .profileImageUrl(profileImageUrl != null ? profileImageUrl : defaultProfileImage)
                     .build();
         } else if ("naver".equals(registrationId)) {
             Map<String, Object> response = (Map<String, Object>) attributes.get("response");
+            String profileImage = (String) response.get("profile_image");
             return UsersDto.builder()
                     .provider("naver")
                     .providerUserId((String) response.get("id"))
                     .email((String) response.get("email"))
                     .nickname((String) response.get("name"))
-                    .profileImageUrl((String) response.get("profile_image"))
+                    .profileImageUrl(profileImage != null ? profileImage : defaultProfileImage)
                     .build();
         }
         // 지원하지 않는 소셜 서비스인 경우 예외 처리

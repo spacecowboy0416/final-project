@@ -42,18 +42,31 @@ public class SecurityConfig {
                                 .requireExplicitSave(false)
                         )
 
-                        // 인가 설정(default: 로그인한 사용자만 접근 가능)
+                        // 인가 설정 (default: 로그인한 사용자만 접근 가능)
                         .authorizeHttpRequests(auth -> auth
-                                // 마스터만
-                                .requestMatchers("/admin/super/**").hasRole("MASTER")
-                                // 관리자 및 마스터만
+                                // 관리자 권한 설정
                                 .requestMatchers("/admin/**", "/admin-management/**").hasAnyRole("ADMIN", "MASTER")
-                                // 인증 없이 누구나 접근 가능
-                                .requestMatchers("/", "/login/**", "/oauth2/**", "/static/**", "/css/**", "/js/**", "/common/**", "/user/**","/main/**",  "/api/main/**")
-                                .permitAll()
+
+                                // 인증 없이 누구나 접근 가능한 경로
+                                .requestMatchers(
+                                        // 기본 페이지 및 인증
+                                        "/", "/oauth2/**", "/logout", "/recommend/**",
+
+                                        // 도메인별 리소스(js,css,image 등)
+                                        "/common/**", "/login/**", "/main/**", "/recommendation/**", "/user/**",
+
+                                        // 보완
+                                        "/favicon.ico", "/css/**", "/js/**", "/images/**", "/image/**",
+
+                                        // 공개 API
+                                        "/api/main/**", "/api/recommendations/**"
+                                ).permitAll()
+
                                 // 그 외 모든 요청은 인증 필요
-                                .anyRequest().authenticated()
-                        )
+                                //.anyRequest().authenticated()
+                                // [[[[[[개발용 임시 설정]]]]]]
+                                .anyRequest().permitAll()
+                                )
 
                         // OAuth2 로그인 설정
                         .oauth2Login(oauth2 -> oauth2
