@@ -4,11 +4,12 @@ import com.finalproject.coordi.recommendation.dto.api.CoordinationOutputDto;
 import com.finalproject.coordi.recommendation.dto.api.RecommendationDebugResponseDto;
 import com.finalproject.coordi.recommendation.dto.api.UserRequestDto;
 import com.finalproject.coordi.recommendation.config.RecommendationImageProperties;
-import com.finalproject.coordi.recommendation.service.product.ShoppingPort.SearchedProduct;
 import com.finalproject.coordi.recommendation.service.Orchestrator;
+import com.finalproject.coordi.recommendation.service.productSearch.ShoppingSearcher;
+import com.finalproject.coordi.recommendation.service.productSearch.ShoppingPort.SearchedProduct;
 import com.finalproject.coordi.recommendation.infra.gemini.GeminiProperties;
 import com.finalproject.coordi.recommendation.infra.map.KakaoMapProperties;
-import com.finalproject.coordi.recommendation.service.product.ShoppingSearcher;
+
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import java.util.List;

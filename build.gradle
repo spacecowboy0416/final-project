@@ -50,6 +50,8 @@ dependencies {
 	implementation 'org.jsoup:jsoup:1.18.1'
 	implementation 'com.google.genai:google-genai:1.36.0'
 	implementation 'org.jsoup:jsoup:1.18.1'
+	implementation 'com.microsoft.onnxruntime:onnxruntime:1.20.0'
+	implementation 'org.bytedeco:opencv-platform:4.10.0-1.5.11'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
   implementation 'org.springframework.boot:spring-boot-starter-aop'
 }

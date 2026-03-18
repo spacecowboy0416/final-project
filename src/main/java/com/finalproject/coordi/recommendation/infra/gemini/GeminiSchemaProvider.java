@@ -5,6 +5,7 @@ import com.finalproject.coordi.recommendation.domain.enums.CodedEnum;
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.ColorType;
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.CategoryType;
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.FitType;
+import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.GenderType;
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.ItemCategoryType;
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.PriorityType;
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.StyleType;
@@ -85,6 +86,7 @@ public class GeminiSchemaProvider {
             Map.of(
                 "ai_blueprint", objectSchema(
                     Map.of(
+                        "gender", enumSchema(GenderType.class),
                         "tpoType", enumSchema(TpoType.class),
                         "styleType", enumSchema(StyleType.class),
                         "main_item_analysis", objectSchema(
@@ -109,7 +111,7 @@ public class GeminiSchemaProvider {
                         ),
                         "styling_rule_applied", stringSchema(1L, null)
                     ),
-                    List.of("tpoType", "styleType", "main_item_analysis", "coordination", "styling_rule_applied")
+                    List.of("gender", "tpoType", "styleType", "main_item_analysis", "coordination", "styling_rule_applied")
                 )
             ),
             List.of("ai_blueprint")

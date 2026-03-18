@@ -1,11 +1,15 @@
 package com.finalproject.coordi.recommendation.domain.enums;
 
+import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.CategoryType;
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.ColorType;
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.FitType;
+import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.GenderType;
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.ItemCategoryType;
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.MaterialType;
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.StyleType;
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.TpoType;
+import com.finalproject.coordi.recommendation.dto.api.RawBlueprintDto;
+import java.util.EnumSet;
 
 /**
  * Naver Shopping 검색어 조합 규칙을 구성하는 토큰 타입 정의.
@@ -15,13 +19,66 @@ public final class ShoppingQueryEnums {
     }
 
     public enum QueryTokenType {
-        GENDER,
-        COLOR,
-        FIT,
-        MATERIAL,
-        STYLE,
-        CATEGORY,
-        TPO
+        GENDER(),
+        COLOR(),
+        FIT(CategoryType.values()),
+        MATERIAL(CategoryType.values()),
+        STYLE(),
+        CATEGORY(),
+        TPO();
+
+        private final EnumSet<CategoryType> unsupportedSlots;
+
+        QueryTokenType(CategoryType... unsupportedSlots) {
+            this.unsupportedSlots = EnumSet.noneOf(CategoryType.class);
+            if (unsupportedSlots == null) {
+                return;
+            }
+            for (CategoryType slot : unsupportedSlots) {
+                if (slot != null) {
+                    this.unsupportedSlots.add(slot);
+                }
+            }
+        }
+
+        public boolean isSupported(CategoryType slotKey) {
+            if (slotKey == null) {
+                return true;
+            }
+            return !unsupportedSlots.contains(slotKey);
+        }
+
+        public String extractToken(
+            CategoryType slotKey,
+            RawBlueprintDto.ItemInfo item,
+            GenderType gender,
+            StyleType styleType,
+            TpoType tpoType
+        ) {
+            if (!isSupported(slotKey)) {
+                return null;
+            }
+            return switch (this) {
+                case GENDER -> GenderKeyword.from(gender);
+                case COLOR -> item == null || item.attributes() == null
+                    ? null
+                    : ColorKeyword.from(item.attributes().color());
+                case FIT -> item == null || item.attributes() == null
+                    ? null
+                    : FitKeyword.from(item.attributes().fit());
+                case MATERIAL -> item == null || item.attributes() == null
+                    ? null
+                    : MaterialKeyword.from(item.attributes().material());
+                case STYLE -> {
+                    StyleType resolvedStyle = item != null && item.attributes() != null
+                        ? item.attributes().style()
+                        : styleType;
+                    yield StyleKeyword.from(resolvedStyle);
+                }
+                case CATEGORY -> CategoryKeyword.from(item == null ? null : item.category());
+                case TPO -> TpoKeyword.from(tpoType);
+            };
+        }
     }
 
     public enum QuerySortType {

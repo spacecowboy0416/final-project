@@ -18,11 +18,17 @@ public class BlueprintStage {
     private final BlueprintStaticValidator blueprintStaticValidator;
     private final BlueprintNormalizer blueprintNormalizer;
 
-    @LogStage("blueprint.generateValidatedBlueprint")
-    public NormalizedBlueprintDto generateNormalizedBlueprint(PayloadDto payload) {
+    @LogStage("blueprint.generateNormalizedBlueprint")
+    public BlueprintStageResult generate(PayloadDto payload) {
         RawBlueprintDto rawBlueprint = aiPort.generateBlueprint(payload);
         var validatedBlueprint = blueprintStaticValidator.validateRawBlueprint(rawBlueprint);
         var normalizedBlueprint = blueprintNormalizer.normalize(validatedBlueprint);
-        return normalizedBlueprint;
+        return new BlueprintStageResult(rawBlueprint, normalizedBlueprint);
+    }
+
+    public record BlueprintStageResult(
+        RawBlueprintDto rawBlueprint,
+        NormalizedBlueprintDto normalizedBlueprint
+    ) {
     }
 }

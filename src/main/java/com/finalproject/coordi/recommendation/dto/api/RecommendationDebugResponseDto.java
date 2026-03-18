@@ -3,8 +3,9 @@ package com.finalproject.coordi.recommendation.dto.api;
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.StyleType;
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.CategoryType;
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.TpoType;
-import com.finalproject.coordi.recommendation.service.product.ShoppingPort.SearchedProduct;
-import com.finalproject.coordi.recommendation.service.product.ShoppingPort.ShoppingSearchQuery;
+import com.finalproject.coordi.recommendation.service.productSearch.ShoppingPort.SearchedProduct;
+import com.finalproject.coordi.recommendation.service.productSearch.ShoppingPort.ShoppingSearchQuery;
+
 import java.util.List;
 import java.util.Map;
 
@@ -20,6 +21,7 @@ public record RecommendationDebugResponseDto(
     List<CoordinationItemOutputDto> coordination,
     Map<String, String> slotSearchQueries,
     Map<String, List<SearchedProductDebugDto>> searchedProductsBySlot,
+    Map<String, List<SearchedProductDebugDto>> filteredProductsBySlot,
     Map<String, Long> stageTimings
 ) {
     public static RecommendationDebugResponseDto from(
@@ -27,6 +29,7 @@ public record RecommendationDebugResponseDto(
         CoordinationOutputDto coordinationOutput,
         Map<CategoryType, ShoppingSearchQuery> slotSearchQueries,
         Map<CategoryType, List<SearchedProduct>> searchedProductsBySlot,
+        Map<CategoryType, List<SearchedProduct>> filteredProductsBySlot,
         Map<String, Long> stageTimings
     ) {
         return new RecommendationDebugResponseDto(
@@ -38,6 +41,7 @@ public record RecommendationDebugResponseDto(
             coordinationOutput.coordination(),
             toDebugSlotSearchQueries(slotSearchQueries),
             toDebugSearchedProductsBySlot(searchedProductsBySlot),
+            toDebugSearchedProductsBySlot(filteredProductsBySlot),
             stageTimings == null ? Map.of() : stageTimings
         );
     }
@@ -94,5 +98,4 @@ public record RecommendationDebugResponseDto(
         }
     }
 }
-
 

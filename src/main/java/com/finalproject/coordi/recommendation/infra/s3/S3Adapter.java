@@ -2,7 +2,8 @@ package com.finalproject.coordi.recommendation.infra.s3;
 
 import com.finalproject.coordi.exception.BusinessException;
 import com.finalproject.coordi.exception.ErrorCode;
-import com.finalproject.coordi.recommendation.service.product.ImageUploadPort;
+import com.finalproject.coordi.recommendation.service.productSearch.ImageUploadPort;
+
 import java.time.LocalDate;
 import java.util.Locale;
 import java.util.UUID;

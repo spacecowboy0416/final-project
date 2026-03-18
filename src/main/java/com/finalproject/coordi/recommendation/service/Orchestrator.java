@@ -2,21 +2,21 @@ package com.finalproject.coordi.recommendation.service;
 
 import com.finalproject.coordi.recommendation.config.annotation.StageExecutionTimes;
 import com.finalproject.coordi.recommendation.dto.api.CoordinationOutputDto;
-import com.finalproject.coordi.recommendation.dto.api.PayloadDto;
 import com.finalproject.coordi.recommendation.dto.api.RawBlueprintDto;
 import com.finalproject.coordi.recommendation.dto.api.RecommendationDebugResponseDto;
 import com.finalproject.coordi.recommendation.dto.api.UserRequestDto;
-import com.finalproject.coordi.recommendation.dto.internal.NormalizedBlueprintDto;
-import com.finalproject.coordi.recommendation.service.blueprint.BlueprintDebugStage;
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.CategoryType;
 import com.finalproject.coordi.recommendation.service.blueprint.BlueprintStage;
+import com.finalproject.coordi.recommendation.service.blueprint.BlueprintStage.BlueprintStageResult;
 import com.finalproject.coordi.recommendation.service.coordination.CoordinationStage;
-import com.finalproject.coordi.recommendation.service.coordination.ItemMatcher;
 import com.finalproject.coordi.recommendation.service.finaloutput.FinalOutputBuilder;
+import com.finalproject.coordi.recommendation.service.imagefilter.ImageFilterStage;
 import com.finalproject.coordi.recommendation.service.payload.PayloadStage;
-import com.finalproject.coordi.recommendation.service.product.ShoppingPort.SearchedProduct;
-import com.finalproject.coordi.recommendation.service.product.ShoppingPort.ShoppingSearchQuery;
-import com.finalproject.coordi.recommendation.service.product.ProductStage;
+import com.finalproject.coordi.recommendation.service.productSearch.ProductSearchStage;
+import com.finalproject.coordi.recommendation.service.productSearch.ProductSearchStage.ProductSearchStageResult;
+import com.finalproject.coordi.recommendation.service.productSearch.ShoppingPort.SearchedProduct;
+import com.finalproject.coordi.recommendation.service.productSearch.ShoppingPort.ShoppingSearchQuery;
+
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Map;
@@ -34,8 +34,8 @@ import org.springframework.validation.annotation.Validated;
 public class Orchestrator {
     private final PayloadStage payloadStage;
     private final BlueprintStage blueprintStage;
-    private final BlueprintDebugStage blueprintDebugStage;
-    private final ProductStage productStage;
+    private final ProductSearchStage productSearchStage;
+    private final ImageFilterStage imageFilterStage;
     private final CoordinationStage coordinationStage;
     private final FinalOutputBuilder finalOutputBuilder;
     private final StageExecutionTimes stageExecutionTimes;
@@ -51,81 +51,52 @@ public class Orchestrator {
      * 디버그 화면용으로 중간 산출물과 stage timing까지 함께 반환하는 진입점이다.
      */
     public RecommendationDebugResponseDto coordinateDebug(@Valid UserRequestDto request) {
-        DebugPipelineResult pipelineResult = runDebugPipeline(request);
+        PipelineResult pipelineResult = runPipeline(request);
         return RecommendationDebugResponseDto.from(
             pipelineResult.rawBlueprint(),
             pipelineResult.coordinationOutput(),
             pipelineResult.slotSearchQueries(),
             pipelineResult.searchedProductsBySlot(),
+            pipelineResult.filteredProductsBySlot(),
             stageExecutionTimes.snapshot()
         );
     }
 
     private PipelineResult runPipeline(@Valid UserRequestDto request) {
-
-        //사용자 입력, 날씨, 프롬프트 조합하여 payload 생성
+        // 사용자 입력, 날씨, 프롬프트 조합하여 payload 생성
         var payload = payloadStage.build(request).payload();
 
-        //ai 호출하여 blueprint 생성, 검증, 정규화(BlueprintStage 내에서 모두 수행)
-        NormalizedBlueprintDto normalizedBlueprintDto = blueprintStage.generateNormalizedBlueprint(payload);
+        // ai 호출하여 blueprint 생성, 검증, 정규화(BlueprintStage 내에서 모두 수행)
+        BlueprintStageResult blueprintResult = blueprintStage.generate(payload);
 
-        // product 단계에서 쿼리 추출/검색/이미지 다운로드/DB upsert/S3 upsert를 모두 수행한다.
-        productStage.process(normalizedBlueprintDto);
+        // product search 단계에서 슬롯별 검색 쿼리 생성 및 검색을 수행한다.
+        ProductSearchStageResult productSearchResult = productSearchStage.search(blueprintResult.normalizedBlueprint());
 
-        // NormalizedBlueprint와 가장 적절한 product 매칭을 수행한다.
-        CoordinationStage.CoordinationResult coordinationResult =
-            coordinationStage.coordinate(normalizedBlueprintDto, Map.of());
-        Map<CategoryType, ItemMatcher.MatchedItem> matchedItemsBySlot =
-            coordinationResult.matchedItemsBySlot();
+        // image filter 단계에서 검색 후보를 1차 이미지 품질 기준으로 필터링한다.
+        var imageFilterResult = imageFilterStage.filter(productSearchResult.searchedProductsBySlot());
 
-        // slot별 matched item 가져와 최종 응답 형태로 변환한다
-        CoordinationOutputDto response = finalOutputBuilder.build(normalizedBlueprintDto, matchedItemsBySlot);
-        return new PipelineResult(
-            normalizedBlueprintDto,
-            response,
-            Map.of(),
-            Map.of()
+        // 이후 observation/scoring/final-output 고도화 이전 단계에서는 빈 매칭 결과를 사용한다.
+        var coordinationResult = coordinationStage.match(blueprintResult.normalizedBlueprint(), productSearchResult);
+        CoordinationOutputDto coordinationOutput = finalOutputBuilder.build(
+            blueprintResult.normalizedBlueprint(),
+            coordinationResult
         );
-    }
 
-    private DebugPipelineResult runDebugPipeline(@Valid UserRequestDto request) {
-        PayloadDto payload = payloadStage.build(request).payload();
-
-        BlueprintDebugStage.DebugBlueprintResult debugBlueprintResult =
-            blueprintDebugStage.generateValidatedDebugBlueprint(payload);
-        RawBlueprintDto rawBlueprint = debugBlueprintResult.rawBlueprint();
-        NormalizedBlueprintDto normalizedBlueprintDto = debugBlueprintResult.validatedBlueprint();
-
-        productStage.process(normalizedBlueprintDto);
-
-        CoordinationStage.CoordinationResult coordinationResult =
-            coordinationStage.coordinate(normalizedBlueprintDto, Map.of());
-        Map<CategoryType, ItemMatcher.MatchedItem> matchedItemsBySlot =
-            coordinationResult.matchedItemsBySlot();
-
-        CoordinationOutputDto response = finalOutputBuilder.build(normalizedBlueprintDto, matchedItemsBySlot);
-        return new DebugPipelineResult(
-            rawBlueprint,
-            response,
-            Map.of(),
-            Map.of()
+        return new PipelineResult(
+            blueprintResult.rawBlueprint(),
+            coordinationOutput,
+            productSearchResult.slotSearchQueries(),
+            productSearchResult.searchedProductsBySlot(),
+            imageFilterResult.filteredProductsBySlot()
         );
     }
 
     private record PipelineResult(
-        NormalizedBlueprintDto normalizedBlueprint,
-        CoordinationOutputDto coordinationOutput,
-        Map<CategoryType, ShoppingSearchQuery> slotSearchQueries,
-        Map<CategoryType, List<SearchedProduct>> searchedProductsBySlot
-    ) {
-    }
-
-    private record DebugPipelineResult(
         RawBlueprintDto rawBlueprint,
         CoordinationOutputDto coordinationOutput,
         Map<CategoryType, ShoppingSearchQuery> slotSearchQueries,
-        Map<CategoryType, List<SearchedProduct>> searchedProductsBySlot
+        Map<CategoryType, List<SearchedProduct>> searchedProductsBySlot,
+        Map<CategoryType, List<SearchedProduct>> filteredProductsBySlot
     ) {
     }
-
 }

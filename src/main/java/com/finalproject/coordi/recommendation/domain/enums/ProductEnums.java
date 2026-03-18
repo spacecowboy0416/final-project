@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.CategoryType;
 
 /**
- * product 저장/조회에 쓰는 코드 enum 모음.
+ * product /조회에 쓰는 코드 enum 모음.
  */
 public final class ProductEnums {
     private ProductEnums() {

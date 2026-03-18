@@ -1,41 +1,29 @@
 package com.finalproject.coordi.recommendation.service.coordination;
 
 import com.finalproject.coordi.recommendation.config.annotation.LogStage;
-import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.CategoryType;
 import com.finalproject.coordi.recommendation.dto.internal.NormalizedBlueprintDto;
-import com.finalproject.coordi.recommendation.dto.persistent.ProductDto;
-import com.finalproject.coordi.recommendation.service.product.ShoppingPort.SearchedProduct;
-import java.util.List;
+import com.finalproject.coordi.recommendation.service.productSearch.ProductSearchStage.ProductSearchStageResult;
+
+import java.util.Collections;
 import java.util.Map;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 /**
- * coordination 단계의 DB 재조회와 item match를 묶는다.
+ * 요청 태그와 후보 상품을 입력받아 슬롯별 매칭 결과를 만든다.
+ * 현재는 Product Search 리팩토링 단계이므로 빈 결과를 반환한다.
  */
 @Component
-@RequiredArgsConstructor
 public class CoordinationStage {
-    private final PersistedProductReader persistedProductReader;
-    private final ItemMatcher itemMatcher;
-
-    @LogStage("coordination.coordinate")
-    public CoordinationResult coordinate(
-        NormalizedBlueprintDto validatedBlueprint,
-        Map<CategoryType, List<SearchedProduct>> searchedProductsBySlot
+    @LogStage("coordination.match")
+    public CoordinationStageResult match(
+        NormalizedBlueprintDto normalizedBlueprint,
+        ProductSearchStageResult productSearchResult
     ) {
-        Map<CategoryType, List<ProductDto>> persistedProductsBySlot =
-            persistedProductReader.readBySlot(searchedProductsBySlot);
-        Map<CategoryType, ItemMatcher.MatchedItem> matchedItemsBySlot =
-            itemMatcher.matchAll(persistedProductsBySlot, validatedBlueprint);
-        return new CoordinationResult(persistedProductsBySlot, matchedItemsBySlot);
+        return new CoordinationStageResult(Collections.emptyMap());
     }
 
-    public record CoordinationResult(
-        Map<CategoryType, List<ProductDto>> persistedProductsBySlot,
-        Map<CategoryType, ItemMatcher.MatchedItem> matchedItemsBySlot
+    public record CoordinationStageResult(
+        Map<String, Object> matchedItemsBySlot
     ) {
     }
 }
-
-

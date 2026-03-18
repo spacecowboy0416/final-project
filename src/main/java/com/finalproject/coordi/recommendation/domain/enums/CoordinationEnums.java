@@ -39,6 +39,29 @@ public final class CoordinationEnums {
         }
     }
 
+    // 성별 분류 코드
+    public enum GenderType implements CodedEnum {
+        MALE("male"),
+        FEMALE("female"),
+        UNISEX("unisex");
+
+        private final String code;
+
+        GenderType(String code) {
+            this.code = code;
+        }
+
+        @Override
+        public String code() {
+            return code;
+        }
+
+        @JsonCreator
+        public static GenderType fromCode(String rawCode) {
+            return EnumResolver.fromCode(GenderType.class, rawCode);
+        }
+    }
+
     // 코디 무드/스타일 분류 코드
     public enum StyleType implements CodedEnum {
         MINIMAL("minimal"),

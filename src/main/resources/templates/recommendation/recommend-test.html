@@ -12,6 +12,7 @@
         .log-panel { border: 1px solid #ccc; padding: 8px; margin-bottom: 10px; }
         .log-grid { display: grid; grid-template-columns: minmax(220px, 0.75fr) minmax(240px, 0.85fr) minmax(320px, 1.2fr); gap: 10px; align-items: start; }
         .four-column-layout { display: grid; grid-template-columns: repeat(4, minmax(280px, 1fr)); gap: 10px; align-items: start; }
+        .two-column-layout { display: grid; grid-template-columns: repeat(2, minmax(320px, 1fr)); gap: 10px; margin-top: 10px; align-items: start; }
         .panel { border: 1px solid #ccc; padding: 8px; }
         .panel section { margin-bottom: 10px; }
         .panel section:last-child { margin-bottom: 0; }
@@ -60,6 +61,7 @@
             .input-grid { grid-template-columns: 1fr; }
             .result-slot-grid { grid-template-columns: 1fr; }
             .shopping-debug-form { grid-template-columns: 1fr; }
+            .two-column-layout { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -78,6 +80,7 @@
                 <div>
                     <p id="statusText">대기 중</p>
                     <p id="elapsedTimeText">소요 시간: -</p>
+                    <p id="responseSummaryText">응답 요약: -</p>
                     <pre id="errorText">에러 없음</pre>
                 </div>
                 <div>
@@ -87,6 +90,8 @@
                 <div>
                     <h4>Debug Output</h4>
                     <pre id="resultBox">디버그 응답 없음</pre>
+                    <h4>Diagnostic Log</h4>
+                    <pre id="diagnosticLogText">진단 로그 없음</pre>
                 </div>
             </div>
         </section>
@@ -301,6 +306,23 @@
             </section>
         </div>
     </div>
+
+    <div class="two-column-layout">
+        <div class="panel">
+            <section>
+                <h3>Filtered Images</h3>
+                <p class="compact-note">ImageFilter 통과 결과(옷 사진 우선)</p>
+                <div id="filteredImageGrid" class="candidate-grid"></div>
+            </section>
+        </div>
+        <div class="panel">
+            <section>
+                <h3>Filter Summary</h3>
+                <p class="compact-note">필터 적용 상태 요약</p>
+                <pre id="filterSummaryBox">요약 없음</pre>
+            </section>
+        </div>
+    </div>
 </main>
 
 <script th:inline="javascript">
@@ -335,8 +357,12 @@
     const geminiResponseBox = document.getElementById("geminiResponseBox");
     const statusText = document.getElementById("statusText");
     const elapsedTimeText = document.getElementById("elapsedTimeText");
+    const responseSummaryText = document.getElementById("responseSummaryText");
     const errorText = document.getElementById("errorText");
+    const diagnosticLogText = document.getElementById("diagnosticLogText");
+    const filterSummaryBox = document.getElementById("filterSummaryBox");
     const mapStatus = document.getElementById("mapStatus");
+    const filteredImageGrid = document.getElementById("filteredImageGrid");
     const searchedProductGrid = document.getElementById("candidateGrid");
     const shoppingDebugQueryInput = document.getElementById("shoppingDebugQuery");
     const shoppingDebugBtn = document.getElementById("shoppingDebugBtn");
@@ -358,26 +384,46 @@
 
     function resetResultSkeleton() {
         geminiResponseBox.textContent = "Gemini 응답 없음";
+        filteredImageGrid.innerHTML = "";
         searchedProductGrid.innerHTML = "";
         shoppingDebugResult.innerHTML = "";
         shoppingDebugStatus.textContent = "대기 중";
         timingList.innerHTML = "";
         queryList.innerHTML = "";
+        diagnosticLogText.textContent = "진단 로그 없음";
+        filterSummaryBox.textContent = "요약 없음";
     }
 
     function resetOutputStatus() {
         elapsedTimeText.textContent = "소요 시간: -";
+        responseSummaryText.textContent = "응답 요약: -";
         errorText.textContent = "에러 없음";
     }
 
     function updateResultSkeleton(response) {
-        geminiResponseBox.textContent = response?.geminiBlueprint
-            ? JSON.stringify(response.geminiBlueprint, null, 2)
+        geminiResponseBox.textContent = response?.rawBlueprint
+            ? JSON.stringify(response.rawBlueprint, null, 2)
             : "Gemini 응답 없음";
 
         updateQueryList(response?.slotSearchQueries || {});
-        updateSearchedProductGrid(response?.searchedProductsBySlot || {});
+        const filteredProductsBySlot = response?.filteredProductsBySlot || {};
+        const searchedProductsBySlot = response?.searchedProductsBySlot || {};
+        updateProductGrid(searchedProductGrid, searchedProductsBySlot, "searched product 없음");
+        updateFilteredImageGrid(filteredProductsBySlot);
         updateTimingList(response?.stageTimings || {});
+        updateDiagnosticLog(response, filteredProductsBySlot, searchedProductsBySlot);
+        updateFilterSummary(filteredProductsBySlot, searchedProductsBySlot);
+    }
+
+    function totalProductCount(productsBySlot) {
+        if (!productsBySlot) {
+            return 0;
+        }
+        const slotKeys = ["tops", "bottoms", "outerwear", "shoes", "accessories"];
+        return slotKeys.reduce((sum, slotKey) => {
+            const products = Array.isArray(productsBySlot?.[slotKey]) ? productsBySlot[slotKey] : [];
+            return sum + products.length;
+        }, 0);
     }
 
     function updateQueryList(slotSearchQueries) {
@@ -392,12 +438,12 @@
         });
     }
 
-    function updateSearchedProductGrid(searchedProductsBySlot) {
-        searchedProductGrid.innerHTML = "";
+    function updateProductGrid(targetGrid, productsBySlot, emptyMessage) {
+        targetGrid.innerHTML = "";
         const slotKeys = ["tops", "bottoms", "outerwear", "shoes", "accessories"];
 
         slotKeys.forEach(slotKey => {
-            const searchedProducts = Array.isArray(searchedProductsBySlot?.[slotKey]) ? searchedProductsBySlot[slotKey] : [];
+            const searchedProducts = Array.isArray(productsBySlot?.[slotKey]) ? productsBySlot[slotKey] : [];
             const card = document.createElement("div");
             card.className = "candidate-card";
 
@@ -407,9 +453,9 @@
 
             if (searchedProducts.length === 0) {
                 const empty = document.createElement("p");
-                empty.textContent = "searched product 없음";
+                empty.textContent = emptyMessage;
                 card.appendChild(empty);
-                searchedProductGrid.appendChild(card);
+                targetGrid.appendChild(card);
                 return;
             }
 
@@ -444,7 +490,51 @@
                 list.appendChild(item);
             });
             card.appendChild(list);
-            searchedProductGrid.appendChild(card);
+            targetGrid.appendChild(card);
+        });
+    }
+
+    function updateFilteredImageGrid(filteredProductsBySlot) {
+        filteredImageGrid.innerHTML = "";
+        const slotKeys = ["tops", "bottoms", "outerwear", "shoes", "accessories"];
+        slotKeys.forEach(slotKey => {
+            const filteredProducts = Array.isArray(filteredProductsBySlot?.[slotKey])
+                ? filteredProductsBySlot[slotKey]
+                : [];
+            const card = document.createElement("div");
+            card.className = "candidate-card";
+            const title = document.createElement("h4");
+            title.textContent = `${slotKey} (${filteredProducts.length})`;
+            card.appendChild(title);
+
+            if (filteredProducts.length === 0) {
+                const empty = document.createElement("p");
+                empty.textContent = "filtered image 없음";
+                card.appendChild(empty);
+                filteredImageGrid.appendChild(card);
+                return;
+            }
+
+            const wrapper = document.createElement("div");
+            wrapper.style.display = "grid";
+            wrapper.style.gridTemplateColumns = "repeat(4, minmax(60px, 1fr))";
+            wrapper.style.gap = "6px";
+            filteredProducts.forEach(product => {
+                const image = document.createElement("img");
+                image.alt = product.productName || "filtered image";
+                image.style.width = "100%";
+                image.style.aspectRatio = "1 / 1";
+                image.style.objectFit = "cover";
+                image.style.border = "1px solid #ddd";
+                if (product.productImageUrl) {
+                    image.src = product.productImageUrl;
+                } else {
+                    image.style.visibility = "hidden";
+                }
+                wrapper.appendChild(image);
+            });
+            card.appendChild(wrapper);
+            filteredImageGrid.appendChild(card);
         });
     }
 
@@ -574,6 +664,44 @@
             reader.onerror = reject;
             reader.readAsDataURL(file);
         });
+    }
+
+    function sumStageTiming(stageTimings) {
+        if (!stageTimings) {
+            return 0;
+        }
+        return Object.values(stageTimings).reduce((sum, value) => {
+            const elapsed = Number(value);
+            return sum + (Number.isFinite(elapsed) ? elapsed : 0);
+        }, 0);
+    }
+
+    function updateDiagnosticLog(response, filteredProductsBySlot, searchedProductsBySlot) {
+        const filteredCount = totalProductCount(filteredProductsBySlot);
+        const searchedCount = totalProductCount(searchedProductsBySlot);
+        const stageTotalMs = sumStageTiming(response?.stageTimings || {});
+        diagnosticLogText.textContent = JSON.stringify({
+            filteredCount,
+            searchedCount,
+            filteredRatio: searchedCount > 0 ? (filteredCount / searchedCount).toFixed(3) : "0.000",
+            stageTotalMs,
+            hasRawBlueprint: !!response?.rawBlueprint,
+            likelyFilterBypassed: searchedCount > 0 && filteredCount === searchedCount
+        }, null, 2);
+    }
+
+    function updateFilterSummary(filteredProductsBySlot, searchedProductsBySlot) {
+        const filteredCount = totalProductCount(filteredProductsBySlot);
+        const searchedCount = totalProductCount(searchedProductsBySlot);
+        const summary = {
+            filteredCount,
+            searchedCount,
+            removedCount: Math.max(0, searchedCount - filteredCount),
+            status: searchedCount > 0 && filteredCount === searchedCount
+                ? "필터가 거의 적용되지 않음(설정/모델 확인 필요)"
+                : "필터 적용됨"
+        };
+        filterSummaryBox.textContent = JSON.stringify(summary, null, 2);
     }
 
     function loadImageElement(file) {
@@ -988,18 +1116,24 @@
             }
             const parsed = JSON.parse(responseText);
             updateResultSkeleton(parsed);
+            const clientElapsedMs = Date.now() - requestStartedAt;
+            const serverStageTotalMs = sumStageTiming(parsed?.stageTimings || {});
             resultBox.textContent = truncateText(JSON.stringify({
                 slotSearchQueries: parsed.slotSearchQueries,
                 searchedProductsBySlot: parsed.searchedProductsBySlot,
+                filteredProductsBySlot: parsed.filteredProductsBySlot,
                 stageTimings: parsed.stageTimings
             }, null, 2));
             statusText.textContent = "완료";
-            elapsedTimeText.textContent = `소요 시간: ${Date.now() - requestStartedAt}ms`;
+            elapsedTimeText.textContent = `소요 시간: ${clientElapsedMs}ms`;
+            responseSummaryText.textContent = `응답 요약: client=${clientElapsedMs}ms / stageTotal=${serverStageTotalMs}ms`;
         } catch (error) {
             resultBox.textContent = truncateText(error.message || error);
             statusText.textContent = "실패";
             elapsedTimeText.textContent = `소요 시간: ${Date.now() - requestStartedAt}ms`;
             errorText.textContent = String(error.stack || error.message || error);
+            responseSummaryText.textContent = "응답 요약: 실패";
+            diagnosticLogText.textContent = truncateText(String(error.stack || error.message || error), 500);
         }
     });
 

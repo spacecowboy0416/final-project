@@ -1,6 +1,6 @@
 package com.finalproject.coordi.recommendation.service.payload;
 
-import com.finalproject.coordi.recommendation.domain.enums.GenderType;
+import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.GenderType;
 import com.finalproject.coordi.recommendation.dto.api.UserRequestDto;
 import com.finalproject.coordi.recommendation.dto.internal.ImageData;
 import com.finalproject.coordi.recommendation.dto.internal.Location;

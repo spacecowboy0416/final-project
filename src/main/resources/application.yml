@@ -85,12 +85,7 @@ mybatis:
 
 # 6. Doc 관리 
 
-# 7. Recommendation 입력 이미지 제한
-recommendation:
-  image:
-    max-size: 5MB
-
-# 8. 커스텀 API 키 관리 (Gemini, OpenWeatherMap)
+# 7. 커스텀 API 키 관리 (Gemini, OpenWeatherMap)
 external:
   api:
     gemini:
@@ -121,14 +116,14 @@ external:
       extension: ${IMAGE_STORAGE_EXTENSION:.jpg}
       recommendation-path: ${IMAGE_STORAGE_RECOMMENDATION_PATH:recommendations}
 
-# 9. Sentry (Monitoring)
+# 8. Sentry (Monitoring)
 sentry:
   dsn: ${SENTRY_DSN_BACKEND}
   dsn-frontend: ${SENTRY_DSN_FRONTEND}
   traces-sample-rate: 1.0 # 추적할 Event의 비율 설정 - 1.0은 100% 추적, 아직 배포 이전이므로 1.0으로 설정
   exception-resolver-order: -2147483647 # Order가 낮을수록 먼저 처리됨, Sentry가 예외를 가장 먼저 처리하도록 설정
 
-# 10. Logging 설정 통합
+# 9. Logging 설정 통합
 logging:
   level:
     root: INFO

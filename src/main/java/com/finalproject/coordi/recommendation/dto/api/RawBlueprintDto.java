@@ -3,6 +3,7 @@ package com.finalproject.coordi.recommendation.dto.api;
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.ColorType;
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.CategoryType;
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.FitType;
+import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.GenderType;
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.ItemCategoryType;
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.MaterialType;
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.PriorityType;
@@ -25,6 +26,8 @@ public record RawBlueprintDto(
     AiBlueprint aiBlueprint
 ) {
     public record AiBlueprint(
+        @NotNull
+        GenderType gender,
         @NotNull
         TpoType tpoType,
         @NotNull
