@@ -1,0 +1,36 @@
+.stats-card {
+  background: rgba(31, 41, 55, 0.4);
+  border: 1px solid rgba(75, 85, 99, 0.5);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  transition: transform 0.2s;
+}
+
+.tag-rank-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem;
+  background: rgba(55, 65, 81, 0.3);
+  border-radius: 0.5rem;
+  border-left: 4px solid #6366f1;
+  margin-bottom: 0.5rem;
+}
+
+.tag-rank-name {
+  font-weight: 500;
+  color: #f3f4f6;
+}
+
+.tag-rank-count {
+  font-size: 0.875rem;
+  color: #9ca3af;
+}
+
+/* For chart containers that had inline styles */
+.chart-container-card {
+  background: rgba(31, 41, 55, 0.2);
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(75, 85, 99, 0.3);
+}

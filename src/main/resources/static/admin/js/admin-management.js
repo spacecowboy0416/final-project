@@ -6,6 +6,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const templates = {
     "item-management": document.getElementById("item-management-template"),
     "user-management": document.getElementById("user-management-template"),
+    "community-management": document.getElementById("community-management-template"),
+    "system-stats": document.getElementById("system-stats-template"),
   };
 
   function loadContent(targetId) {
@@ -21,6 +23,10 @@ document.addEventListener("DOMContentLoaded", () => {
         attachItemPanelEvents();
       } else if (targetId === "user-management") {
         loadUserManagementPanel();
+      } else if (targetId === "community-management") {
+        loadCommunityManagementPanel();
+      } else if (targetId === "system-stats") {
+        loadSystemStatsPanel();
       }
     } else {
       const div = document.createElement("div");
@@ -327,17 +333,19 @@ async function fetchAndRenderUsers() {
 function renderUsers(users) {
   const tableBody = document.getElementById("user-table-body");
   const emptyMessage = document.querySelector(
-    "#user-management-template .empty-list-message",
+    "#admin-content-area .empty-list-message",
   );
+
+  if (!tableBody || !emptyMessage) return;
+
   if (!users || users.length === 0) {
     tableBody.innerHTML = "";
-    if (emptyMessage) emptyMessage.style.display = "block";
-    return;
-  }
-  if (emptyMessage) emptyMessage.style.display = "none";
-  tableBody.innerHTML = users
-    .map(
-      (user) => `
+    emptyMessage.style.display = "block";
+  } else {
+    emptyMessage.style.display = "none";
+    tableBody.innerHTML = users
+      .map(
+        (user) => `
         <tr data-user-id="${user.userId}">
             <td>${user.userId}</td>
             <td><img src="${user.profileImageUrl || `https://i.pravatar.cc/150?u=${user.userId}`}" alt="${user.nickname}" class="user-profile-img" referrerPolicy="no-referrer"></td>
@@ -363,8 +371,9 @@ function renderUsers(users) {
             </td>
         </tr>
     `,
-    )
-    .join("");
+      )
+      .join("");
+  }
 }
 
 async function updateUser(userId, role, status) {
@@ -400,5 +409,162 @@ function formatDate(dateString) {
   return new Date(dateString).toLocaleString("ko-KR", {
     dateStyle: "short",
     timeStyle: "short",
+  });
+}
+
+// --- Community Management Functions ---
+async function loadCommunityManagementPanel() {
+  const tableBody = document.getElementById('community-table-body');
+  if (!tableBody) return;
+
+  try {
+    const res = await fetch('/api/admin/community/posts');
+    const posts = await res.json();
+    
+    tableBody.innerHTML = posts.map(post => `
+      <tr class="border-b border-gray-800 hover:bg-gray-800/30">
+        <td class="py-3 px-2">${post.postId}</td>
+        <td class="py-3 px-2 font-medium" style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${post.title}</td>
+        <td class="py-3 px-2 text-gray-400 text-sm">${post.authorNickname}</td>
+        <td class="py-3 px-2 text-xs text-gray-500">${new Date(post.createdAt).toLocaleDateString()}</td>
+        <td class="py-3 px-2 text-indigo-400 font-bold">${post.commentCount}</td>
+        <td class="py-3 px-2">
+          <span class="post-badge ${post.public ? 'badge-public' : 'badge-hidden'}">
+            ${post.public ? '공개' : '숨김'}
+          </span>
+        </td>
+        <td class="py-3 px-2">
+          <div style="display: flex; gap: 4px; align-items: center;">
+            <button onclick="adminTogglePostVisibility(${post.postId}, ${post.public})" 
+              class="btn-admin-action ${post.public ? 'btn-admin-hide' : 'btn-admin-show'}">
+              ${post.public ? '숨김' : '공개'}
+            </button>
+            <button onclick="adminDeletePost(${post.postId})" class="btn-admin-action btn-admin-delete">삭제</button>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+  } catch (err) {
+    tableBody.innerHTML = '<tr><td colspan="7" class="text-center">데이터를 불러오지 못했습니다.</td></tr>';
+  }
+}
+
+// 초기화 시 접근 가능하도록 window 객체에 등록
+window.loadCommunityManagementPanel = loadCommunityManagementPanel;
+
+window.adminTogglePostVisibility = async (postId, currentStatus) => {
+  try {
+    const response = await fetch(`/api/admin/community/posts/${postId}/visibility`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ isPublic: !currentStatus })
+    });
+    
+    if (response.ok) {
+      window.loadCommunityManagementPanel(); // 전역 함수로 호출
+    } else {
+      alert('상태 변경에 실패했습니다.');
+    }
+  } catch (error) {
+    console.error('Toggle failed:', error);
+  }
+};
+
+window.adminDeletePost = async (postId) => {
+  if (!confirm('정말 이 게시글을 삭제하시겠습니까?')) return;
+  try {
+    const response = await fetch(`/api/admin/community/posts/${postId}`, { method: 'DELETE' });
+    if (response.ok) {
+      window.loadCommunityManagementPanel();
+    }
+  } catch (error) {
+    console.error('Delete failed:', error);
+  }
+};
+
+
+// --- System Statistics Functions ---
+let adminTrendChart = null;
+
+async function loadSystemStatsPanel() {
+  try {
+    const res = await fetch('/api/admin/statistics/summary');
+    const data = await res.json();
+    if (!data) return;
+
+    // 요약 지표
+    document.getElementById('stat-total-users').textContent = data.totalUsers.toLocaleString();
+    document.getElementById('stat-today-users').textContent = '+' + data.todayNewUsers.toLocaleString();
+    document.getElementById('stat-total-recs').textContent = data.totalRecommendations.toLocaleString();
+    document.getElementById('stat-today-recs').textContent = '+' + data.todayRecommendations.toLocaleString();
+    document.getElementById('stat-active-errors').textContent = data.activeErrors.toLocaleString();
+
+    // 인기 태그
+    const tagList = document.getElementById('popular-tags-list');
+    if (tagList) {
+      tagList.innerHTML = data.popularTags.map((tag, index) => `
+        <div class="tag-rank-item">
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <span style="color: #6366f1; font-weight: 700; width: 1.2rem;">${index + 1}</span>
+            <span class="tag-rank-name">${tag.tagName}</span>
+            <span style="font-size: 0.65rem; padding: 0.1rem 0.4rem; background: #374151; color: #9ca3af; border-radius: 0.25rem;">${tag.tagType}</span>
+          </div>
+          <span class="tag-rank-count">${tag.usageCount.toLocaleString()}회</span>
+        </div>
+      `).join('');
+    }
+
+    // 차트
+    renderAdminTrendChart(data.dailyTrends);
+  } catch (err) {
+    console.error('Stats load failed:', err);
+  }
+}
+
+function renderAdminTrendChart(trends) {
+  const canvas = document.getElementById('daily-trend-chart');
+  if (!canvas) return;
+  
+  const ctx = canvas.getContext('2d');
+  if (adminTrendChart) adminTrendChart.destroy();
+
+  // Chart.js가 전역에 로드되었는지 확인 후 실행
+  if (typeof Chart === 'undefined') {
+    console.error('Chart.js not loaded');
+    return;
+  }
+
+  adminTrendChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: trends.map(t => t.date.substring(5)),
+      datasets: [
+        {
+          label: '신규 가입',
+          data: trends.map(t => t.user_count),
+          borderColor: '#10b981',
+          backgroundColor: 'rgba(16, 185, 129, 0.1)',
+          fill: true,
+          tension: 0.4
+        },
+        {
+          label: '코디 추천',
+          data: trends.map(t => t.rec_count),
+          borderColor: '#6366f1',
+          backgroundColor: 'rgba(99, 102, 241, 0.1)',
+          fill: true,
+          tension: 0.4
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { labels: { color: '#9ca3af' } } },
+      scales: {
+        y: { grid: { color: 'rgba(75, 85, 99, 0.2)' }, ticks: { color: '#9ca3af' } },
+        x: { grid: { display: false }, ticks: { color: '#9ca3af' } }
+      }
+    }
   });
 }
