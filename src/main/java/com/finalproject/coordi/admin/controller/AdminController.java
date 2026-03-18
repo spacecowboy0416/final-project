@@ -12,7 +12,7 @@ public class AdminController {
 
     private final AdminTagService adminTagService;
 
-    // 관리자 메뉴 진입, 진입 시 유저 관리 탭 자동 연결
+    // 관리자 페이지의 여러 탭(사용자, 태그 등)에 필요한 공통 데이터를 미리 로드하고, 기본 뷰를 렌더링하기 위함.
     @GetMapping("/admin-management")
     public String adminPage(Model model) {
         model.addAttribute("tagTypes", adminTagService.getTagTypes());
