@@ -132,6 +132,33 @@
             fetched_at = CURRENT_TIMESTAMP
     </insert>
 
+    <insert id="insertProductImageMetadata"
+            parameterType="com.finalproject.coordi.recommendation.dto.persistent.ProductImageMetadataDto"
+            useGeneratedKeys="true" keyProperty="imageMetaId">
+        INSERT INTO product_image_metadata
+        (
+            product_id,
+            user_id,
+            mime_type,
+            image_size_bytes,
+            storage_provider,
+            storage_url,
+            storage_path,
+            checksum_sha256
+        )
+        VALUES
+        (
+            #{productId},
+            #{userId},
+            #{mimeType},
+            #{imageSizeBytes},
+            #{storageProvider},
+            #{storageUrl},
+            #{storagePath},
+            #{checksumSha256}
+        )
+    </insert>
+
     <insert id="insertProductTag" parameterType="com.finalproject.coordi.recommendation.dto.persistent.ProductTagDto">
         INSERT IGNORE INTO product_tag
         (
@@ -144,6 +171,13 @@
             #{tagId}
         )
     </insert>
+
+    <select id="findCategoryIdByCode" resultType="long">
+        SELECT category_id
+        FROM category
+        WHERE code = #{code}
+        LIMIT 1
+    </select>
 
     <select id="findProductIdBySourceAndExternalId" resultType="long">
         SELECT product_id
@@ -176,5 +210,32 @@
         WHERE source = #{source}
           AND external_id = #{externalId}
         LIMIT 1
+    </select>
+
+    <select id="findProductsBySourceAndExternalIds" resultType="com.finalproject.coordi.recommendation.dto.persistent.ProductDto">
+        SELECT
+            product_id AS productId,
+            source,
+            external_id AS externalId,
+            category_id AS categoryId,
+            gender,
+            name,
+            brand,
+            price,
+            image_url AS imageUrl,
+            link,
+            color,
+            material,
+            fit,
+            style,
+            season,
+            temp_min AS tempMin,
+            temp_max AS tempMax
+        FROM product
+        WHERE source = #{source}
+          AND external_id IN
+          <foreach collection="externalIds" item="externalId" open="(" separator="," close=")">
+              #{externalId}
+          </foreach>
     </select>
 </mapper>
