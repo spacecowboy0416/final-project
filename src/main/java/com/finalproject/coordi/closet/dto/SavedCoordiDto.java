@@ -1,6 +1,7 @@
 package com.finalproject.coordi.closet.dto;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import lombok.Data;
 
 @Data
@@ -17,4 +18,5 @@ public class SavedCoordiDto {
     private String aiBlueprint;
     private String aiExplanation;
     private LocalDateTime createdAt;
+    private List<CoordiItemDto> coordiItems; 
 }
