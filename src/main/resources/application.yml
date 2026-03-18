@@ -161,4 +161,4 @@ jwt:
 # false : Redis 없이 실행 (캐시 비활성화, 서버 정상 동작)
 app:
   cache:
-    redis-enabled: false
+    redis-enabled: true
