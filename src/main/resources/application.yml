@@ -61,21 +61,10 @@ spring:
   # 4. File Upload (S3) 및 정적 리소스 설정
   servlet:
     multipart:
-<<<<<<< HEAD
-      max-file-size: ${recommendation.image.max-size:5MB}
-      max-request-size: ${recommendation.image.max-size:5MB}
-      
-=======
       max-file-size: 10MB
       max-request-size: 10MB
-  
-  web:
-    resources:
-      chain:
-        cache: false
 
   # DevTools 및 LiveReload 설정 통합
->>>>>>> 03e60e25c12eb7f269bb26761fca386adc4b3ec0
   devtools:
     livereload:
       enabled: true
@@ -98,9 +87,6 @@ mybatis:
 
 # 6. Doc 관리 
 
-<<<<<<< HEAD
-# 7. 커스텀 API 키 관리 (Gemini, OpenWeatherMap)
-=======
 # 7. Swagger (SpringDoc)
 springdoc:
   api-docs:
@@ -111,7 +97,6 @@ springdoc:
     operations-sorter: method
 
 # 8. 커스텀 API 키 관리 (Gemini, OpenWeatherMap 등)
->>>>>>> 03e60e25c12eb7f269bb26761fca386adc4b3ec0
 external:
   api:
     gemini:
@@ -168,8 +153,6 @@ logging:
     "[com.finalproject.coordi.closet.mapper]": TRACE
     "[com.finalproject.coordi.recommend.mapper]": TRACE
     "[com.finalproject.coordi.errorlog.mapper]": TRACE
-<<<<<<< HEAD
-=======
 
 # JWT 관련 설정
 jwt:
@@ -181,4 +164,3 @@ jwt:
 app:
   cache:
     redis-enabled: false
->>>>>>> 03e60e25c12eb7f269bb26761fca386adc4b3ec0
