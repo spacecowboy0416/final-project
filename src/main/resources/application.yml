@@ -114,8 +114,14 @@ external:
       client-secret: ${NAVER_CLIENT_SECRET:}
     weather:
       key: ${WEATHER_API_KEY}
+      current-url: https://api.openweathermap.org/data/2.5/weather
+      forecast-url: https://api.openweathermap.org/data/2.5/forecast
       redis:
         key-prefix: ${WEATHER_REDIS_KEY_PREFIX:weather:district}
+    kakao:
+      local:
+        rest-api-key: ${KAKAO_REST_API_KEY}
+        coord2region-url: https://dapi.kakao.com/v2/local/geo/coord2regioncode.json
     kakao-map:
       endpoint: ${KAKAO_MAP_ENDPOINT:https://dapi.kakao.com/v2/local/geo/coord2address.json}
       js-key: ${KAKAO_MAP_JS_KEY:}
@@ -158,3 +164,10 @@ logging:
 # JWT 관련 설정
 jwt:
   secret: ${JWT_SECRET}
+
+# Redis 캐시 사용 여부
+# true  : Redis 캐시 활성화
+# false : Redis 없이 실행 (캐시 비활성화, 서버 정상 동작)
+app:
+  cache:
+    redis-enabled: false
