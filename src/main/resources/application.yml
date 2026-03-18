@@ -18,6 +18,7 @@ spring:
     url: jdbc:mysql://${RDS_HOSTNAME}:${RDS_PORT}/${RDS_DB_NAME}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul
     username: ${RDS_USERNAME}
     password: ${RDS_PASSWORD}
+    
   data:
     redis:
       host: ${REDIS_HOST:localhost}
@@ -57,12 +58,18 @@ spring:
             user-info-uri: https://kapi.kakao.com/v2/user/me
             user-name-attribute: id
 
-  # 4. File Upload (S3)
+  # 4. File Upload (S3) 및 정적 리소스 설정
   servlet:
     multipart:
       max-file-size: 10MB
       max-request-size: 10MB
-      
+  
+  web:
+    resources:
+      chain:
+        cache: false
+
+  # DevTools 및 LiveReload 설정 통합
   devtools:
     livereload:
       enabled: true
@@ -100,11 +107,11 @@ springdoc:
     groups-order: ASC
     operations-sorter: method
 
-# 8. 커스텀 API 키 관리 (Gemini, OpenWeatherMap)
+# 8. 커스텀 API 키 관리 (Gemini, OpenWeatherMap 등)
 external:
   api:
     gemini:
-      # 💡 조장님의 SDK 엔드포인트 및 최신 모델(3.1) 적용
+      # 조장님의 SDK 엔드포인트 및 최신 모델(3.1) 적용
       endpoint: ${GEMINI_ENDPOINT:https://generativelanguage.googleapis.com} 
       model: ${GEMINI_MODEL:gemini-3.1-flash-lite-preview}
       url: ${GEMINI_URL:https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent} 
@@ -112,9 +119,7 @@ external:
       cache:
         enabled: ${GEMINI_PROMPT_CACHE_ENABLED:true}
         ttl-seconds: ${GEMINI_PROMPT_CACHE_TTL_SECONDS:3600}
-    gemini-jin:
-      endpoint: ${GEMINI_JIN_ENDPOINT:https://generativelanguage.googleapis.com/v1beta}
-      model: ${GEMINI_JIN_MODEL:gemini-2.5-flash}
+    # gemini-jin 섹션 제거됨 (불필요한 Dead Code 정리)
     shopping:
       endpoint: ${SHOPPING_API_ENDPOINT:https://openapi.naver.com/v1/search/shop.json}
       client-id: ${NAVER_CLIENT_ID:}
@@ -137,8 +142,8 @@ external:
 sentry:
   dsn: ${SENTRY_DSN_BACKEND}
   dsn-frontend: ${SENTRY_DSN_FRONTEND}
-  traces-sample-rate: 1.0 # 추적할 Event의 비율 설정 - 1.0은 100% 추적, 아직 배포 이전이므로 1.0으로 설정
-  exception-resolver-order: -2147483647 # Order가 낮을수록 먼저 처리됨, Sentry가 예외를 가장 먼저 처리하도록 설정
+  traces-sample-rate: 1.0 # 추적할 Event의 비율 설정 - 1.0은 100% 추적
+  exception-resolver-order: -2147483647 # Sentry가 예외를 가장 먼저 처리하도록 설정
 
 # 10. Logging 설정 통합
 logging:
@@ -148,19 +153,6 @@ logging:
     "[com.finalproject.coordi.closet.mapper]": TRACE
     "[com.finalproject.coordi.recommend.mapper]": TRACE
     "[com.finalproject.coordi.errorlog.mapper]": TRACE
-
-# 정적 리소스(JS/CSS) 캐시 끄기
-  web:
-    resources:
-      chain:
-        cache: false
-
-# DevTools 및 LiveReload 활성화
-  devtools:
-    livereload:
-      enabled: true
-    restart:
-      enabled: true # 클래스 파일 변경 시 자동 재시작 (선택 사항)
 
 # JWT 관련 설정
 jwt:
