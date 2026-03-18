@@ -14,6 +14,7 @@ public class ClosetItemDto {
     private Long itemId;
     private Long userId;
     private Long productId;
+    private String categoryName;
     private Long categoryId;
     private String name;
     private String brand;

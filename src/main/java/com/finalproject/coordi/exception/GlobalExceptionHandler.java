@@ -27,7 +27,7 @@ public class GlobalExceptionHandler {
     private final AiErrorTrackerService aiErrorTrackerService;
 
     /**
-     * 단순 정적 자원 누락 에러는 무시
+     * 단순 정적 자원 누락 에러는 무시 및 Sentry 처리
      */
     @ExceptionHandler(NoResourceFoundException.class)
     public ResponseEntity<Void> handleNoResourceFound(NoResourceFoundException e, HttpServletRequest request) {

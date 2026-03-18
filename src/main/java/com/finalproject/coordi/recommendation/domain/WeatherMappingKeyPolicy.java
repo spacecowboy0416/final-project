@@ -1,8 +1,8 @@
 package com.finalproject.coordi.recommendation.domain;
 
+import com.finalproject.coordi.recommendation.infra.weather.WeatherRedisProperties;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 /**
@@ -13,8 +13,11 @@ import org.springframework.stereotype.Component;
 public class WeatherMappingKeyPolicy {
     private static final DateTimeFormatter WEATHER_SLOT_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmm");
 
-    @Value("${external.api.weather.redis.key-prefix:weather:district}")
-    private String weatherRedisKeyPrefix;
+    private final WeatherRedisProperties weatherRedisProperties;
+
+    public WeatherMappingKeyPolicy(WeatherRedisProperties weatherRedisProperties) {
+        this.weatherRedisProperties = weatherRedisProperties;
+    }
 
     /**
      * districtName과 scheduleTime을 recommendation 표준 Redis 날씨 키 형식으로 조합한다.
@@ -22,7 +25,7 @@ public class WeatherMappingKeyPolicy {
     public String buildKey(String districtName, OffsetDateTime scheduleTime) {
         String normalizedDistrictName = districtName == null ? "" : districtName.trim();
         OffsetDateTime normalizedScheduleTime = normalizeScheduleTime(scheduleTime);
-        return weatherRedisKeyPrefix + ":" + normalizedDistrictName + ":" + WEATHER_SLOT_FORMATTER.format(normalizedScheduleTime);
+        return weatherRedisProperties.getKeyPrefix() + ":" + normalizedDistrictName + ":" + WEATHER_SLOT_FORMATTER.format(normalizedScheduleTime);
     }
 
     /**
@@ -40,3 +43,4 @@ public class WeatherMappingKeyPolicy {
         return normalized.plusHours(1).withMinute(0);
     }
 }
+

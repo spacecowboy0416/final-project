@@ -50,12 +50,18 @@ dependencies {
 	implementation 'org.jsoup:jsoup:1.18.1'
 	implementation 'com.google.genai:google-genai:1.36.0'
 	implementation 'org.jsoup:jsoup:1.18.1'
+	implementation 'com.microsoft.onnxruntime:onnxruntime:1.20.0'
+	implementation 'org.bytedeco:opencv-platform:4.10.0-1.5.11'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+  implementation 'org.springframework.boot:spring-boot-starter-aop'
 	
 	/*jwt 관련 라이브러리*/
 	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+    
+    /* AWS S3 업로드 전용 라이브러리 추가 */
+    implementation 'com.amazonaws:aws-java-sdk-s3:1.12.771'
 }
 
 tasks.named('test') {
