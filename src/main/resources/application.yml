@@ -48,11 +48,13 @@ spring:
             client-authentication-method: client_secret_post
             authorization-grant-type: authorization_code
             redirect-uri: "{baseUrl}/login/oauth2/code/kakao"
-            scope: profile_nickname # account_email  # 에러 발생-권한없음
-            client-name: Kakao
+            scope:
+              - profile_nickname
         provider:
+          google:
+            authorization-uri: https://accounts.google.com/o/oauth2/v2/auth?prompt=select_account # 로그인 시마다 항상 로그인창이 뜨도록 설정
           kakao:
-            authorization-uri: https://kauth.kakao.com/oauth/authorize
+            authorization-uri: https://kauth.kakao.com/oauth/authorize?prompt=login
             token-uri: https://kauth.kakao.com/oauth/token
             user-info-uri: https://kapi.kakao.com/v2/user/me
             user-name-attribute: id
@@ -62,7 +64,7 @@ spring:
     multipart:
       max-file-size: 10MB
       max-request-size: 10MB
-      
+
   devtools:
     livereload:
       enabled: true
@@ -142,13 +144,13 @@ logging:
     "[com.finalproject.coordi.recommend.mapper]": TRACE
     "[com.finalproject.coordi.errorlog.mapper]": TRACE
 
-# 정적 리소스(JS/CSS) 캐시 끄기
+  # 정적 리소스(JS/CSS) 캐시 끄기
   web:
     resources:
       chain:
         cache: false
 
-# DevTools 및 LiveReload 활성화
+  # DevTools 및 LiveReload 활성화
   devtools:
     livereload:
       enabled: true
