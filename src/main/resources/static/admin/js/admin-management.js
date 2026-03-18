@@ -376,19 +376,66 @@ function renderUsers(users) {
   }
 }
 
-async function updateUser(userId, role, status) {
-  try {
-    const response = await fetch(`/api/admin/users/${userId}`, {
+async function updateUser(userId, newRole, newStatus) {
+  const userRow = document.querySelector(`tr[data-user-id="${userId}"]`);
+  if (!userRow) {
+    alert("오류: 사용자 정보를 찾을 수 없습니다.");
+    return;
+  }
+
+  const originalRole = userRow.querySelector('.role-badge').textContent.trim();
+  const originalStatus = userRow.querySelector('.status-badge').textContent.trim();
+
+  const updatePromises = [];
+
+  // 역할이 변경되었을 경우 API 호출 준비
+  if (newRole !== originalRole) {
+    const roleUpdatePromise = fetch(`/api/admin/users/${userId}/role`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ role, status }),
+      body: JSON.stringify({ role: newRole }),
     });
-    if (!response.ok) {
-      const errorData = await response.json();
+    updatePromises.push(roleUpdatePromise);
+  }
+
+  // 상태가 변경되었을 경우 API 호출 준비
+  if (newStatus !== originalStatus) {
+    const statusUpdatePromise = fetch(`/api/admin/users/${userId}/status`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: newStatus }),
+    });
+    updatePromises.push(statusUpdatePromise);
+  }
+
+  // 변경된 내용이 없으면 함수 종료
+  if (updatePromises.length === 0) {
+    alert("변경된 내용이 없습니다.");
+    return;
+  }
+
+  try {
+    const responses = await Promise.all(updatePromises);
+    
+    // 모든 응답이 성공적인지 확인
+    const allOk = responses.every(res => res.ok);
+    
+    if (!allOk) {
+      // 실패한 응답 중 첫 번째 응답에서 에러 메시지를 파싱 시도
+      const failedResponse = responses.find(res => !res.ok);
+      let errorData;
+      try {
+        errorData = await failedResponse.json();
+      } catch (e) {
+        // 응답이 JSON이 아닐 경우
+        errorData = { message: `서버 오류 (상태 코드: ${failedResponse.status})` };
+      }
       throw new Error(errorData.message || "정보 변경에 실패했습니다.");
     }
-    alert(`사용자 ID ${userId}의 정보가 변경되었습니다.`);
+
+    alert(`사용자 ID ${userId}의 정보가 성공적으로 변경되었습니다.`);
     await fetchAndRenderUsers();
+
   } catch (error) {
     console.error("Failed to update user:", error);
     alert(`오류: ${error.message}`);
@@ -400,6 +447,12 @@ function getSocialIcon(provider) {
   const p = provider.toLowerCase();
   if (p === "google") {
     return `<img src="/admin/images/google-logo.svg" referrerPolicy="no-referer" alt="Google" class="social-icon">`;
+  }
+  if (p === "kakao") {
+    return `<img src="/admin/images/kakao-logo.svg" referrerPolicy="no-referer" alt="Kakao" class="social-icon">`;
+  }
+  if (p === "naver") {
+    return `<img src="/admin/images/naver-logo.svg" referrerPolicy="no-referer" alt="Naver" class="social-icon">`;
   }
   return `<span class="social-icon social-${p}">${p.charAt(0).toUpperCase()}</span>`;
 }

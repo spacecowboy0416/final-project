@@ -1,7 +1,8 @@
 package com.finalproject.coordi.admin.user.controller;
 
 import com.finalproject.coordi.admin.user.dto.UserResponse;
-import com.finalproject.coordi.admin.user.dto.UserUpdateRequest;
+import com.finalproject.coordi.admin.user.dto.UserRoleUpdateRequest;
+import com.finalproject.coordi.admin.user.dto.UserStatusUpdateRequest;
 import com.finalproject.coordi.admin.user.service.AdminUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -25,11 +26,19 @@ public class AdminUserController {
         return ResponseEntity.ok(users);
     }
 
-    @PatchMapping("/{userId}")
-    public ResponseEntity<Void> updateUser(
+    @PatchMapping("/{userId}/role")
+    public ResponseEntity<Void> updateUserRole(
             @PathVariable Long userId,
-            @RequestBody UserUpdateRequest request) {
-        adminUserService.updateUser(userId, request);
+            @RequestBody UserRoleUpdateRequest request) {
+        adminUserService.updateUserRole(userId, request.getRole());
+        return ResponseEntity.ok().build();
+    }
+
+    @PatchMapping("/{userId}/status")
+    public ResponseEntity<Void> updateUserStatus(
+            @PathVariable Long userId,
+            @RequestBody UserStatusUpdateRequest request) {
+        adminUserService.updateUserStatus(userId, request.getStatus());
         return ResponseEntity.ok().build();
     }
 }

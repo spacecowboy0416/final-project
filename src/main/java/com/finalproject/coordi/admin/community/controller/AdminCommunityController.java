@@ -24,7 +24,7 @@ public class AdminCommunityController {
 
     @PatchMapping("/posts/{postId}/visibility")
     public ResponseEntity<Void> updatePostVisibility(@PathVariable Long postId,
-                                                     @RequestBody Map<String, Boolean> payload) {
+            @RequestBody Map<String, Boolean> payload) {
         adminCommunityService.modifyPostVisibility(postId, payload.get("isPublic"));
         return ResponseEntity.ok().build();
     }

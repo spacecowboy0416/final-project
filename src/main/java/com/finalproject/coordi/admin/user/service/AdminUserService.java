@@ -2,7 +2,6 @@ package com.finalproject.coordi.admin.user.service;
 
 import com.finalproject.coordi.admin.user.domain.User;
 import com.finalproject.coordi.admin.user.dto.UserResponse;
-import com.finalproject.coordi.admin.user.dto.UserUpdateRequest;
 import com.finalproject.coordi.admin.user.mapper.UserMapperInter;
 import com.finalproject.coordi.exception.user.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -27,15 +26,14 @@ public class AdminUserService {
     }
 
     @Transactional
-    public void updateUser(Long userId, UserUpdateRequest request) {
+    public void updateUserRole(Long userId, String role) {
         userMapperInter.findById(userId)
                 .orElseThrow(UserNotFoundException::new);
 
-        int updatedRows = userMapperInter.updateUser(userId, request.getRole(), request.getStatus());
+        int updatedRows = userMapperInter.updateUser(userId, role, null);
 
         if (updatedRows == 0) {
-            // This might happen if the provided data is the same as the existing data,
-            // or if the user ID does not exist.
+            throw new RuntimeException("User role update failed for userId: " + userId);
         }
     }
 
@@ -44,7 +42,7 @@ public class AdminUserService {
         userMapperInter.findById(userId)
                 .orElseThrow(UserNotFoundException::new);
 
-        int updatedRows = userMapperInter.updateUser(userId, null, status);
+        int updatedRows = userMapperInter.updateUserStatus(userId, status);
 
         if (updatedRows == 0) {
             throw new RuntimeException("User status update failed for userId: " + userId);

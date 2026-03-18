@@ -12,6 +12,7 @@ public class AdminController {
 
     private final AdminTagService adminTagService;
 
+    // 관리자 메뉴 진입, 진입 시 유저 관리 탭 자동 연결
     @GetMapping("/admin-management")
     public String adminPage(Model model) {
         model.addAttribute("tagTypes", adminTagService.getTagTypes());
