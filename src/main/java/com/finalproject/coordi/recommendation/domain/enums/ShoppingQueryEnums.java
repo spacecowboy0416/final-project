@@ -49,30 +49,29 @@ public final class ShoppingQueryEnums {
         }
 
         public String extractToken(
-            CategoryType slotKey,
-            RawBlueprintDto.ItemInfo item,
-            GenderType gender,
-            StyleType styleType,
-            TpoType tpoType
-        ) {
+                CategoryType slotKey,
+                RawBlueprintDto.ItemInfo item,
+                GenderType gender,
+                StyleType styleType,
+                TpoType tpoType) {
             if (!isSupported(slotKey)) {
                 return null;
             }
             return switch (this) {
                 case GENDER -> GenderKeyword.from(gender);
                 case COLOR -> item == null || item.attributes() == null
-                    ? null
-                    : ColorKeyword.from(item.attributes().color());
+                        ? null
+                        : ColorKeyword.from(item.attributes().color());
                 case FIT -> item == null || item.attributes() == null
-                    ? null
-                    : FitKeyword.from(item.attributes().fit());
+                        ? null
+                        : FitKeyword.from(item.attributes().fit());
                 case MATERIAL -> item == null || item.attributes() == null
-                    ? null
-                    : MaterialKeyword.from(item.attributes().material());
+                        ? null
+                        : MaterialKeyword.from(item.attributes().material());
                 case STYLE -> {
                     StyleType resolvedStyle = item != null && item.attributes() != null
-                        ? item.attributes().style()
-                        : styleType;
+                            ? item.attributes().style()
+                            : styleType;
                     yield StyleKeyword.from(resolvedStyle);
                 }
                 case CATEGORY -> CategoryKeyword.from(item == null ? null : item.category());

@@ -2,7 +2,10 @@ package com.finalproject.coordi.recommendation.service.payload;
 
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.GenderType;
 import com.finalproject.coordi.recommendation.dto.api.UserRequestDto;
+import com.finalproject.coordi.recommendation.dto.internal.ImageData;
 import com.finalproject.coordi.recommendation.dto.internal.UserRequest;
+import java.util.Base64;
+import org.springframework.util.StringUtils;
 import org.springframework.stereotype.Component;
 
 /**
@@ -18,7 +21,8 @@ public class UserRequestMapper {
             source.naturalText(),
             toGenderType(source.gender()),
             source.scheduleTime(),
-            toWeather(source.weather())
+            toWeather(source.weather()),
+            toImageData(source.imageBase64(), source.imageMimeType())
         );
     }
 
@@ -36,6 +40,16 @@ public class UserRequestMapper {
             source.status().name(), // or maybe we shouldn't pass name? wait, WeatherStatusType is enum.
             null, // rainProbability 
             "USER_PROVIDED" // source
+        );
+    }
+
+    private ImageData toImageData(String imageBase64, String imageMimeType) {
+        if (!StringUtils.hasText(imageBase64)) {
+            return null;
+        }
+        return new ImageData(
+            Base64.getDecoder().decode(imageBase64),
+            StringUtils.hasText(imageMimeType) ? imageMimeType : PayloadBuilder.DEFAULT_IMAGE_MIME_TYPE
         );
     }
 }

@@ -30,7 +30,8 @@ public class PayloadStage {
             mappedUserRequest.naturalText(),
             mappedUserRequest.gender(),
             weather,
-            mappedUserRequest.scheduleTime()
+            mappedUserRequest.scheduleTime(),
+            mappedUserRequest.imageData()
         );
         return new PayloadStageResult(payload);
     }

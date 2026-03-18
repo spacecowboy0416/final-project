@@ -17,7 +17,9 @@ public record UserRequestDto(
     @NotNull
     OffsetDateTime scheduleTime,
     @Valid @NotNull
-    WeatherInput weather
+    WeatherInput weather,
+    String imageBase64,
+    String imageMimeType
 ) {
     public enum GenderType {
         MALE,

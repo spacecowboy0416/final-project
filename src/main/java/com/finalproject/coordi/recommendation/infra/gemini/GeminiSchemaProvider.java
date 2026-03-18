@@ -62,13 +62,11 @@ public class GeminiSchemaProvider {
                 "scheduleTime", stringSchema(1L, null),
                 "weather", objectSchema(
                     Map.of(
-                        "temperature", numberSchema(),
                         "feelsLike", numberSchema(),
                         "weatherStatus", stringSchema(1L, null),
-                        "rainProbability", stringSchema(1L, null),
-                        "weatherSource", stringSchema(1L, null)
+                        "rainProbability", stringSchema(1L, null)
                     ),
-                    List.of("temperature", "feelsLike", "weatherStatus", "rainProbability", "weatherSource")
+                    List.of("feelsLike", "weatherStatus", "rainProbability")
                 ),
                 "imageData", objectSchema(
                     Map.of(

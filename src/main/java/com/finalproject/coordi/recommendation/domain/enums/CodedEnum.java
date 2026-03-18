@@ -8,5 +8,6 @@ import com.fasterxml.jackson.annotation.JsonValue;
  */
 public interface CodedEnum {
     @JsonValue
-    String code();
+    String getCode();
+
 }
