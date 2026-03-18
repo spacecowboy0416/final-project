@@ -19,7 +19,7 @@ public class S3Config {
     // application.yml 파일에 작성해둔 AWS Secret Key를 불러옵니다.
     @Value("${cloud.aws.credentials.secret-key}")
     private String secretKey;
-    
+
     // application.yml 파일에 작성해둔 AWS 지역(Region) 정보를 불러옵니다.
     @Value("${cloud.aws.region.static}")
     private String region;
