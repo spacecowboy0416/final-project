@@ -100,7 +100,6 @@ springdoc:
 external:
   api:
     gemini:
-      # 조장님의 SDK 엔드포인트 및 최신 모델(3.1) 적용
       endpoint: ${GEMINI_ENDPOINT:https://generativelanguage.googleapis.com} 
       model: ${GEMINI_MODEL:gemini-3.1-flash-lite-preview}
       url: ${GEMINI_URL:https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent} 
@@ -108,7 +107,6 @@ external:
       cache:
         enabled: ${GEMINI_PROMPT_CACHE_ENABLED:true}
         ttl-seconds: ${GEMINI_PROMPT_CACHE_TTL_SECONDS:3600}
-    # gemini-jin 섹션 제거됨 (불필요한 Dead Code 정리)
     shopping:
       endpoint: ${SHOPPING_API_ENDPOINT:https://openapi.naver.com/v1/search/shop.json}
       client-id: ${NAVER_CLIENT_ID:}
@@ -121,7 +119,7 @@ external:
         key-prefix: ${WEATHER_REDIS_KEY_PREFIX:weather:district}
     kakao:
       local:
-        rest-api-key: ${KAKAO_REST_API_KEY}
+        rest-api-key: ${KAKAO_CLIENT_ID}
         coord2region-url: https://dapi.kakao.com/v2/local/geo/coord2regioncode.json
     kakao-map:
       endpoint: ${KAKAO_MAP_ENDPOINT:https://dapi.kakao.com/v2/local/geo/coord2address.json}
