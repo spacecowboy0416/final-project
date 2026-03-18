@@ -7,10 +7,6 @@ import com.finalproject.coordi.recommendation.domain.enums.WeatherEnums.WeatherS
 import com.finalproject.coordi.recommendation.service.payload.WeatherPort;
 import java.time.OffsetDateTime;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
@@ -19,11 +15,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @RequiredArgsConstructor
-@ConditionalOnProperty(name = "app.cache.redis-enabled", havingValue = "true")
-@ConditionalOnBean(StringRedisTemplate.class)
 public class RedisWeatherAdapter implements WeatherPort {
-    private static final Logger log = LoggerFactory.getLogger(RedisWeatherAdapter.class);
-
     private final StringRedisTemplate stringRedisTemplate;
     private final ObjectMapper objectMapper;
     private final WeatherMappingKeyPolicy weatherMappingKeyPolicy;
@@ -35,15 +27,7 @@ public class RedisWeatherAdapter implements WeatherPort {
     @Override
     public WeatherData fetchByDistrict(String districtName, OffsetDateTime scheduleTime) {
         String redisKey = weatherMappingKeyPolicy.buildKey(districtName, scheduleTime);
-        String cachedBody;
-        try {
-            cachedBody = stringRedisTemplate.opsForValue().get(redisKey);
-        } catch (Exception exception) {
-            // Redis 서버 연결 이슈가 있어도 추천 파이프라인은 진행할 수 있도록 캐시 미스로 처리한다.
-            log.warn("Redis 날씨 캐시 조회 실패. 캐시 미스로 처리한다. key={}", redisKey, exception);
-            return new WeatherData(null, null, null, null, WeatherSourceType.REDIS_CACHE_MISS);
-        }
-
+        String cachedBody = stringRedisTemplate.opsForValue().get(redisKey);
         if (cachedBody == null || cachedBody.isBlank()) {
             return new WeatherData(null, null, null, null, WeatherSourceType.REDIS_CACHE_MISS);
         }
