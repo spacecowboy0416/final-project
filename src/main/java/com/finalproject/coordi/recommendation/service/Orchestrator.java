@@ -1,11 +1,13 @@
 package com.finalproject.coordi.recommendation.service;
 
 import com.finalproject.coordi.recommendation.config.annotation.StageExecutionTimes;
+import com.finalproject.coordi.recommendation.config.RecommendationPipelineProperties;
 import com.finalproject.coordi.recommendation.dto.api.CoordinationOutputDto;
 import com.finalproject.coordi.recommendation.dto.api.RawBlueprintDto;
 import com.finalproject.coordi.recommendation.dto.api.RecommendationDebugResponseDto;
 import com.finalproject.coordi.recommendation.dto.api.UserRequestDto;
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.CategoryType;
+import com.finalproject.coordi.recommendation.domain.enums.PipelineMode;
 import com.finalproject.coordi.recommendation.service.blueprint.BlueprintStage;
 import com.finalproject.coordi.recommendation.service.blueprint.BlueprintStage.BlueprintStageResult;
 import com.finalproject.coordi.recommendation.service.coordination.CoordinationStage;
@@ -18,6 +20,7 @@ import com.finalproject.coordi.recommendation.service.productSearch.ShoppingPort
 import com.finalproject.coordi.recommendation.service.productSearch.ShoppingPort.ShoppingSearchQuery;
 
 import jakarta.validation.Valid;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -39,6 +42,7 @@ public class Orchestrator {
     private final CoordinationStage coordinationStage;
     private final FinalOutputBuilder finalOutputBuilder;
     private final StageExecutionTimes stageExecutionTimes;
+    private final RecommendationPipelineProperties recommendationPipelineProperties;
 
     /**
      * recommendation 표준 응답만 필요한 일반 API 진입점이다.
@@ -63,6 +67,15 @@ public class Orchestrator {
     }
 
     private PipelineResult runPipeline(@Valid UserRequestDto request) {
+        PipelineMode pipelineMode = recommendationPipelineProperties.getMode();
+        if (pipelineMode == PipelineMode.FAST_TOP1) {
+            return runFastTop1Pipeline(request);
+        }
+        return runLegacyFullPipeline(request);
+    }
+
+    // 기존 파이프라인 단계를 모두 수행한다.
+    private PipelineResult runLegacyFullPipeline(@Valid UserRequestDto request) {
         // 사용자 입력, 날씨, 프롬프트 조합하여 payload 생성
         var payload = payloadStage.build(request).payload();
 
@@ -89,6 +102,41 @@ public class Orchestrator {
             productSearchResult.searchedProductsBySlot(),
             imageFilterResult.filteredProductsBySlot()
         );
+    }
+
+    // 축소 파이프라인: 검색 결과에서 슬롯별 TOP1만 사용하고 이미지 필터 단계는 건너뛴다.
+    private PipelineResult runFastTop1Pipeline(@Valid UserRequestDto request) {
+        var payload = payloadStage.build(request).payload();
+        BlueprintStageResult blueprintResult = blueprintStage.generate(payload);
+        ProductSearchStageResult productSearchResult = productSearchStage.search(blueprintResult.normalizedBlueprint());
+        var coordinationResult = coordinationStage.match(blueprintResult.normalizedBlueprint(), productSearchResult);
+        CoordinationOutputDto coordinationOutput = finalOutputBuilder.build(
+            blueprintResult.normalizedBlueprint(),
+            coordinationResult
+        );
+
+        return new PipelineResult(
+            blueprintResult.rawBlueprint(),
+            coordinationOutput,
+            productSearchResult.slotSearchQueries(),
+            productSearchResult.searchedProductsBySlot(),
+            top1ProductsBySlot(productSearchResult.searchedProductsBySlot())
+        );
+    }
+
+    private Map<CategoryType, List<SearchedProduct>> top1ProductsBySlot(
+        Map<CategoryType, List<SearchedProduct>> searchedProductsBySlot
+    ) {
+        EnumMap<CategoryType, List<SearchedProduct>> top1ProductsBySlot = new EnumMap<>(CategoryType.class);
+        for (CategoryType categoryType : CategoryType.values()) {
+            List<SearchedProduct> products = searchedProductsBySlot == null ? null : searchedProductsBySlot.get(categoryType);
+            if (products == null || products.isEmpty()) {
+                top1ProductsBySlot.put(categoryType, List.of());
+                continue;
+            }
+            top1ProductsBySlot.put(categoryType, List.of(products.getFirst()));
+        }
+        return top1ProductsBySlot;
     }
 
     private record PipelineResult(

@@ -162,3 +162,7 @@ jwt:
 app:
   cache:
     redis-enabled: false
+
+recommendation:
+  pipeline:
+    mode: ${RECOMMENDATION_PIPELINE_MODE:legacy_full}

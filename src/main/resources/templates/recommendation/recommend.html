@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:replace="~{layout/common :: configFragment}"></th:block>
+    <title>추천 페이지</title>
+    <style>
+        .recommend-wrap { max-width: 1080px; margin: 24px auto; padding: 0 16px; }
+        .recommend-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .card { border: 1px solid #d9dee5; border-radius: 12px; background: #fff; padding: 16px; }
+        .card h2 { margin: 0 0 12px; font-size: 18px; }
+        .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+        .field label { font-size: 13px; font-weight: 600; color: #334155; }
+        .field input, .field select, .field textarea {
+            border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px 10px; font-size: 14px;
+        }
+        .field textarea { min-height: 96px; resize: vertical; }
+        .actions { display: flex; gap: 8px; margin-top: 8px; }
+        .btn { border: 0; border-radius: 8px; padding: 10px 14px; cursor: pointer; font-weight: 600; }
+        .btn-primary { background: #111827; color: #fff; }
+        .btn-secondary { background: #e2e8f0; color: #111827; }
+        .json-box {
+            background: #0f172a; color: #e2e8f0; border-radius: 8px; padding: 12px;
+            min-height: 520px; overflow: auto; font-size: 12px; line-height: 1.5;
+        }
+        .hint { margin-top: 8px; color: #64748b; font-size: 12px; }
+        @media (max-width: 980px) {
+            .recommend-grid { grid-template-columns: 1fr; }
+            .json-box { min-height: 300px; }
+        }
+    </style>
+</head>
+<body>
+<div th:replace="~{layout/common :: headerFragment}"></div>
+<main class="recommend-wrap">
+    <div class="recommend-grid">
+        <section class="card">
+            <h2>입력</h2>
+            <form id="recommendForm">
+                <div class="field">
+                    <label for="naturalText">요청 문장</label>
+                    <textarea id="naturalText" required>비 오는 날 출근룩 추천해줘</textarea>
+                </div>
+                <div class="field">
+                    <label for="gender">성별</label>
+                    <select id="gender">
+                        <option value="UNISEX">UNISEX</option>
+                        <option value="MALE">MALE</option>
+                        <option value="FEMALE">FEMALE</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="scheduleTime">일정 시각</label>
+                    <input id="scheduleTime" type="datetime-local" required>
+                </div>
+                <div class="field">
+                    <label for="districtName">구/군 이름</label>
+                    <input id="districtName" type="text" value="강남구" required>
+                </div>
+                <div class="field">
+                    <label for="latitude">위도</label>
+                    <input id="latitude" type="number" step="any" value="37.5172" required>
+                </div>
+                <div class="field">
+                    <label for="longitude">경도</label>
+                    <input id="longitude" type="number" step="any" value="127.0473" required>
+                </div>
+                <div class="field">
+                    <label for="imageFile">이미지 파일</label>
+                    <input id="imageFile" type="file" accept="image/*" required>
+                </div>
+                <div class="actions">
+                    <button class="btn btn-primary" type="submit">추천 요청</button>
+                    <button class="btn btn-secondary" id="clearButton" type="button">초기화</button>
+                </div>
+                <p class="hint">최대 이미지 크기: <span th:text="${recommendationImageMaxBytes}"></span> bytes</p>
+            </form>
+        </section>
+        <section class="card">
+            <h2>출력</h2>
+            <pre id="outputJson" class="json-box">{}</pre>
+        </section>
+    </div>
+</main>
+<footer th:replace="~{layout/common :: footerFragment}"></footer>
+<script th:inline="javascript">
+    const recommendationImageMaxBytes = /*[[${recommendationImageMaxBytes}]]*/ 5242880;
+    const recommendForm = document.getElementById("recommendForm");
+    const outputJson = document.getElementById("outputJson");
+    const clearButton = document.getElementById("clearButton");
+
+    document.getElementById("scheduleTime").value = toDateTimeLocalString(new Date());
+
+    recommendForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        try {
+            const requestPayload = await buildRequestPayload();
+            outputJson.textContent = JSON.stringify({ input: requestPayload }, null, 2);
+
+            const response = await fetch("/api/recommendations", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(requestPayload)
+            });
+
+            const body = await response.json();
+            outputJson.textContent = JSON.stringify({
+                input: requestPayload,
+                output: body,
+                status: response.status
+            }, null, 2);
+        } catch (error) {
+            outputJson.textContent = JSON.stringify({
+                error: error.message
+            }, null, 2);
+        }
+    });
+
+    clearButton.addEventListener("click", () => {
+        outputJson.textContent = "{}";
+    });
+
+    async function buildRequestPayload() {
+        const imageFileInput = document.getElementById("imageFile");
+        const imageFile = imageFileInput.files && imageFileInput.files[0];
+        if (!imageFile) {
+            throw new Error("이미지 파일을 선택해주세요.");
+        }
+        if (imageFile.size > recommendationImageMaxBytes) {
+            throw new Error("이미지 크기가 제한을 초과했습니다.");
+        }
+
+        const imageBytes = await fileToByteArray(imageFile);
+        return {
+            naturalText: document.getElementById("naturalText").value,
+            gender: document.getElementById("gender").value,
+            scheduleTime: toOffsetDateTimeString(document.getElementById("scheduleTime").value),
+            location: {
+                districtName: document.getElementById("districtName").value,
+                placeName: "",
+                addressName: "",
+                latitude: Number(document.getElementById("latitude").value),
+                longitude: Number(document.getElementById("longitude").value)
+            },
+            imageData: {
+                imageBytes,
+                mimeType: imageFile.type || "image/jpeg"
+            }
+        };
+    }
+
+    async function fileToByteArray(file) {
+        const arrayBuffer = await file.arrayBuffer();
+        return Array.from(new Uint8Array(arrayBuffer));
+    }
+
+    function toOffsetDateTimeString(localDateTime) {
+        const date = new Date(localDateTime);
+        return date.toISOString();
+    }
+
+    function toDateTimeLocalString(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+        const hours = String(date.getHours()).padStart(2, "0");
+        const minutes = String(date.getMinutes()).padStart(2, "0");
+        return `${year}-${month}-${day}T${hours}:${minutes}`;
+    }
+</script>
+</body>
+</html>

@@ -37,8 +37,15 @@ public class RecommendationController {
     private final GeminiProperties geminiProperties;
     private final RecommendationImageProperties recommendationImageProperties;
 
-    // 추천 테스트 페이지를 반환한다.
+    // 추천 입력/출력 페이지를 반환한다.
     @GetMapping("/recommend")
+    public String recommendPage(Model model) {
+        model.addAttribute("recommendationImageMaxBytes", recommendationImageProperties.getMaxSize().toBytes());
+        return "recommendation/recommend";
+    }
+
+    // 기존 디버그 테스트 페이지를 별도 경로로 유지한다.
+    @GetMapping("/recommend/test")
     public String recommendTestPage(Model model) {
         model.addAttribute("kakaoMapApiKey", kakaoMapProperties.getJsKey());
         model.addAttribute("geminiModel", geminiProperties.getModel());
@@ -71,5 +78,4 @@ public class RecommendationController {
         return ResponseEntity.ok(shoppingSearcher.search(query));
     }
 }
-
 
