@@ -3,6 +3,7 @@ package com.finalproject.coordi.recommendation.dto.api;
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.StyleType;
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.CategoryType;
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.TpoType;
+import com.finalproject.coordi.recommendation.service.Orchestrator.PipelineResult;
 import com.finalproject.coordi.recommendation.service.productSearch.ShoppingPort.SearchedProduct;
 import com.finalproject.coordi.recommendation.service.productSearch.ShoppingPort.ShoppingSearchQuery;
 
@@ -25,23 +26,35 @@ public record RecommendationDebugResponseDto(
     Map<String, Long> stageTimings
 ) {
     public static RecommendationDebugResponseDto from(
-        RawBlueprintDto rawBlueprint,
-        CoordinationOutputDto coordinationOutput,
-        Map<CategoryType, ShoppingSearchQuery> slotSearchQueries,
-        Map<CategoryType, List<SearchedProduct>> searchedProductsBySlot,
-        Map<CategoryType, List<SearchedProduct>> filteredProductsBySlot,
+        PipelineResult pipelineResult,
         Map<String, Long> stageTimings
     ) {
+        if (pipelineResult == null || pipelineResult.coordinationOutput() == null) {
+            return new RecommendationDebugResponseDto(
+                null,
+                null,
+                null,
+                null,
+                null,
+                List.of(),
+                Map.of(),
+                Map.of(),
+                Map.of(),
+                stageTimings == null ? Map.of() : stageTimings
+            );
+        }
+
+        CoordinationOutputDto coordinationOutput = pipelineResult.coordinationOutput();
         return new RecommendationDebugResponseDto(
-            rawBlueprint,
+            pipelineResult.rawBlueprint(),
             coordinationOutput.blueprintId(),
             coordinationOutput.tpoType(),
             coordinationOutput.styleType(),
             coordinationOutput.stylingRuleApplied(),
             coordinationOutput.coordination(),
-            toDebugSlotSearchQueries(slotSearchQueries),
-            toDebugSearchedProductsBySlot(searchedProductsBySlot),
-            toDebugSearchedProductsBySlot(filteredProductsBySlot),
+            toDebugSlotSearchQueries(pipelineResult.slotSearchQueries()),
+            toDebugSearchedProductsBySlot(pipelineResult.searchedProductsBySlot()),
+            toDebugSearchedProductsBySlot(pipelineResult.filteredProductsBySlot()),
             stageTimings == null ? Map.of() : stageTimings
         );
     }
@@ -98,4 +111,3 @@ public record RecommendationDebugResponseDto(
         }
     }
 }
-

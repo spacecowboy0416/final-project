@@ -9,6 +9,8 @@ import com.finalproject.coordi.recommendation.service.productSearch.ShoppingSear
 import com.finalproject.coordi.recommendation.service.productSearch.ShoppingPort.SearchedProduct;
 import com.finalproject.coordi.recommendation.infra.gemini.GeminiProperties;
 import com.finalproject.coordi.recommendation.infra.map.KakaoMapProperties;
+import com.finalproject.coordi.users.annotation.LoginUser;
+import com.finalproject.coordi.users.dto.UsersDto;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -44,8 +46,8 @@ public class RecommendationController {
         return "recommendation/recommend";
     }
 
-    // 기존 디버그 테스트 페이지를 별도 경로로 유지한다.
-    @GetMapping("/recommend/test")
+    // 디버그 테스트 페이지 진입점 (/recommend-test, /recommend/test 모두 허용)
+    @GetMapping({"/recommend-test", "/recommend/test"})
     public String recommendTestPage(Model model) {
         model.addAttribute("kakaoMapApiKey", kakaoMapProperties.getJsKey());
         model.addAttribute("geminiModel", geminiProperties.getModel());
@@ -57,9 +59,11 @@ public class RecommendationController {
     @PostMapping("/api/recommendations")
     @ResponseBody
     public ResponseEntity<CoordinationOutputDto> recommend(
+        @LoginUser UsersDto loginUser,
         @Valid @RequestBody UserRequestDto request
     ) {
-        return ResponseEntity.ok(orchestratorService.coordinate(request));
+        Long userId = loginUser == null ? null : loginUser.getUserId();
+        return ResponseEntity.ok(orchestratorService.coordinate(request, userId));
     }
 
     @PostMapping("/api/recommendations/debug")
@@ -78,4 +82,3 @@ public class RecommendationController {
         return ResponseEntity.ok(shoppingSearcher.search(query));
     }
 }
-

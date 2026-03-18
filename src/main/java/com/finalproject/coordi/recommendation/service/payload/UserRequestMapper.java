@@ -2,8 +2,6 @@ package com.finalproject.coordi.recommendation.service.payload;
 
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.GenderType;
 import com.finalproject.coordi.recommendation.dto.api.UserRequestDto;
-import com.finalproject.coordi.recommendation.dto.internal.ImageData;
-import com.finalproject.coordi.recommendation.dto.internal.Location;
 import com.finalproject.coordi.recommendation.dto.internal.UserRequest;
 import org.springframework.stereotype.Component;
 
@@ -20,8 +18,7 @@ public class UserRequestMapper {
             source.naturalText(),
             toGenderType(source.gender()),
             source.scheduleTime(),
-            toLocation(source.location()),
-            toImageData(source.imageData())
+            toWeather(source.weather())
         );
     }
 
@@ -29,23 +26,16 @@ public class UserRequestMapper {
         return source == null ? null : GenderType.valueOf(source.name());
     }
 
-    private Location toLocation(UserRequestDto.LocationInfo source) {
+    private com.finalproject.coordi.recommendation.dto.internal.Weather toWeather(UserRequestDto.WeatherInput source) {
         if (source == null) {
             return null;
         }
-        return new Location(
-            source.districtName(),
-            source.placeName(),
-            source.addressName(),
-            source.latitude(),
-            source.longitude()
+        return new com.finalproject.coordi.recommendation.dto.internal.Weather(
+            source.temperature(),
+            source.feelsLike(),
+            source.status().name(), // or maybe we shouldn't pass name? wait, WeatherStatusType is enum.
+            null, // rainProbability 
+            "USER_PROVIDED" // source
         );
-    }
-
-    private ImageData toImageData(UserRequestDto.ImageData source) {
-        if (source == null) {
-            return null;
-        }
-        return new ImageData(source.imageBytes(), source.mimeType());
     }
 }

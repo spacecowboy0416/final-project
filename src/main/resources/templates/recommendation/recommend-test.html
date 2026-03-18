@@ -12,7 +12,7 @@
         .log-panel { border: 1px solid #ccc; padding: 8px; margin-bottom: 10px; }
         .log-grid { display: grid; grid-template-columns: minmax(220px, 0.75fr) minmax(240px, 0.85fr) minmax(320px, 1.2fr); gap: 10px; align-items: start; }
         .four-column-layout { display: grid; grid-template-columns: repeat(4, minmax(280px, 1fr)); gap: 10px; align-items: start; }
-        .two-column-layout { display: grid; grid-template-columns: repeat(2, minmax(320px, 1fr)); gap: 10px; margin-top: 10px; align-items: start; }
+        .three-column-layout { display: grid; grid-template-columns: minmax(320px, 1fr) minmax(375px, auto) minmax(320px, 1fr); gap: 10px; margin-top: 10px; align-items: start; }
         .panel { border: 1px solid #ccc; padding: 8px; }
         .panel section { margin-bottom: 10px; }
         .panel section:last-child { margin-bottom: 0; }
@@ -56,11 +56,38 @@
         .compact-note { margin-bottom: 4px; font-size: 12px; color: #555; }
         .compact-button { padding: 4px 8px; }
         .status-line { font-size: 12px; color: #555; margin-bottom: 4px; }
-        @media (max-width: 900px) {
+        /* Desktop Web Preview UI (Computer Screen Basis) */
+        .app-preview-wrapper { background-color: #f0f2f5; padding: 24px; border-radius: 16px; min-height: 600px; display: flex; flex-direction: column; align-items: stretch; box-shadow: inset 0 2px 10px rgba(0,0,0,0.05); }
+        .app-preview { width: 100%; min-height: 500px; border-radius: 20px; background-color: white; overflow: hidden; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.08); font-family: 'Pretendard', -apple-system, sans-serif; display: flex; flex-direction: column; }
+        .app-header { background: #ffffff; padding: 24px 30px; border-bottom: 2px solid #f8f9fa; display: flex; flex-direction: column; gap: 6px; }
+        .app-header .app-title { font-size: 22px; font-weight: 800; color: #1a1a1a; letter-spacing: -0.8px; }
+        .app-header .app-subtitle { font-size: 14px; font-weight: 600; color: #6c757d; }
+        .app-content { padding: 24px; display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; flex-grow: 1; }
+        .app-empty-state { grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 300px; color: #adb5bd; font-size: 16px; gap: 12px; }
+        .app-coordi-card { background: #ffffff; border-radius: 14px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.03); border: 1px solid #edf2f7; transition: transform 0.2s ease, box-shadow 0.2s ease; display: flex; flex-direction: column; }
+        .app-coordi-card:hover { transform: translateY(-4px); box-shadow: 0 12px 25px rgba(0,0,0,0.06); }
+        .app-coordi-img-wrapper { width: 100%; aspect-ratio: 1 / 1.1; background-color: #fbfbfb; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
+        .app-slot-badge { position: absolute; top: 12px; left: 12px; background: rgba(0,0,0,0.8); color: white; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; z-index: 2; }
+        .app-coordi-img-wrapper img { width: 90%; height: 90%; object-fit: contain; }
+        .app-coordi-info { padding: 16px; flex-grow: 1; display: flex; flex-direction: column; border-top: 1px solid #f8f9fa; }
+        .app-coordi-brand { font-size: 11px; color: #2b6cb0; margin-bottom: 4px; font-weight: 700; text-transform: uppercase; }
+        .app-coordi-name { font-size: 14px; font-weight: 600; color: #2d3748; margin: 0 0 8px 0; line-height: 1.4; height: 2.8em; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .app-coordi-price { font-size: 16px; font-weight: 800; color: #1a202c; margin-top: auto; }
+        .app-coordi-reason { font-size: 11px; color: #718096; margin-top: 8px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .app-buy-btn { margin-top: 12px; padding: 10px; background: #222; color: white; text-align: center; border-radius: 8px; font-size: 12px; font-weight: 700; text-decoration: none; transition: background 0.2s; }
+        .app-buy-btn:hover { background: #444; }
+        .two-column-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; align-items: start; }
+        .app-preview-panel { display: block; }
+        .json-details { position: relative; }
+        .json-details[open] summary { background: #222; color: #fff; }
+        .json-popup { position: absolute; top: 100%; right: 0; width: 500px; max-height: 600px; background: #2d3436; color: #fab1a0; border-radius: 12px; padding: 16px; overflow: auto; z-index: 1000; box-shadow: 0 15px 35px rgba(0,0,0,0.3); margin-top: 8px; font-family: 'Consolas', monospace; font-size: 12px; }
+        .json-popup pre { margin: 0; white-space: pre-wrap; word-break: break-all; }
+        @media (max-width: 1200px) {
             .log-grid { grid-template-columns: 1fr; }
             .input-grid { grid-template-columns: 1fr; }
             .result-slot-grid { grid-template-columns: 1fr; }
             .shopping-debug-form { grid-template-columns: 1fr; }
+            .four-column-layout { grid-template-columns: 1fr 1fr; }
             .two-column-layout { grid-template-columns: 1fr; }
         }
     </style>
@@ -150,6 +177,7 @@
                 <p class="compact-note">지도 클릭으로 좌표 입력</p>
                 <div id="map" style="width:100%;height:120px;border:1px solid #ccc;"></div>
                 <p id="mapStatus" class="status-line">지도를 불러오는 중입니다.</p>
+                <div id="weatherPreview" class="compact-note" style="color:#0056b3; font-weight:bold; margin-top:2px; margin-bottom:8px;">날씨 정보: 대기 중...</div>
                 <button id="useCurrentLocationBtn" class="compact-button" type="button">현재 위치 사용</button>
                 <div class="input-grid">
                     <div>
@@ -191,39 +219,27 @@
             </section>
 
             <section class="constraint-section">
-                <h4>입력 제약</h4>
-                <ul class="constraint-list">
-                    <li>AI 입력에는 이미지 1장, 자연어 요청, 대상 성별, 일정 시각이 포함됩니다.</li>
-                    <li><code>location</code>은 서버가 날씨를 조회할 때만 쓰는 요청 필드입니다.</li>
-                    <li>날씨 요약은 서버 내부에서 붙고, 이 테스트 페이지에서는 별도 설명 블록으로 노출하지 않습니다.</li>
-                </ul>
+                <h4>input</h4>
                 <div class="constraint-box">
-                    <strong>input json schema</strong>
                     <pre>{
   "naturalText": "...",
-  "gender": "male",
-  "scheduleTime": "...",
-  "location": {
-    "districtName": "중구",
-    "placeName": "서울특별시청",
-    "addressName": "서울특별시 중구 세종대로 110",
-    "latitude": 37.5665,
-    "longitude": 126.978
-  },
-  "imageData": {
-    "imageBytes": "base64",
-    "mimeType": "image/jpeg"
+  "gender": "MALE | FEMALE | UNISEX",
+  "scheduleTime": "2026-03-18T14:00:00+09:00",
+  "weather": {
+    "status": "CLEAR | CLOUDY | RAIN | SNOW | ...",
+    "temperature": 18.5,
+    "feelsLike": 17.0
   }
 }</pre>
                 </div>
             </section>
 
             <section class="constraint-section">
-                <h4>출력 제약</h4>
+                <h4>output (ai_blueprint)</h4>
                 <div class="constraint-box">
-                    <strong>output json schema</strong>
                     <pre>{
   "ai_blueprint": {
+    "gender": "male",
     "tpoType": "date",
     "styleType": "minimal",
     "main_item_analysis": {
@@ -235,6 +251,7 @@
     },
     "coordination": {
       "tops": {
+        "slot_key": "tops",
         "item_name": "...",
         "category": "top",
         "attributes": {
@@ -252,17 +269,6 @@
   }
 }</pre>
                 </div>
-            </section>
-
-            <section class="constraint-section">
-                <h4>의미 규칙</h4>
-                <ul class="constraint-list">
-                    <li><code>tpoType</code>은 상황 코드이고 스타일 코드가 아닙니다.</li>
-                    <li><code>styleType</code>과 <code>attributes.style</code>은 스타일 코드입니다.</li>
-                    <li><code>item_name</code>은 사용자 노출용 이름입니다.</li>
-                    <li>쇼핑용 <code>search_query</code>는 AI 출력이 아니라 서버 비즈니스 로직에서 속성값으로 조합합니다.</li>
-                    <li><code>reasoning</code>은 각 슬롯이 전체 코디에 왜 맞는지 짧게 설명해야 합니다.</li>
-                </ul>
             </section>
         </div>
 
@@ -307,19 +313,44 @@
         </div>
     </div>
 
+    <!-- 하단 결과 섹션: 왼쪽(쇼핑 후보), 오른쪽(최종 미리보기) -->
     <div class="two-column-layout">
+        <!-- 왼쪽: 쇼핑 검색 결과 (추천 후보군) -->
         <div class="panel">
             <section>
-                <h3>Filtered Images</h3>
-                <p class="compact-note">ImageFilter 통과 결과(옷 사진 우선)</p>
-                <div id="filteredImageGrid" class="candidate-grid"></div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <h3 style="margin: 0;">쇼핑 출력 결과 (추천 후보군)</h3>
+                    <details class="json-details">
+                        <summary class="compact-button" style="display: inline-block; cursor: pointer;">원본 JSON 보기</summary>
+                        <div class="json-popup">
+                            <pre id="shoppingRawJson">검색 결과가 없습니다.</pre>
+                        </div>
+                    </details>
+                </div>
+                <p class="compact-note">쇼핑 검색을 통해 발굴된 각 슬롯별 후보 상품들입니다.</p>
+                <div id="shoppingOutputGrid" class="candidate-grid">
+                    <div class="app-empty-state"><p>검색 결과가 여기에 표시됩니다 🔍</p></div>
+                </div>
             </section>
         </div>
-        <div class="panel">
+
+        <!-- 오른쪽: 실제 사용자 앱 미리보기 -->
+        <div class="panel app-preview-panel">
             <section>
-                <h3>Filter Summary</h3>
-                <p class="compact-note">필터 적용 상태 요약</p>
-                <pre id="filterSummaryBox">요약 없음</pre>
+                <h3>사용자 미리보기 (실제 서비스 화면)</h3>
+                <div class="app-preview-wrapper">
+                    <div class="app-preview">
+                        <!-- 앱 헤더 -->
+                        <div class="app-header">
+                            <div id="appHeaderTitle" class="app-title">코디 추천 결과</div>
+                            <div id="appHeaderSubtitle" class="app-subtitle">제안 대기 중</div>
+                        </div>
+                        <!-- 앱 콘텐츠 (최종 선택된 아이템들) -->
+                        <div id="appContent" class="app-content">
+                            <div class="app-empty-state"><p>최종 추천 결과가 여기에 표시됩니다 👕</p></div>
+                        </div>
+                    </div>
+                </div>
             </section>
         </div>
     </div>
@@ -360,14 +391,17 @@
     const responseSummaryText = document.getElementById("responseSummaryText");
     const errorText = document.getElementById("errorText");
     const diagnosticLogText = document.getElementById("diagnosticLogText");
-    const filterSummaryBox = document.getElementById("filterSummaryBox");
     const mapStatus = document.getElementById("mapStatus");
-    const filteredImageGrid = document.getElementById("filteredImageGrid");
     const searchedProductGrid = document.getElementById("candidateGrid");
     const shoppingDebugQueryInput = document.getElementById("shoppingDebugQuery");
     const shoppingDebugBtn = document.getElementById("shoppingDebugBtn");
     const shoppingDebugStatus = document.getElementById("shoppingDebugStatus");
     const shoppingDebugResult = document.getElementById("shoppingDebugResult");
+    const shoppingOutputGrid = document.getElementById("shoppingOutputGrid");
+    const shoppingRawJson = document.getElementById("shoppingRawJson");
+    const appHeaderTitle = document.getElementById("appHeaderTitle");
+    const appHeaderSubtitle = document.getElementById("appHeaderSubtitle");
+    const appContent = document.getElementById("appContent");
     const timingList = document.getElementById("timingList");
     const queryList = document.getElementById("queryList");
     const RESULT_BOX_MAX_LENGTH = 100;
@@ -384,14 +418,19 @@
 
     function resetResultSkeleton() {
         geminiResponseBox.textContent = "Gemini 응답 없음";
-        filteredImageGrid.innerHTML = "";
+        shoppingRawJson.textContent = "검색 결과가 없습니다.";
+        shoppingOutputGrid.innerHTML = '<div class="app-empty-state"><p>검색 결과가 여기에 표시됩니다 🔍</p></div>';
+        
+        appHeaderTitle.textContent = "코디 결과";
+        appHeaderSubtitle.textContent = "제안 대기 중";
+        appContent.innerHTML = '<div class="app-empty-state"><p>최종 추천 결과가 여기에 표시됩니다 👕</p></div>';
+
         searchedProductGrid.innerHTML = "";
         shoppingDebugResult.innerHTML = "";
         shoppingDebugStatus.textContent = "대기 중";
         timingList.innerHTML = "";
         queryList.innerHTML = "";
         diagnosticLogText.textContent = "진단 로그 없음";
-        filterSummaryBox.textContent = "요약 없음";
     }
 
     function resetOutputStatus() {
@@ -400,19 +439,112 @@
         errorText.textContent = "에러 없음";
     }
 
+    // 추천 파이프라인이 완료되면 호출되어 결과를 화면에 표시합니다.
     function updateResultSkeleton(response) {
         geminiResponseBox.textContent = response?.rawBlueprint
             ? JSON.stringify(response.rawBlueprint, null, 2)
             : "Gemini 응답 없음";
 
         updateQueryList(response?.slotSearchQueries || {});
-        const filteredProductsBySlot = response?.filteredProductsBySlot || {};
         const searchedProductsBySlot = response?.searchedProductsBySlot || {};
+        
+        // 왼쪽 섹션: 쇼핑 출력 결과 (후보군) 업데이트
+        shoppingRawJson.textContent = JSON.stringify(searchedProductsBySlot, null, 2);
+        updateProductGrid(shoppingOutputGrid, searchedProductsBySlot, "검색된 상품 데이터가 없습니다.");
+        
+        // 상단 4컬럼 패널의 데이터도 동기화 (필요시)
         updateProductGrid(searchedProductGrid, searchedProductsBySlot, "searched product 없음");
-        updateFilteredImageGrid(filteredProductsBySlot);
+        
         updateTimingList(response?.stageTimings || {});
-        updateDiagnosticLog(response, filteredProductsBySlot, searchedProductsBySlot);
-        updateFilterSummary(filteredProductsBySlot, searchedProductsBySlot);
+        updateDiagnosticLog(response, {}, searchedProductsBySlot);
+        renderCoordinationResult(response);
+    }
+
+    // 사용자에게 보여질 최종 코디 결과 카드를 렌더링한다.
+    function renderCoordinationResult(response) {
+        appContent.innerHTML = ""; // 이전 미리보기 내용 삭제
+
+        const items = Array.isArray(response?.coordination) ? response.coordination : [];
+        if (items.length === 0) {
+            coordiMeta.textContent = "결과 없음";
+            appHeaderSubtitle.textContent = "조건에 맞는 옷이 없습니다";
+            appContent.innerHTML = '<div class="app-empty-state"><p>추천 결과가 없습니다 🥲</p></div>';
+            return;
+        }
+
+        const tpoText = response.tpoType ? response.tpoType.toUpperCase() : "OUTFIT";
+        const styleText = response.styleType ? response.styleType : "MIX";
+        
+        // 상단 정보 업데이트 (앱 헤더)
+        appHeaderTitle.textContent = `${styleText.charAt(0).toUpperCase() + styleText.slice(1)} 스타일 핏`;
+        appHeaderSubtitle.textContent = `오늘의 ${tpoText} 코디`;
+
+        items.forEach(item => {
+            // (디버그 뷰인 coordiSlotGrid는 삭제되었으므로 앱 뷰 렌더링만 수행)
+
+            // 2. 실제 미리보기 뷰 렌더링 (Desktop UI)
+            const appCard = document.createElement("div");
+            appCard.className = "app-coordi-card";
+
+            // 이미지 영역
+            const imgWrapper = document.createElement("div");
+            imgWrapper.className = "app-coordi-img-wrapper";
+            
+            const slotBadge = document.createElement("div");
+            slotBadge.className = "app-slot-badge";
+            slotBadge.textContent = (item.slotKey || "ITEM").toUpperCase();
+            imgWrapper.appendChild(slotBadge);
+
+            if (item.imageUrl) {
+                const appImg = document.createElement("img");
+                appImg.src = item.imageUrl;
+                appImg.alt = item.itemName || "상품 이미지";
+                imgWrapper.appendChild(appImg);
+            }
+            appCard.appendChild(imgWrapper);
+
+            // 인포 영역
+            const infoDiv = document.createElement("div");
+            infoDiv.className = "app-coordi-info";
+
+            if (item.brandName) {
+                const appBrand = document.createElement("div");
+                appBrand.className = "app-coordi-brand";
+                appBrand.textContent = item.brandName;
+                infoDiv.appendChild(appBrand);
+            }
+
+            const appName = document.createElement("h3");
+            appName.className = "app-coordi-name";
+            appName.textContent = item.itemName || "상품명 없음";
+            infoDiv.appendChild(appName);
+
+            if (item.salePrice) {
+                const appPrice = document.createElement("div");
+                appPrice.className = "app-coordi-price";
+                appPrice.textContent = `${item.salePrice.toLocaleString()}원`;
+                infoDiv.appendChild(appPrice);
+            }
+
+            if (item.reasoning) {
+                const appReason = document.createElement("div");
+                appReason.className = "app-coordi-reason";
+                appReason.textContent = item.reasoning;
+                infoDiv.appendChild(appReason);
+            }
+
+            if (item.productDetailUrl) {
+                const appBtn = document.createElement("a");
+                appBtn.className = "app-buy-btn";
+                appBtn.href = item.productDetailUrl;
+                appBtn.target = "_blank";
+                appBtn.textContent = "상세보기";
+                infoDiv.appendChild(appBtn);
+            }
+
+            appCard.appendChild(infoDiv);
+            appContent.appendChild(appCard);
+        });
     }
 
     function totalProductCount(productsBySlot) {
@@ -782,8 +914,42 @@
         });
     }
 
-    function updateWeatherPreview() {
-        // 위치/시간 변경은 내부 payload와 지도 상태에만 반영한다.
+    async function updateWeatherPreview() {
+        const previewEl = document.getElementById("weatherPreview");
+        const latStr = document.getElementById("latitude")?.value;
+        const lonStr = document.getElementById("longitude")?.value;
+
+        if (!previewEl || !latStr || !lonStr) return;
+
+        const lat = parseFloat(latStr);
+        const lon = parseFloat(lonStr);
+        if (isNaN(lat) || isNaN(lon)) return;
+
+        previewEl.textContent = "날씨 정보: 조회 중...";
+
+        try {
+            const res = await fetch(`/api/main/summary?lat=${lat}&lon=${lon}`);
+            if (res.ok) {
+                const data = await res.json();
+                const temp = Math.round(data.temperature);
+                const feels = Math.round(data.feelsLike);
+                previewEl.textContent = `날씨 정보: ${data.weatherStateKo} / 온도 ${temp}°C (체감 ${feels}°C) / ${data.weatherDesc}`;
+                window._cachedWeather = {
+                    status: data.weatherStatus,
+                    temperature: data.temperature,
+                    feelsLike: data.feelsLike
+                };
+            } else {
+                previewEl.textContent = "날씨 정보: 조회 실패 (서버 오류)";
+            }
+        } catch (error) {
+            previewEl.textContent = "날씨 정보: 네트워크 오류";
+        }
+        
+        // update payload preview whenever weather is re-fetched
+        if (typeof buildPreviewPayload === "function" && typeof updatePayloadPreview === "function") {
+            updatePayloadPreview(buildPreviewPayload());
+        }
     }
 
     function updatePayloadPreview(payload) {
@@ -825,75 +991,27 @@
         return `${imageState.name} (${imageState.mimeType}) - ${sourceLabel} / 전송 용량 ${resizedLabel}`;
     }
 
-    function buildPreviewPayload(file) {
-        const activeImage = resolveActiveImage(file);
+    function buildPreviewPayload() {
         return {
             naturalText: document.getElementById("naturalText").value,
             gender: document.getElementById("gender").value,
             scheduleTime: toOffsetDateTime(scheduleTimeInput.value),
-            location: readLocationFields(),
-            imageData: {
-                inputStatus: activeImage ? "success" : "missing",
-                mimeType: activeImage?.mimeType || "",
-                originalSizeBytes: activeImage?.originalBytes || 0,
-                transmittedSizeBytes: activeImage?.resizedBytes || 0
-            }
-        };
-    }
-
-    function readLocationFields() {
-        return {
-            districtName: document.getElementById("districtName").value,
-            placeName: document.getElementById("placeName").value,
-            addressName: document.getElementById("addressName").value,
-            latitude: Number(document.getElementById("latitude").value),
-            longitude: Number(document.getElementById("longitude").value)
+            weather: readWeatherFields()
         };
     }
 
     async function buildPayload() {
-        const file = imageFileInput.files && imageFileInput.files[0];
-        const activeImage = await resolveActiveImagePayload(file);
-        if (!activeImage) {
-            throw new Error("테스트용 샘플 이미지 또는 업로드 이미지를 준비하지 못했습니다.");
-        }
-
         const payload = {
             naturalText: document.getElementById("naturalText").value,
             gender: document.getElementById("gender").value,
             scheduleTime: toOffsetDateTime(scheduleTimeInput.value),
-            location: readLocationFields(),
-            imageData: {
-                imageBytes: activeImage.imageBytes,
-                mimeType: activeImage.mimeType
-            }
+            weather: readWeatherFields()
         };
-        updatePayloadPreview(buildPreviewPayload(file));
+        updatePayloadPreview(buildPreviewPayload());
         return payload;
     }
 
-    function resolveActiveImage(file) {
-        if (file && selectedImageState) {
-            return selectedImageState;
-        }
-        if (sampleImageState.imageBytes) {
-            return sampleImageState;
-        }
-        return null;
-    }
-
-    async function resolveActiveImagePayload(file) {
-        if (file) {
-            if (!selectedImageState || selectedImageState.name !== file.name || selectedImageState.originalBytes !== file.size) {
-                selectedImageState = await prepareImageState(file);
-            }
-            return selectedImageState;
-        }
-        if (sampleImageState.imageBytes) {
-            return sampleImageState;
-        }
-        return null;
-    }
+    // (이미지 전처리 로직 삭제됨)
 
     async function prepareImageState(file, sourceUrl = "") {
         const resizedFile = await resizeImageFile(file);
@@ -1043,11 +1161,7 @@
         naturalText: document.getElementById("naturalText").value,
         gender: document.getElementById("gender").value,
         scheduleTime: toOffsetDateTime(scheduleTimeInput.value),
-        location: readLocationFields(),
-        imageData: {
-            inputStatus: "missing",
-            mimeType: ""
-        }
+        weather: readWeatherFields()
     });
 
     imageFileInput.addEventListener("change", async () => {
@@ -1056,7 +1170,7 @@
 
         if (!file) {
             imageInfo.textContent = "선택된 파일 없음";
-            updatePayloadPreview(buildPreviewPayload(file));
+            updatePayloadPreview(buildPreviewPayload());
             imagePreview.hidden = true;
             imagePreview.removeAttribute("src");
             imagePreviewEmpty.hidden = false;
@@ -1080,9 +1194,9 @@
             selectedImageState = await prepareImageState(file);
             imageInfo.textContent = formatImageInfo(selectedImageState);
         } catch (error) {
-            imageInfo.textContent = `이미지 전처리 실패: ${error.message || error}`;
+            imageInfo.textContent = `이미지 관련 로직은 Payload에서 제외되었습니다: ${error.message || error}`;
         }
-        updatePayloadPreview(buildPreviewPayload(file));
+        updatePayloadPreview(buildPreviewPayload());
     });
 
     shoppingDebugBtn.addEventListener("click", runShoppingDebugSearch);

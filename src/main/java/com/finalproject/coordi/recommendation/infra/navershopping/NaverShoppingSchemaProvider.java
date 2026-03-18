@@ -4,14 +4,15 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.finalproject.coordi.recommendation.domain.enums.ShoppingQueryEnums.QuerySortType;
 import com.finalproject.coordi.recommendation.domain.enums.ShoppingQueryEnums.QueryTokenType;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 /**
  * Naver Shopping 요청/응답 스키마와 한글 토큰 매핑 규칙을 보관한다.
  */
 @Component
+@RequiredArgsConstructor
 public class NaverShoppingSchemaProvider {
-    public static final int RESULT_LIMIT = 10;
     public static final int START = 1;
     public static final QuerySortType SORT = QuerySortType.SIM;
     public static final List<QueryTokenType> TOKEN_ORDER = List.of(
@@ -22,35 +23,22 @@ public class NaverShoppingSchemaProvider {
         QueryTokenType.MATERIAL
     );
 
-    private static final NaverShoppingQuerySchema QUERY_SCHEMA = new NaverShoppingQuerySchema(
-        RESULT_LIMIT,
-        START,
-        SORT,
-        TOKEN_ORDER
-    );
+    private final NaverShoppingProperties shoppingProperties;
 
     public int resultLimit() {
-        return QUERY_SCHEMA.resultLimit();
+        return shoppingProperties.getResultLimit();
     }
 
     public int start() {
-        return QUERY_SCHEMA.start();
+        return START;
     }
 
     public QuerySortType sort() {
-        return QUERY_SCHEMA.sort();
+        return SORT;
     }
 
     public List<QueryTokenType> tokenOrder() {
-        return QUERY_SCHEMA.tokenOrder();
-    }
-
-    public record NaverShoppingQuerySchema(
-        int resultLimit,
-        int start,
-        QuerySortType sort,
-        List<QueryTokenType> tokenOrder
-    ) {
+        return TOKEN_ORDER;
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -70,4 +58,3 @@ public class NaverShoppingSchemaProvider {
     ) {
     }
 }
-

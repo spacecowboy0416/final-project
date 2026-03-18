@@ -17,22 +17,20 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class PayloadStage {
-    private final WeatherFetcher weatherFetcher;
     private final PayloadBuilder payloadBuilder;
     private final UserRequestMapper userRequestMapper;
 
     @LogStage("payload.build")
     public PayloadStageResult build(UserRequestDto UserRequest) {
         UserRequest mappedUserRequest = userRequestMapper.map(UserRequest);
-        Weather weather = weatherFetcher.fetch(mappedUserRequest);
+        Weather weather = mappedUserRequest.weather();
         PayloadDto payload = payloadBuilder.build(
             SYSTEM_PROMPT_EN,
             USER_PROMPT_EN,
             mappedUserRequest.naturalText(),
             mappedUserRequest.gender(),
             weather,
-            mappedUserRequest.scheduleTime(),
-            mappedUserRequest.imageData()
+            mappedUserRequest.scheduleTime()
         );
         return new PayloadStageResult(payload);
     }

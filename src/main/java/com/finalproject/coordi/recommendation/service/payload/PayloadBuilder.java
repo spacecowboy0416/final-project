@@ -2,7 +2,6 @@ package com.finalproject.coordi.recommendation.service.payload;
 
 import com.finalproject.coordi.recommendation.dto.api.PayloadDto;
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.GenderType;
-import com.finalproject.coordi.recommendation.dto.internal.ImageData;
 import com.finalproject.coordi.recommendation.dto.internal.Weather;
 import java.time.OffsetDateTime;
 import java.util.Locale;
@@ -16,11 +15,9 @@ public class PayloadBuilder {
         String naturalText,
         GenderType gender,
         Weather weather,
-        OffsetDateTime scheduleTime,
-        ImageData imageData
+        OffsetDateTime scheduleTime
     ) {
         Weather safeWeather = safeWeather(weather);
-        ImageData safeImageData = safeImageData(imageData);
 
         String userPrompt = String.format(
             userPromptTemplate,
@@ -36,7 +33,7 @@ public class PayloadBuilder {
         return new PayloadDto(
             systemPrompt,
             userPrompt,
-            new PayloadDto.PayloadImageData(safeImageBytes(safeImageData.imageBytes()), safeText(safeImageData.mimeType()))
+            new PayloadDto.PayloadImageData(new byte[0], "")
         );
     }
 
@@ -57,19 +54,5 @@ public class PayloadBuilder {
             return new Weather(null, null, null, null, null);
         }
         return weather;
-    }
-
-    private ImageData safeImageData(ImageData imageData) {
-        if (imageData == null) {
-            return new ImageData(new byte[0], "");
-        }
-        return imageData;
-    }
-
-    private byte[] safeImageBytes(byte[] imageBytes) {
-        if (imageBytes == null) {
-            return new byte[0];
-        }
-        return imageBytes;
     }
 }
