@@ -28,4 +28,5 @@ public class AdminCommunityService {
     public void removePost(Long postId) {
         communityMapper.deletePost(postId);
     }
+
 }
