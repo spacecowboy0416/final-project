@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+	<th:block th:replace="~{layout/common :: configFragment}"></th:block>
+    <meta charset="UTF-8">
+    <title>코디 공유 게시판</title>
+
+	<link rel="stylesheet" th:href="@{/board/css/board-common.css}">
+	<link rel="stylesheet" th:href="@{/board/css/board-list.css}">
+</head>
+<body>
+<div th:replace="~{layout/common :: headerFragment}"></div>
+
+<main class="board-list-page">
+
+    <section class="board-topbar">
+        <div class="board-topbar__title-wrap">
+            <p class="board-topbar__eyebrow">Community</p>
+            <h1 class="board-topbar__title">코디 공유</h1>
+        </div>
+
+        <div class="board-topbar__filters">
+            <select id="weather">
+                <option value="">날씨</option>
+                <option value="clear">맑음</option>
+                <option value="partly_cloudy">구름 조금</option>
+                <option value="cloudy">흐림</option>
+                <option value="windy">바람 많음</option>
+                <option value="rain">비</option>
+                <option value="cloudy_rain">흐리고 비</option>
+                <option value="thunderstorm">뇌우</option>
+                <option value="thunderstorm_rain">뇌우와 비</option>
+                <option value="snow">눈</option>
+                <option value="cloudy_snow">흐리고 눈</option>
+                <option value="sleet">진눈깨비</option>
+                <option value="hail">우박</option>
+            </select>
+
+            <select id="style">
+                <option value="">스타일</option>
+                <option value="minimal">minimal</option>
+                <option value="comfortable">comfortable</option>
+                <option value="street">street</option>
+                <option value="sporty">sporty</option>
+                <option value="classic">classic</option>
+                <option value="glam">glam</option>
+            </select>
+
+            <select id="tpo">
+                <option value="">TPO</option>
+                <option value="date">date</option>
+                <option value="work">work</option>
+                <option value="casual">casual</option>
+                <option value="exercise">exercise</option>
+                <option value="travel">travel</option>
+                <option value="formal">formal</option>
+                <option value="funeral">funeral</option>
+                <option value="wedding">wedding</option>
+            </select>
+
+            <button type="button" class="board-search-btn" id="searchBtn">검색</button>
+            <button type="button" class="board-reset-btn" id="resetBtn">초기화</button>
+        </div>
+
+        <a href="/board/write" class="board-write-btn">글쓰기</a>
+    </section>
+
+    <section class="board-list-header">
+        <div>
+            <h2>게시글 목록</h2>
+            <p>다른 사용자의 추천 코디를 둘러보세요.</p>
+        </div>
+        <span id="postCountText">불러오는 중...</span>
+    </section>
+
+    <section id="postList" class="board-feed"></section>
+</main>
+
+<footer th:replace="~{layout/common :: footerFragment}"></footer>
+
+<script th:src="@{/board/js/board-list.js}"></script>
+</body>
+</html>

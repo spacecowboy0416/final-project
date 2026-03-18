@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+	<th:block th:replace="~{layout/common :: configFragment}"></th:block>
+    <meta charset="UTF-8">
+    <title>게시글 상세</title>
+
+	<link rel="stylesheet" th:href="@{/board/css/board-common.css}">
+	<link rel="stylesheet" th:href="@{/board/css/board-detail.css}">
+</head>
+<body>
+<div th:replace="~{layout/common :: headerFragment}"></div>
+
+<main class="board-page board-detail-page">
+    <section id="postDetail" class="board-detail-card"></section>
+
+    <section class="board-section-card">
+        <div class="board-section-title-wrap">
+            <h3>코디 구성</h3>
+            <p>게시글에 연결된 아이템 정보입니다.</p>
+        </div>
+        <div id="coordiItems" class="board-item-list"></div>
+    </section>
+
+    <section class="board-section-card">
+        <div class="board-section-title-wrap">
+            <h3>댓글</h3>
+            <p>다른 사용자와 코디 의견을 나눠보세요.</p>
+        </div>
+
+        <div class="board-comment-form">
+            <label for="commentContent">댓글 작성</label>
+            <textarea id="commentContent" maxlength="500" placeholder="댓글을 입력해주세요."></textarea>
+            <div class="board-comment-form__actions">
+                <button type="button" class="board-primary-btn" id="commentSubmitBtn">댓글 등록</button>
+            </div>
+        </div>
+
+        <div id="commentList" class="board-comment-list"></div>
+    </section>
+</main>
+
+<footer th:replace="~{layout/common :: footerFragment}"></footer>
+
+<script th:src="@{/board/js/board-detail.js}"></script>
+</body>
+</html>

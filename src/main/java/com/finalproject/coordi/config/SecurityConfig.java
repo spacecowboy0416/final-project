@@ -52,6 +52,11 @@ public class SecurityConfig {
                                                                 "/css/**", "/js/**", "/common/**", 
                                                                 "/main/**",  "/api/main/**")
                                                 .permitAll()
+                                                //추가
+                                                .requestMatchers("/board", "/board/**").permitAll()
+                                                .requestMatchers(org.springframework.http.HttpMethod.GET,
+                                                        "/api/board/posts", "/api/board/posts/*", "/api/board/posts/*/comments")
+                                                .permitAll()
                                                 // 그 외 모든 요청은 인증 필요
                                                 .anyRequest().authenticated())
 

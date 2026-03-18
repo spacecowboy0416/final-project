@@ -1,0 +1,224 @@
+.board-form-card {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 32px;
+}
+
+.board-form-header {
+    margin-bottom: 28px;
+}
+
+.board-form-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.board-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 28px;
+}
+
+.board-selected-coordi {
+    margin-bottom: 24px;
+    padding: 22px;
+    border: 1px solid #e5e7eb;
+    border-radius: 22px;
+    background: #ffffff;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
+}
+
+.board-selected-coordi__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 18px;
+}
+
+.board-selected-coordi__header h3 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 800;
+    color: #111827;
+}
+
+.board-selected-coordi__header p {
+    margin: 8px 0 0;
+    color: #6b7280;
+}
+
+.board-selected-coordi__empty {
+    padding: 34px 20px;
+    border: 1px dashed #d1d5db;
+    border-radius: 18px;
+    text-align: center;
+    color: #6b7280;
+    background: #f9fafb;
+}
+
+.board-selected-coordi__preview {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    padding: 18px;
+    border: 1px solid #eef2f7;
+    border-radius: 18px;
+    background: #f8fafc;
+}
+
+.board-selected-coordi__preview-item {
+    padding: 14px;
+    background: #ffffff;
+    border: 1px solid #edf2f7;
+    border-radius: 14px;
+}
+
+.board-selected-coordi__preview-item span {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 12px;
+    color: #9ca3af;
+    font-weight: 700;
+}
+
+.board-selected-coordi__preview-item strong {
+    color: #111827;
+    line-height: 1.5;
+}
+
+.board-modal.hidden {
+    display: none;
+}
+
+.board-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+}
+
+.board-modal__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.5);
+}
+
+.board-modal__content {
+    position: relative;
+    z-index: 1;
+    max-width: 980px;
+    margin: 50px auto;
+    padding: 24px;
+    border-radius: 24px;
+    background: #ffffff;
+    box-shadow: 0 24px 50px rgba(15, 23, 42, 0.18);
+    max-height: calc(100vh - 100px);
+    overflow-y: auto;
+}
+
+.board-modal__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.board-modal__header h3 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 800;
+}
+
+.board-modal__header p {
+    margin: 8px 0 0;
+    color: #6b7280;
+}
+
+.board-coordi-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.board-coordi-card {
+    padding: 18px;
+    border: 1px solid #e5e7eb;
+    border-radius: 20px;
+    background: #ffffff;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.board-coordi-card:hover {
+    transform: translateY(-2px);
+    border-color: #c7d2fe;
+    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
+}
+
+.board-coordi-card__badge-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 14px;
+}
+
+.board-coordi-card__badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 7px 11px;
+    border-radius: 999px;
+    background: #eef2ff;
+    color: #4338ca;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.board-coordi-card__grid {
+    display: grid;
+    gap: 10px;
+}
+
+.board-coordi-card__item {
+    padding: 12px;
+    border-radius: 14px;
+    background: #f8fafc;
+    border: 1px solid #eef2f7;
+}
+
+.board-coordi-card__item span {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 12px;
+    color: #9ca3af;
+    font-weight: 700;
+}
+
+.board-coordi-card__item strong {
+    color: #111827;
+    line-height: 1.5;
+}
+
+@media (max-width: 768px) {
+    .board-form-card {
+        padding: 24px 18px;
+    }
+
+    .board-selected-coordi__header,
+    .board-modal__header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .board-selected-coordi__preview,
+    .board-coordi-list {
+        grid-template-columns: 1fr;
+    }
+
+    .board-modal__content {
+        margin: 20px 12px;
+        max-height: calc(100vh - 40px);
+    }
+}

@@ -36,6 +36,7 @@ public class NaverShoppingAdapter implements ShoppingPort {
 
     private final NaverShoppingProperties shoppingProperties;
     private final NaverShoppingSchemaProvider schemaProvider;
+    
     @Qualifier("naverShoppingRestClient")
     private final RestClient naverShoppingRestClient;
 
