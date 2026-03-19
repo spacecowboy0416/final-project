@@ -3,7 +3,7 @@ package com.finalproject.coordi.recommendation.service.productSearch;
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.CategoryType;
 import com.finalproject.coordi.recommendation.dto.api.RawBlueprintDto;
 import com.finalproject.coordi.recommendation.dto.internal.NormalizedBlueprintDto;
-import com.finalproject.coordi.recommendation.infra.navershopping.NaverShoppingSchemaProvider;
+import com.finalproject.coordi.recommendation.infra.navershopping.NaverShoppingProperties;
 import com.finalproject.coordi.recommendation.infra.navershopping.policy.NaverShoppingQueryPolicy;
 import com.finalproject.coordi.recommendation.infra.navershopping.policy.NaverShoppingQueryPolicy.QueryTokenType;
 import com.finalproject.coordi.recommendation.infra.navershopping.policy.NaverShoppingQueryPolicy.SearchQueryContext;
@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class SearchQueryExtractor {
-    private final NaverShoppingSchemaProvider schemaProvider;
+    private final NaverShoppingProperties shoppingProperties;
     private final NaverShoppingQueryPolicy queryPolicy;
 
     public Map<CategoryType, ShoppingSearchQuery> extract(NormalizedBlueprintDto normalizedBlueprint) {
@@ -45,7 +45,7 @@ public class SearchQueryExtractor {
 
             queriesBySlot.put(
                 categoryType,
-                new ShoppingSearchQuery(searchQuery.trim(), schemaProvider.resultLimit())
+                new ShoppingSearchQuery(searchQuery.trim(), shoppingProperties.getResultLimit())
             );
         });
         return queriesBySlot;

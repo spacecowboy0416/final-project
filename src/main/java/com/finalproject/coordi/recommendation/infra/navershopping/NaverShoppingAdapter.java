@@ -1,13 +1,12 @@
 package com.finalproject.coordi.recommendation.infra.navershopping;
 
 import com.finalproject.coordi.exception.recommendation.RecommendationException;
-import com.finalproject.coordi.recommendation.infra.navershopping.NaverShoppingSchemaProvider.NaverShoppingItemResponse;
-import com.finalproject.coordi.recommendation.infra.navershopping.NaverShoppingSchemaProvider.NaverShoppingSearchResponse;
 import com.finalproject.coordi.recommendation.infra.navershopping.policy.NaverShoppingQueryPolicy;
 import com.finalproject.coordi.recommendation.service.productSearch.ShoppingPort;
 import com.finalproject.coordi.recommendation.service.productSearch.ShoppingPort.SearchedProduct;
 import com.finalproject.coordi.recommendation.service.productSearch.ShoppingPort.ShoppingSearchQuery;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -37,7 +36,6 @@ public class NaverShoppingAdapter implements ShoppingPort {
 
     private final NaverShoppingProperties shoppingProperties;
     private final NaverShoppingQueryPolicy queryPolicy;
-    private final NaverShoppingSchemaProvider schemaProvider;
     @Qualifier("naverShoppingRestClient")
     private final RestClient naverShoppingRestClient;
 
@@ -165,6 +163,22 @@ public class NaverShoppingAdapter implements ShoppingPort {
             return "unknown";
         }
     }
-}
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    private record NaverShoppingSearchResponse(
+        List<NaverShoppingItemResponse> items
+    ) {
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    private record NaverShoppingItemResponse(
+        String productId,
+        String title,
+        String brand,
+        String lprice,
+        String image,
+        String link
+    ) {
+    }
+}
 

@@ -10,7 +10,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * recommendation 테스트 페이지에서 최종 coordination과 slot별 searched product를 함께 확인하기 위한 디버그 응답 DTO.
+ * recommendation 테스트 페이지에서 blueprint, 슬롯별 검색 쿼리, 최종 coordination,
+ * stage timing을 함께 확인하기 위한 디버그 응답 DTO.
  */
 public record RecommendationDebugResponseDto(
     RawBlueprintDto rawBlueprint,

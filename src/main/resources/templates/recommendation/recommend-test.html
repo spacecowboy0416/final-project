@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <th:block th:replace="~{layout/common :: configFragment}"></th:block>
-    <title>Recommendation Test (Skeleton)</title>
+    <title>Recommendation Debug</title>
     <style>
         /* 최소한의 뼈대 레이아웃용 CSS */
         body {
@@ -104,15 +104,30 @@
         .item-info {
             flex-grow: 1;
         }
+
+        .preset-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+
+        .preset-button {
+            border: 1px solid #bbb;
+            background: #f8fafc;
+            padding: 6px 8px;
+            cursor: pointer;
+            font-size: 12px;
+        }
     </style>
 </head>
 
 <body>
 
     <main>
-        <h2>추천 파이프라인 뼈대 테스트</h2>
+        <h2>추천 Debug 점검</h2>
         <p>현재 Gemini 모델: <strong th:text="${geminiModel} ?: 'unknown'">unknown</strong></p>
-        <p style="margin-bottom: 12px; color: #1d4ed8; font-size: 13px;">이 페이지는 현재 TOP1 추천과 슬롯별 검색 쿼리를 기준으로 파이프라인을 확인합니다.</p>
+        <p style="margin-bottom: 12px; color: #1d4ed8; font-size: 13px;">이 페이지는 blueprint, 슬롯별 검색 쿼리, 최종 TOP1 추천 결과를 같은 슬롯 축으로 확인합니다.</p>
 
         <div class="panel grid-3">
             <div>
@@ -134,6 +149,7 @@
         <div class="grid-4">
             <div class="panel">
                 <h3>1. 이미지 & 텍스트</h3>
+                <div id="presetList" class="preset-list"></div>
                 <input id="imageFile" type="file" accept="image/*">
                 <img id="imagePreview" style="max-height: 150px; display: none; margin-bottom: 8px;">
 
@@ -175,9 +191,9 @@
 
         <div class="grid-2">
             <div class="panel">
-                <h4>Search Queries</h4>
+                <h4>슬롯별 검색 쿼리</h4>
                 <ul id="queryList"></ul>
-                <h3>중간 산출물 (Gemini Blueprint & Slot Queries)</h3>
+                <h3>Blueprint</h3>
                 <pre id="geminiResponseBox">응답 없음</pre>
             </div>
 
@@ -195,6 +211,12 @@
 </script>
 <script>
     // 1. 상태 변수 및 요소 캐싱
+    const SLOT_ORDER = ["headwear", "tops", "bottoms", "outerwear", "shoes", "accessories"];
+    const QUERY_CHECK_PRESETS = [
+        { label: "비 오는 날 출근룩", naturalText: "비 오는 날 출근룩 추천해줘", gender: "MALE" },
+        { label: "일상 캐주얼", naturalText: "일상 캐주얼룩 추천해줘", gender: "FEMALE" },
+        { label: "모자 포함 스타일", naturalText: "모자까지 포함한 고프코어 느낌으로 추천해줘", gender: "UNISEX" }
+    ];
     let selectedImageBase64 = null;
     let selectedImageMimeType = DEFAULT_IMAGE_MIME_TYPE;
     let cachedWeather = null;
@@ -218,7 +240,11 @@ const els = {
         shoppingDebugQuery: document.getElementById('shoppingDebugQuery'),
         shoppingDebugBtn: document.getElementById('shoppingDebugBtn'),
         shoppingDebugStatus: document.getElementById('shoppingDebugStatus'),
-        shoppingDebugResult: document.getElementById('shoppingDebugResult')
+        shoppingDebugResult: document.getElementById('shoppingDebugResult'),
+        presetList: document.getElementById('presetList'),
+        errorText: document.getElementById('errorText'),
+        diagnosticLogText: document.getElementById('diagnosticLogText'),
+        elapsedTimeText: document.getElementById('elapsedTimeText')
     };
 
     // 2. 유틸리티 함수
@@ -287,6 +313,31 @@ const els = {
         });
     }
 
+    function renderStageTimings(stageTimings) {
+        els.timingList.innerHTML = '';
+        if (!stageTimings) {
+            return;
+        }
+        Object.entries(stageTimings).forEach(([stageName, elapsedMs]) => {
+            const li = document.createElement('li');
+            li.textContent = `${stageName}: ${elapsedMs}ms`;
+            els.timingList.appendChild(li);
+        });
+    }
+
+    function renderDiagnosticLog(data) {
+        const queries = data?.slotSearchQueries || {};
+        const coordinationItems = data?.coordination || [];
+        const missingQuerySlots = SLOT_ORDER.filter(slotKey => !queries[slotKey]);
+        const coordinationSlots = coordinationItems.map(item => item.slotKey);
+
+        els.diagnosticLogText.textContent = JSON.stringify({
+            generatedQuerySlots: Object.keys(queries),
+            missingQuerySlots,
+            coordinationSlots
+        }, null, 2);
+    }
+
 function renderDebugResult(items) {
     els.shoppingDebugResult.innerHTML = '';
     
@@ -321,6 +372,21 @@ function renderDebugResult(items) {
     });
 }
 
+    function renderPresetButtons() {
+        QUERY_CHECK_PRESETS.forEach((preset, index) => {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'preset-button';
+            button.textContent = `${index + 1}. ${preset.label}`;
+            button.addEventListener('click', () => {
+                els.naturalText.value = preset.naturalText;
+                els.gender.value = preset.gender;
+                buildPayload();
+            });
+            els.presetList.appendChild(button);
+        });
+    }
+
     // 4. 이벤트 리스너 등록
     els.imageFile.addEventListener('change', (e) => {
         const file = e.target.files[0];
@@ -342,7 +408,9 @@ function renderDebugResult(items) {
 
         els.submitBtn.addEventListener('click', async () => {
             els.statusText.textContent = "요청 중...";
+            els.errorText.textContent = "에러 없음";
             try {
+                const startedAt = Date.now();
                 const payload = buildPayload();
                 const response = await fetch('/api/recommendations/debug', {
                 method: 'POST',
@@ -354,21 +422,22 @@ function renderDebugResult(items) {
             els.geminiResponseBox.textContent = JSON.stringify(data.rawBlueprint, null, 2);
             renderQueries(data.slotSearchQueries);
             renderCoordination(data.coordination);
+            renderStageTimings(data.stageTimings);
+            renderDiagnosticLog(data);
             els.statusText.textContent = "완료";
+            els.elapsedTimeText.textContent = `소요 시간: ${Date.now() - startedAt}ms`;
         } catch (error) {
             els.statusText.textContent = "실패";
-            document.getElementById('errorText').textContent = error.message;
+            els.errorText.textContent = error.message;
         }
     });
 
     function renderQueries(queries) {
         els.queryList.innerHTML = '';
-        if (!queries) {
-            return;
-        }
-        Object.entries(queries).forEach(([slotKey, searchKeyword]) => {
+        SLOT_ORDER.forEach((slotKey) => {
             const li = document.createElement('li');
-            li.textContent = `${slotKey}: ${searchKeyword}`;
+            const searchKeyword = queries?.[slotKey];
+            li.textContent = `${slotKey}: ${searchKeyword || "(생성 안 됨)"}`;
             els.queryList.appendChild(li);
         });
     }
@@ -390,6 +459,8 @@ function renderDebugResult(items) {
 
     // 5. 초기화 (지도 및 샘플 이미지)
     window.addEventListener('DOMContentLoaded', async () => {
+        renderPresetButtons();
+
         // 샘플 이미지 로드
         try {
             const response = await fetch(TEST_SAMPLE_IMAGE_URL);
