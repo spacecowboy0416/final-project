@@ -48,7 +48,7 @@ public class NaverShoppingAdapter implements ShoppingPort {
             .queryParam("query", query.searchKeyword())
             .queryParam("display", query.resultLimit())
             .queryParam("start", queryPolicy.start())
-            .queryParam("sort", queryPolicy.sort().apiValue())
+            .queryParam("sort", queryPolicy.sort().getApiValue())
             .encode()
             .build()
             .toUri();
