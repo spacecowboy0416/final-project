@@ -15,11 +15,19 @@ public final class CoordinationEnums {
     }
 
     /*
-     * TODO: enum 추가
-     * 1. brand
-     * 2. pattern (solid/stripe/check/print)
-     * 
-     * 
+     *Enum  목록 
+     * 1. TpoType: 약속/출근/데이트 등 상황(TPO) 분류 코드
+     * 2. GenderType: 성별 분류 코드
+     * 3. StyleType: 코디 무드/스타일 분류 코드
+     * 4. ColorType: 주요 색상 분류 코드
+     * 5. PatternType: 패턴 분류 코드
+     * 6. MaterialType: 의류 소재 분류 코드
+     * 7. BrandType: 주요 브랜드 분류 코드 (각 카테고리별 유명 브랜드 매핑)
+     * 8. FitType: 의류 핏 분류 코드
+     * 9. ItemCategoryType: 실제 아이템 카테고리 분류 코드(검색/매핑용)
+     * 10. CategoryType: 코디 슬롯 키 분류 코드(tops/bottom
+     * outerwear/shoes/accessories)
+     * 11. PriorityType: 슬롯별 필수도 분류 코드
      */
 
     // 약속/출근/캐주얼 등 상황(TPO) 분류 코드

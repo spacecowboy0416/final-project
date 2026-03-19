@@ -3,6 +3,7 @@ package com.finalproject.coordi.recommendation.infra.navershopping.policy;
 import com.finalproject.coordi.recommendation.domain.enums.CodedKeywordedEnum;
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.CategoryType;
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.GenderType;
+import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.MaterialType;
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.StyleType;
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.TpoType;
 import com.finalproject.coordi.recommendation.dto.api.RawBlueprintDto;
@@ -17,14 +18,33 @@ import org.springframework.stereotype.Component;
 public class NaverShoppingQueryPolicy {
     private static final int START = 1;
     private static final QuerySortType SORT = QuerySortType.SIM;
-    private static final List<QueryTokenType> TOKEN_ORDER = List.of(
+    private static final List<QueryTokenType> DEFAULT_TOKEN_ORDER = List.of(
         QueryTokenType.GENDER,
-        QueryTokenType.STYLE,
         QueryTokenType.COLOR,
         QueryTokenType.CATEGORY,
         QueryTokenType.FIT,
         QueryTokenType.MATERIAL,
-        QueryTokenType.TPO
+        QueryTokenType.STYLE
+    );
+    private static final List<QueryTokenType> HEADWEAR_TOKEN_ORDER = List.of(
+        QueryTokenType.GENDER,
+        QueryTokenType.COLOR,
+        QueryTokenType.CATEGORY,
+        QueryTokenType.MATERIAL,
+        QueryTokenType.STYLE
+    );
+    private static final List<QueryTokenType> SHOES_TOKEN_ORDER = List.of(
+        QueryTokenType.GENDER,
+        QueryTokenType.COLOR,
+        QueryTokenType.CATEGORY,
+        QueryTokenType.MATERIAL,
+        QueryTokenType.STYLE
+    );
+    private static final List<QueryTokenType> ACCESSORIES_TOKEN_ORDER = List.of(
+        QueryTokenType.GENDER,
+        QueryTokenType.CATEGORY,
+        QueryTokenType.COLOR,
+        QueryTokenType.STYLE
     );
     private static final EnumSet<CategoryType> FIT_SUPPORTED_SLOTS = EnumSet.of(
         CategoryType.TOPS,
@@ -47,8 +67,16 @@ public class NaverShoppingQueryPolicy {
         return SORT;
     }
 
-    public List<QueryTokenType> tokenOrder() {
-        return TOKEN_ORDER;
+    public List<QueryTokenType> tokenOrder(CategoryType slotKey) {
+        if (slotKey == null) {
+            return DEFAULT_TOKEN_ORDER;
+        }
+        return switch (slotKey) {
+            case HEADWEAR -> HEADWEAR_TOKEN_ORDER;
+            case SHOES -> SHOES_TOKEN_ORDER;
+            case ACCESSORIES -> ACCESSORIES_TOKEN_ORDER;
+            default -> DEFAULT_TOKEN_ORDER;
+        };
     }
 
     public String extractToken(
@@ -71,8 +99,34 @@ public class NaverShoppingQueryPolicy {
             case COLOR -> keywordOf(item == null || item.attributes() == null ? null : item.attributes().color());
             case CATEGORY -> keywordOf(item == null ? null : item.category());
             case FIT -> keywordOf(item == null || item.attributes() == null ? null : item.attributes().fit());
-            case MATERIAL -> keywordOf(item == null || item.attributes() == null ? null : item.attributes().material());
+            case MATERIAL -> materialKeywordOf(slotKey, item);
             case TPO -> keywordOf(queryContext == null ? null : queryContext.tpoType());
+        };
+    }
+
+    private String materialKeywordOf(CategoryType slotKey, RawBlueprintDto.ItemInfo item) {
+        MaterialType materialType = item == null || item.attributes() == null ? null : item.attributes().material();
+        if (materialType == null || !isMaterialKeywordSupported(slotKey, materialType)) {
+            return null;
+        }
+        return materialType.getKeyword();
+    }
+
+    private boolean isMaterialKeywordSupported(CategoryType slotKey, MaterialType materialType) {
+        if (slotKey == null || materialType == null) {
+            return false;
+        }
+        return switch (slotKey) {
+            case SHOES -> materialType == MaterialType.LEATHER || materialType == MaterialType.SUEDE;
+            case HEADWEAR -> EnumSet.of(
+                MaterialType.COTTON,
+                MaterialType.DENIM,
+                MaterialType.WOOL,
+                MaterialType.NYLON,
+                MaterialType.FLEECE,
+                MaterialType.CORDUROY
+            ).contains(materialType);
+            default -> true;
         };
     }
 

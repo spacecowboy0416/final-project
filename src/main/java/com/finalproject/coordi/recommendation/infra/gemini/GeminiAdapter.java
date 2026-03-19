@@ -33,7 +33,7 @@ public class GeminiAdapter implements AiPort {
     private final ObjectMapper objectMapper;
     private final Client geminiClient;
     private final GeminiProperties geminiProperties;
-    private final GeminiSchemaProvider schemaProvider;
+    private final GeminiBlueprintContract blueprintContract;
 
     /**
      * 입력 DTO와 출력 스키마를 사용해 Gemini blueprint 출력 DTO를 반환한다.
@@ -45,9 +45,9 @@ public class GeminiAdapter implements AiPort {
         stopWatch.start();
 
         GenerateContentConfig generationConfig = GenerateContentConfig.builder()
-            .responseMimeType(schemaProvider.responseMimeType())
+            .responseMimeType(blueprintContract.responseMimeType())
             .systemInstruction(Content.fromParts(Part.fromText(payload.systemPrompt())))
-            .responseSchema(schemaProvider.getOutputSchema())
+            .responseSchema(blueprintContract.getOutputSchema())
             .build();
 
         Content requestContent = Content.fromParts(

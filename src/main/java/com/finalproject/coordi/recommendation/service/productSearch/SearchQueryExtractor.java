@@ -57,7 +57,7 @@ public class SearchQueryExtractor {
         SearchQueryContext queryContext
     ) {
         Set<String> mappedTokens = new LinkedHashSet<>();
-        for (QueryTokenType tokenType : queryPolicy.tokenOrder()) {
+        for (QueryTokenType tokenType : queryPolicy.tokenOrder(slotKey)) {
             addToken(mappedTokens, extractToken(slotKey, tokenType, item, queryContext));
         }
         return String.join(" ", mappedTokens);

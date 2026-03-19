@@ -127,7 +127,7 @@
     <main>
         <h2>추천 Debug 점검</h2>
         <p>현재 Gemini 모델: <strong th:text="${geminiModel} ?: 'unknown'">unknown</strong></p>
-        <p style="margin-bottom: 12px; color: #1d4ed8; font-size: 13px;">이 페이지는 blueprint, 슬롯별 검색 쿼리, 최종 TOP1 추천 결과를 같은 슬롯 축으로 확인합니다.</p>
+        <p style="margin-bottom: 12px; color: #1d4ed8; font-size: 13px;">이 페이지는 현재 위치 기준 날씨를 먼저 가져오고, 필요 시 지도 클릭으로 위치를 바꿔 blueprint, 슬롯별 검색 쿼리, 최종 TOP1 추천 결과를 같은 슬롯 축으로 확인합니다.</p>
 
         <div class="panel grid-3">
             <div>
@@ -220,6 +220,8 @@
     let selectedImageBase64 = null;
     let selectedImageMimeType = DEFAULT_IMAGE_MIME_TYPE;
     let cachedWeather = null;
+    let kakaoMapInstance = null;
+    let kakaoMarker = null;
 
 const els = {
         imageFile: document.getElementById('imageFile'),
@@ -227,6 +229,7 @@ const els = {
         naturalText: document.getElementById('naturalText'),
         gender: document.getElementById('gender'),
         scheduleTime: document.getElementById('scheduleTime'),
+        useCurrentLocationBtn: document.getElementById('useCurrentLocationBtn'),
         latitude: document.getElementById('latitude'),
         longitude: document.getElementById('longitude'),
         weatherPreview: document.getElementById('weatherPreview'),
@@ -283,7 +286,11 @@ const els = {
     async function updateWeather() {
         const lat = els.latitude.value;
         const lon = els.longitude.value;
-        if (!lat || !lon) return;
+        if (!lat || !lon) {
+            return;
+        }
+
+        els.weatherPreview.textContent = "날씨: 불러오는 중...";
 
         try {
             const res = await fetch(`/api/main/summary?lat=${lat}&lon=${lon}`);
@@ -291,9 +298,55 @@ const els = {
                 const data = await res.json();
                 cachedWeather = { status: data.weatherStatus, temperature: data.temperature, feelsLike: data.feelsLike };
                 els.weatherPreview.textContent = `날씨: ${data.weatherStateKo} / ${Math.round(data.temperature)}°C`;
+            } else {
+                els.weatherPreview.textContent = "날씨 조회 실패";
             }
         } catch (e) { els.weatherPreview.textContent = "날씨 조회 실패"; }
         buildPayload();
+    }
+
+    function syncMapPosition(lat, lon) {
+        if (!kakaoMapInstance || !kakaoMarker || !lat || !lon) {
+            return;
+        }
+        const position = new kakao.maps.LatLng(lat, lon);
+        kakaoMapInstance.setCenter(position);
+        kakaoMarker.setPosition(position);
+    }
+
+    async function setLocationAndRefresh(lat, lon) {
+        els.latitude.value = Number(lat).toFixed(6);
+        els.longitude.value = Number(lon).toFixed(6);
+        syncMapPosition(Number(lat), Number(lon));
+        await updateWeather();
+    }
+
+    async function loadCurrentLocation() {
+        if (!navigator.geolocation) {
+            els.weatherPreview.textContent = "날씨: 위치 기능 미지원";
+            els.diagnosticLogText.textContent = "브라우저가 현재 위치 기능을 지원하지 않아 수동 위치 선택으로 전환합니다.";
+            return;
+        }
+
+        els.weatherPreview.textContent = "날씨: 위치 확인 중...";
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                els.diagnosticLogText.textContent = "현재 위치 기준 날씨를 불러왔습니다.";
+                await setLocationAndRefresh(position.coords.latitude, position.coords.longitude);
+            },
+            (error) => {
+                const message = error.code === error.PERMISSION_DENIED
+                    ? "현재 위치 권한이 없어 수동 위치 선택으로 전환합니다."
+                    : "현재 위치를 가져오지 못해 수동 위치 선택으로 전환합니다.";
+                els.weatherPreview.textContent = "날씨: 위치 수동 선택 필요";
+                els.diagnosticLogText.textContent = message;
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 300000
+            }
+        );
     }
 
     function renderCoordination(items) {
@@ -406,6 +459,10 @@ function renderDebugResult(items) {
         reader.readAsDataURL(file);
     });
 
+    els.useCurrentLocationBtn.addEventListener('click', () => {
+        void loadCurrentLocation();
+    });
+
         els.submitBtn.addEventListener('click', async () => {
             els.statusText.textContent = "요청 중...";
             els.errorText.textContent = "에러 없음";
@@ -460,6 +517,7 @@ function renderDebugResult(items) {
     // 5. 초기화 (지도 및 샘플 이미지)
     window.addEventListener('DOMContentLoaded', async () => {
         renderPresetButtons();
+        void loadCurrentLocation();
 
         // 샘플 이미지 로드
         try {
@@ -484,16 +542,18 @@ function renderDebugResult(items) {
             script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${kakaoMapApiKey}&autoload=false`;
             script.onload = () => {
                 kakao.maps.load(() => {
-                    const map = new kakao.maps.Map(document.getElementById("map"), {
+                    kakaoMapInstance = new kakao.maps.Map(document.getElementById("map"), {
                         center: new kakao.maps.LatLng(37.5665, 126.9780), level: 3
                     });
-                    const marker = new kakao.maps.Marker({ position: map.getCenter() });
-                    marker.setMap(map);
-                    kakao.maps.event.addListener(map, "click", (e) => {
-                        els.latitude.value = e.latLng.getLat();
-                        els.longitude.value = e.latLng.getLng();
-                        marker.setPosition(e.latLng);
-                        updateWeather();
+                    kakaoMarker = new kakao.maps.Marker({ position: kakaoMapInstance.getCenter() });
+                    kakaoMarker.setMap(kakaoMapInstance);
+
+                    if (els.latitude.value && els.longitude.value) {
+                        syncMapPosition(Number(els.latitude.value), Number(els.longitude.value));
+                    }
+
+                    kakao.maps.event.addListener(kakaoMapInstance, "click", async (e) => {
+                        await setLocationAndRefresh(e.latLng.getLat(), e.latLng.getLng());
                     });
                 });
             };
