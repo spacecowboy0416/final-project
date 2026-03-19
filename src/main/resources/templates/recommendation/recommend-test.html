@@ -174,6 +174,10 @@
 
             <div class="panel">
                 <h3>3. 제어</h3>
+                <label style="display:flex; align-items:center; gap:6px; margin-bottom:8px;">
+                    <input id="brandEnabled" type="checkbox" checked style="width:auto; margin:0;">
+                    브랜드 키워드 포함
+                </label>
                 <button id="submitBtn" type="button" style="width: 100%; height: 40px; font-weight: bold;">Debug 요청
                     전송</button>
                 <h4 style="margin-top: 10px;">전송 Payload (미리보기)</h4>
@@ -234,6 +238,7 @@ const els = {
         longitude: document.getElementById('longitude'),
         weatherPreview: document.getElementById('weatherPreview'),
         payloadPreview: document.getElementById('payloadPreview'),
+        brandEnabled: document.getElementById('brandEnabled'),
         submitBtn: document.getElementById('submitBtn'),
         appContent: document.getElementById('appContent'),
         geminiResponseBox: document.getElementById('geminiResponseBox'),
@@ -271,7 +276,8 @@ const els = {
             scheduleTime: toOffsetDateTime(els.scheduleTime.value),
             weather: cachedWeather || { status: "UNKNOWN", temperature: 0, feelsLike: 0 },
             imageBase64: selectedImageBase64,
-            imageMimeType: selectedImageMimeType
+            imageMimeType: selectedImageMimeType,
+            brandEnabled: els.brandEnabled.checked
         };
 
         const displayPayload = { ...payload };
@@ -462,6 +468,8 @@ function renderDebugResult(items) {
     els.useCurrentLocationBtn.addEventListener('click', () => {
         void loadCurrentLocation();
     });
+
+    els.brandEnabled.addEventListener('change', buildPayload);
 
         els.submitBtn.addEventListener('click', async () => {
             els.statusText.textContent = "요청 중...";

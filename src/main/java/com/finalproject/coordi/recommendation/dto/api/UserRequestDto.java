@@ -19,7 +19,8 @@ public record UserRequestDto(
     @Valid @NotNull
     WeatherInput weather,
     String imageBase64,
-    String imageMimeType
+    String imageMimeType,
+    Boolean brandEnabled
 ) {
     public enum GenderType {
         MALE,

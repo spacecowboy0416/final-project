@@ -68,6 +68,12 @@
                     <label for="imageFile">이미지 파일</label>
                     <input id="imageFile" type="file" accept="image/*" required>
                 </div>
+                <div class="field">
+                    <label style="display:flex; align-items:center; gap:6px;">
+                        <input id="brandEnabled" type="checkbox" checked style="width:auto;">
+                        브랜드 키워드 포함
+                    </label>
+                </div>
                 <div class="actions">
                     <button class="btn btn-primary" type="submit">추천 요청</button>
                     <button class="btn btn-secondary" id="clearButton" type="button">초기화</button>
@@ -137,7 +143,8 @@
             scheduleTime: toOffsetDateTimeString(document.getElementById("scheduleTime").value),
             weather,
             imageBase64,
-            imageMimeType: imageFile.type || "image/jpeg"
+            imageMimeType: imageFile.type || "image/jpeg",
+            brandEnabled: document.getElementById("brandEnabled").checked
         };
     }
 

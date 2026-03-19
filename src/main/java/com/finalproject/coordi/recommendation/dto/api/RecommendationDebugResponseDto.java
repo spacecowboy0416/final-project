@@ -18,7 +18,8 @@ public record RecommendationDebugResponseDto(
     String blueprintId,
     TpoType tpoType,
     StyleType styleType,
-    String stylingRuleApplied,
+    CategoryType anchorSlot,
+    String aiExplanation,
     List<CoordinationItemOutputDto> coordination,
     Map<String, String> slotSearchQueries,
     Map<String, Long> stageTimings
@@ -29,6 +30,7 @@ public record RecommendationDebugResponseDto(
     ) {
         if (pipelineResult == null || pipelineResult.coordinationOutput() == null) {
             return new RecommendationDebugResponseDto(
+                null,
                 null,
                 null,
                 null,
@@ -46,7 +48,10 @@ public record RecommendationDebugResponseDto(
             coordinationOutput.blueprintId(),
             coordinationOutput.tpoType(),
             coordinationOutput.styleType(),
-            coordinationOutput.stylingRuleApplied(),
+            pipelineResult.rawBlueprint() == null || pipelineResult.rawBlueprint().aiBlueprint() == null
+                ? null
+                : pipelineResult.rawBlueprint().aiBlueprint().anchorSlot(),
+            coordinationOutput.aiExplanation(),
             coordinationOutput.coordination(),
             toDebugSlotSearchQueries(pipelineResult.slotSearchQueries()),
             stageTimings == null ? Map.of() : stageTimings

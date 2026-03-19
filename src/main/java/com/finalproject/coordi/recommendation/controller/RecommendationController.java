@@ -3,7 +3,7 @@ package com.finalproject.coordi.recommendation.controller;
 import com.finalproject.coordi.recommendation.dto.api.CoordinationOutputDto;
 import com.finalproject.coordi.recommendation.dto.api.RecommendationDebugResponseDto;
 import com.finalproject.coordi.recommendation.dto.api.UserRequestDto;
-import com.finalproject.coordi.recommendation.config.RecommendationImageProperties;
+import com.finalproject.coordi.recommendation.config.RecommendationProperties;
 import com.finalproject.coordi.recommendation.service.Orchestrator;
 import com.finalproject.coordi.recommendation.service.productSearch.ShoppingSearcher;
 import com.finalproject.coordi.recommendation.service.productSearch.ShoppingPort.SearchedProduct;
@@ -37,12 +37,12 @@ public class RecommendationController {
     private final ShoppingSearcher shoppingSearcher;
     private final KakaoMapProperties kakaoMapProperties;
     private final GeminiProperties geminiProperties;
-    private final RecommendationImageProperties recommendationImageProperties;
+    private final RecommendationProperties recommendationProperties;
 
     // 추천 입력/출력 페이지를 반환한다.
     @GetMapping("/recommend")
     public String recommendPage(Model model) {
-        model.addAttribute("recommendationImageMaxBytes", recommendationImageProperties.getMaxSize().toBytes());
+        model.addAttribute("recommendationImageMaxBytes", recommendationProperties.getMaxSize().toBytes());
         return "recommendation/recommend";
     }
 
@@ -51,7 +51,7 @@ public class RecommendationController {
     public String recommendTestPage(Model model) {
         model.addAttribute("kakaoMapApiKey", kakaoMapProperties.getJsKey());
         model.addAttribute("geminiModel", geminiProperties.getModel());
-        model.addAttribute("recommendationImageMaxBytes", recommendationImageProperties.getMaxSize().toBytes());
+        model.addAttribute("recommendationImageMaxBytes", recommendationProperties.getMaxSize().toBytes());
         return "recommendation/recommend-test";
     }
 

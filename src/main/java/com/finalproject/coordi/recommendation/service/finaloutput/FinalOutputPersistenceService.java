@@ -62,7 +62,7 @@ public class FinalOutputPersistenceService {
                 : normalizedBlueprint.aiBlueprint().styleType().getCode())
             .isSaved(true)
             .aiBlueprint(toJson(normalizedBlueprint.rawBlueprint()))
-            .aiExplanation(payload == null ? "" : payload.userPrompt())
+            .aiExplanation(extractAiExplanation(normalizedBlueprint))
             .build();
 
         recommendationMapper.insertRecommendation(recommendationDto);
@@ -121,9 +121,9 @@ public class FinalOutputPersistenceService {
             .source(source)
             .externalId(top1Product.marketplaceProductId())
             .categoryId(categoryId)
-            .gender(normalizedBlueprint.aiBlueprint() == null || normalizedBlueprint.aiBlueprint().gender() == null
+            .gender(itemInfo == null || itemInfo.attributes() == null || itemInfo.attributes().gender() == null
                 ? null
-                : normalizedBlueprint.aiBlueprint().gender().getCode())
+                : itemInfo.attributes().gender().getCode())
             .name(top1Product.productName())
             .brand(top1Product.brandName())
             .price(top1Product.salePrice())
@@ -187,6 +187,14 @@ public class FinalOutputPersistenceService {
     private String extractReason(CategoryType categoryType, NormalizedBlueprintDto normalizedBlueprint) {
         var itemInfo = normalizedBlueprint == null ? null : normalizedBlueprint.itemBySlot(categoryType);
         return itemInfo == null ? "" : itemInfo.reasoning();
+    }
+
+    private String extractAiExplanation(NormalizedBlueprintDto normalizedBlueprint) {
+        if (normalizedBlueprint == null || normalizedBlueprint.aiBlueprint() == null) {
+            return "";
+        }
+        String aiExplanation = normalizedBlueprint.aiBlueprint().aiExplanation();
+        return aiExplanation == null ? "" : aiExplanation;
     }
 
     private String buildScoringDetailsJson(CategoryType categoryType, Long productId) {

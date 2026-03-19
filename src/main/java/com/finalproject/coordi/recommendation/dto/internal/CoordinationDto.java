@@ -10,14 +10,14 @@ import java.util.List;
  * @param blueprintId recommendation이 최종 코디를 식별할 때 사용하는 내부/외부 식별자
  * @param tpoType 코디의 TPO 분류
  * @param styleType 코디의 스타일 분류
- * @param stylingRuleApplied 이번 recommendation 전체에 적용한 스타일링 규칙 요약
+ * @param aiExplanation 이번 recommendation 전체가 도출된 이유 요약
  * @param items 최종 recommendation에 포함되는 옷 목록
  */
 public record CoordinationDto(
     String blueprintId,
     TpoType tpoType,
     StyleType styleType,
-    String stylingRuleApplied,
+    String aiExplanation,
     List<CoordinationItemDto> items
 ) {
 }

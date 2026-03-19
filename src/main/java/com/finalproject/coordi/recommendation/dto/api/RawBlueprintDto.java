@@ -6,6 +6,8 @@ import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.Fit
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.GenderType;
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.ItemCategoryType;
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.MaterialType;
+import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.BrandType;
+import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.PatternType;
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.PriorityType;
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.StyleType;
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.TpoType;
@@ -32,14 +34,17 @@ public record RawBlueprintDto(
         TpoType tpoType,
         @NotNull
         StyleType styleType,
+        @JsonProperty("anchor_slot")
+        @NotNull
+        CategoryType anchorSlot,
         @JsonProperty("main_item_analysis")
         @Valid @NotNull
         MainItemAnalysis mainItemAnalysis,
         @Valid @NotNull
         Coordination coordination,
-        @JsonProperty("styling_rule_applied")
+        @JsonProperty("ai_explanation")
         @NotBlank
-        String stylingRuleApplied
+        String aiExplanation
     ) {
     }
 
@@ -96,12 +101,15 @@ public record RawBlueprintDto(
     }
 
     public record Attributes(
+        GenderType gender,
         @NotNull
         ColorType color,
         @NotNull
         MaterialType material,
         @NotNull
         FitType fit,
+        BrandType brand,
+        PatternType pattern,
         @NotNull
         StyleType style
     ) {

@@ -1,7 +1,7 @@
 package com.finalproject.coordi.recommendation.service;
 
 import com.finalproject.coordi.recommendation.config.annotation.StageExecutionTimes;
-import com.finalproject.coordi.recommendation.config.PipelineProperties;
+import com.finalproject.coordi.recommendation.config.RecommendationProperties;
 import com.finalproject.coordi.recommendation.dto.api.PayloadDto;
 import com.finalproject.coordi.recommendation.dto.api.CoordinationOutputDto;
 import com.finalproject.coordi.recommendation.dto.api.RawBlueprintDto;
@@ -42,7 +42,7 @@ public class Orchestrator {
     private final CoordinationStage coordinationStage;
     private final FinalOutputBuilder finalOutputBuilder;
     private final StageExecutionTimes stageExecutionTimes;
-    private final PipelineProperties pipelineProperties;
+    private final RecommendationProperties recommendationProperties;
 
     /**
      * recommendation 표준 응답만 필요한 일반 API 진입점이다.
@@ -84,12 +84,15 @@ public class Orchestrator {
         BlueprintStageResult blueprintResult = blueprintStage.generate(payload);
 
         // 슬롯별 검색 쿼리 생성 및 상품 검색
-        ProductSearchStageResult productSearchResult = productSearchStage.search(blueprintResult.normalizedBlueprint());
+        ProductSearchStageResult productSearchResult = productSearchStage.search(
+            blueprintResult.normalizedBlueprint(),
+            request.brandEnabled()
+        );
 
         // FAST_TOP1: 검색 결과를 바로 최종 출력에 사용한다.
         // LEGACY_FULL: 기존 filter/coordination 경로를 유지한다.
         Map<CategoryType, List<SearchedProduct>> effectiveProducts;
-        if (pipelineProperties.isFastTop1Enabled()) {
+        if (recommendationProperties.isFastTop1Enabled()) {
             effectiveProducts = productSearchResult.searchedProductsBySlot();
         } else {
             effectiveProducts = imageFilterStage.filter(productSearchResult.searchedProductsBySlot()).filteredProductsBySlot();

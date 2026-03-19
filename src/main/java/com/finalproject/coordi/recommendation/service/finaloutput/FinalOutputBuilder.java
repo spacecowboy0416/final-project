@@ -24,7 +24,7 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class FinalOutputBuilder {
-    private static final String EMPTY_STYLING_RULE = "";
+    private static final String AI_EXPLANATION = "";
 
     private final FinalOutputPersistenceService finalOutputPersistenceService;
 
@@ -44,7 +44,7 @@ public class FinalOutputBuilder {
             blueprintId,
             aiBlueprint == null ? null : aiBlueprint.tpoType(),
             aiBlueprint == null ? null : aiBlueprint.styleType(),
-            aiBlueprint == null ? EMPTY_STYLING_RULE : aiBlueprint.stylingRuleApplied(),
+            aiBlueprint == null ? AI_EXPLANATION : aiBlueprint.aiExplanation(),
             coordinationItems
         );
     }
@@ -67,9 +67,11 @@ public class FinalOutputBuilder {
         Map<CategoryType, List<SearchedProduct>> effectiveProducts
     ) {
         List<CoordinationItemOutputDto> coordinationItems = new ArrayList<>();
+        CategoryType anchorSlot = normalizedBlueprint == null ? null : normalizedBlueprint.anchorSlot();
         for (CategoryType categoryType : CategoryType.values()) {
             var itemInfo = normalizedBlueprint == null ? null : normalizedBlueprint.itemBySlot(categoryType);
-            SearchedProduct top1Product = extractTop1Product(categoryType, effectiveProducts);
+            boolean isAnchorSlot = categoryType == anchorSlot;
+            SearchedProduct top1Product = isAnchorSlot ? null : extractTop1Product(categoryType, effectiveProducts);
 
             Integer tempMin = null;
             Integer tempMax = null;
@@ -83,7 +85,7 @@ public class FinalOutputBuilder {
                     categoryType,
                     top1Product == null ? (itemInfo == null ? "" : itemInfo.itemName()) : top1Product.productName(),
                     top1Product == null ? null : top1Product.productImageUrl(),
-                    top1Product == null ? null : top1Product.brandName(),
+                    top1Product == null || isAnchorSlot ? null : top1Product.brandName(),
                     top1Product == null ? null : top1Product.salePrice(),
                     top1Product == null ? null : top1Product.productDetailUrl(),
                     itemInfo == null ? null : itemInfo.category(),

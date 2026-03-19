@@ -22,15 +22,21 @@ public class SearchQueryExtractor {
     private final NaverShoppingProperties shoppingProperties;
     private final NaverShoppingQueryPolicy queryPolicy;
 
-    public Map<CategoryType, ShoppingSearchQuery> extract(NormalizedBlueprintDto normalizedBlueprint) {
+    public Map<CategoryType, ShoppingSearchQuery> extract(
+        NormalizedBlueprintDto normalizedBlueprint,
+        Boolean brandEnabled
+    ) {
         Map<CategoryType, ShoppingSearchQuery> queriesBySlot = new EnumMap<>(CategoryType.class);
         if (normalizedBlueprint == null || normalizedBlueprint.itemsBySlot() == null) {
             return queriesBySlot;
         }
 
-        SearchQueryContext queryContext = buildQueryContext(normalizedBlueprint);
+        SearchQueryContext queryContext = buildQueryContext(brandEnabled);
         normalizedBlueprint.itemsBySlot().forEach((categoryType, item) -> {
             if (item == null) {
+                return;
+            }
+            if (categoryType == normalizedBlueprint.anchorSlot()) {
                 return;
             }
 
@@ -82,15 +88,11 @@ public class SearchQueryExtractor {
         tokens.add(value);
     }
 
-    private SearchQueryContext buildQueryContext(NormalizedBlueprintDto normalizedBlueprint) {
-        if (normalizedBlueprint == null || normalizedBlueprint.aiBlueprint() == null) {
-            return new SearchQueryContext(null, null, null);
-        }
-        RawBlueprintDto.AiBlueprint aiBlueprint = normalizedBlueprint.aiBlueprint();
-        return new SearchQueryContext(
-            aiBlueprint.gender(),
-            aiBlueprint.styleType(),
-            aiBlueprint.tpoType()
-        );
+    private SearchQueryContext buildQueryContext(Boolean brandEnabled) {
+        return new SearchQueryContext(isBrandEnabled(brandEnabled));
+    }
+
+    private boolean isBrandEnabled(Boolean brandEnabled) {
+        return brandEnabled == null || brandEnabled;
     }
 }
