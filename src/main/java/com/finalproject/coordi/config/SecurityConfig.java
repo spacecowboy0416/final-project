@@ -4,6 +4,7 @@ import com.finalproject.coordi.auth.handler.OAuth2SuccessHandler;
 import com.finalproject.coordi.auth.jwt.JwtAuthenticationFilter;
 import com.finalproject.coordi.auth.jwt.JwtProvider;
 import com.finalproject.coordi.auth.oauth.CustomOAuth2UserService;
+import com.finalproject.coordi.auth.service.RedisService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,6 +26,7 @@ public class SecurityConfig {
         private final CustomOAuth2UserService customOAuth2UserService;
         private final OAuth2SuccessHandler oAuth2SuccessHandler;
         private final JwtProvider jwtProvider;
+        private final RedisService redisService; // 추가
 
         // 애플리케이션으로 유입되는 HTTP 요청에 대한 세부 보안 필터 체인 규칙을 정의합니다.
         @Bean
@@ -80,11 +82,23 @@ public class SecurityConfig {
                                 // 로그아웃을 수행할 시점에 기존에 발급된 JWT 인증 쿠키를 브라우저에서 파기하는 처리 로직을 연결합니다.
                                 .logout(logout -> logout
                                                 .logoutUrl("/logout")
+                                                .addLogoutHandler((request, response, authentication) -> {
+                                                        //로그아웃 시 Redis에서도 토큰 삭제
+                                                        if (authentication != null && authentication.getName() != null) {
+                                                                try {
+                                                                        Long userId = Long.parseLong(authentication.getName());
+                                                                        redisService.deleteRefreshToken(userId);
+                                                                } catch (Exception e) {
+                                                                        // 에러 무시 (이미 로그아웃된 경우 등)
+                                                                }
+                                                        }
+                                                })
                                                 .logoutSuccessUrl("/")
-                                                .deleteCookies("accessToken", "refreshToken"))
+                                                .deleteCookies("accessToken", "refreshToken")
+                                                .invalidateHttpSession(true))
 
                                 // Spring Security의 기본 인증 필터가 동작하기 이전에 커스텀 JWT 필터(JwtAuthenticationFilter)를 먼저 수행하여 토큰의 유효성을 우선 검증합니다.
-                                .addFilterBefore(new JwtAuthenticationFilter(jwtProvider),
+                                .addFilterBefore(new JwtAuthenticationFilter(jwtProvider, redisService),
                                                 UsernamePasswordAuthenticationFilter.class);
 
                 return http.build();

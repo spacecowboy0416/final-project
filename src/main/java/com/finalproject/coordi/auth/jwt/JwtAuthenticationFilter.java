@@ -1,7 +1,10 @@
 package com.finalproject.coordi.auth.jwt;
 
+import com.finalproject.coordi.auth.service.RedisService;
+import com.finalproject.coordi.exception.auth.InvalidTokenException;
 import com.finalproject.coordi.exception.auth.TokenExpiredException;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -22,49 +25,79 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtProvider jwtProvider;
+    private final RedisService redisService; // Redis 연동 추가
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        // 쿠키에서 AccessToken과 RefreshToken 추출
+        // 1. 쿠키에서 AccessToken과 RefreshToken 추출
         String accessToken = resolveToken(request, "accessToken");
         String refreshToken = resolveToken(request, "refreshToken");
 
-        // AccessToken 유효성 검사
-        if (accessToken != null && jwtProvider.validateToken(accessToken)) {
-            setAuthentication(accessToken);
-        }
-        // AccessToken 만료 시 RefreshToken으로 자동 갱신 시도
-        else if (refreshToken != null && jwtProvider.validateToken(refreshToken)) {
-            log.info("AccessToken 만료 감지. RefreshToken으로 갱신을 시도합니다.");
+        // 2. Token 유효성 검사
+        try {
+            // 2-1. AccessToken이 유효한 경우 -> 통과
+            if (accessToken != null && jwtProvider.validateToken(accessToken)) {
+                // 통과
+                setAuthentication(accessToken);
+            }
+        } catch (ExpiredJwtException e) {
+            // 2-2. AccessToken이 만료되었지만 RefreshToken이 유효한 경우 -> AccessToken 재발급
+            if (refreshToken != null && jwtProvider.validateToken(refreshToken)) {
+                // RefreshToken에서 정보 추출
+                Claims claims = jwtProvider.parseClaims(refreshToken);
+                Long userId = Long.parseLong(claims.getSubject());
+                String role = (String) claims.get("role");
 
-            // RefreshToken에서 정보 추출
-            Claims claims = jwtProvider.parseClaims(refreshToken);
-            Long userId = Long.parseLong(claims.getSubject());
-            String role = (String) claims.get("role");
+                // Redis에 저장된 최신 토큰과 현재 브라우저의 토큰을 대조 (중복 로그인 방지 핵심)
+                String savedRefreshToken = redisService.getRefreshToken(userId);
+                if (savedRefreshToken == null || !savedRefreshToken.equals(refreshToken)) {
+                    clearTokenCookies(response); // 잘못된 토큰 쿠키를 즉시 삭제
+                    response.sendRedirect("/?error=duplicate_login"); // 메인 페이지로 리다이렉트
+                    return;
+                }
 
-            // 새 AccessToken 생성
-            String newAccessToken = jwtProvider.createAccessToken(userId, role);
+                // AccessToken 재발급
+                String newAccessToken = jwtProvider.createAccessToken(userId, role);
 
-            // 새 쿠키를 브라우저에 다시 전달
-            ResponseCookie newCookie = ResponseCookie.from("accessToken", newAccessToken)
-                    .path("/")
-                    .httpOnly(true)
-                    .secure(true)
-                    .sameSite("Lax")
-                    .maxAge(1800) // 30분
-                    .build();
-            response.addHeader("Set-Cookie", newCookie.toString());
+                // 새 쿠키를 브라우저에 다시 전달
+                ResponseCookie newCookie = ResponseCookie.from("accessToken", newAccessToken)
+                        .path("/")
+                        .httpOnly(true)
+                        .secure(true)
+                        .sameSite("Lax")
+                        .maxAge(1800) // 30분
+                        .build();
+                response.addHeader("Set-Cookie", newCookie.toString());
 
-            // 인증 정보 설정
-            setAuthentication(newAccessToken);
-        }
-        // 토큰이 존재하지만 둘 다 유효하지 않은 경우
-        else if (accessToken != null || refreshToken != null) {
-            throw new TokenExpiredException();
+                // 통과
+                setAuthentication(newAccessToken);
+            } else {
+                // 리프레시 토큰도 없거나 만료된 경우 쿠키 삭제 후 통과
+                clearTokenCookies(response);
+                throw new TokenExpiredException();
+            }
+        } catch (Exception e) {
+            // 2-3. 토큰이 위조되었거나 잘못된 경우 (Sentry 수집을 위해 예외 던짐)
+            throw new InvalidTokenException();
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    // 브라우저의 인증 쿠키를 강제로 만료시켜 삭제
+    private void clearTokenCookies(HttpServletResponse response) {
+        deleteCookie(response, "accessToken");
+        deleteCookie(response, "refreshToken");
+    }
+
+    private void deleteCookie(HttpServletResponse response, String name) {
+        ResponseCookie cookie = ResponseCookie.from(name, "")
+                .path("/")
+                .maxAge(0)
+                .httpOnly(true)
+                .build();
+        response.addHeader("Set-Cookie", cookie.toString());
     }
 
     // JWT 토큰에서 인증 정보를 추출하여 SecurityContext에 저장
