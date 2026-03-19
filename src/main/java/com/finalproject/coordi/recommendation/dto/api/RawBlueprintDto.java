@@ -7,7 +7,6 @@ import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.Gen
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.ItemCategoryType;
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.MaterialType;
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.BrandType;
-import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.PatternType;
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.PriorityType;
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.StyleType;
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.TpoType;
@@ -63,7 +62,7 @@ public record RawBlueprintDto(
     }
 
     public record Coordination(
-        @Valid @NotNull
+        @Valid
         ItemInfo headwear,
         @Valid @NotNull
         ItemInfo tops,
@@ -109,7 +108,6 @@ public record RawBlueprintDto(
         @NotNull
         FitType fit,
         BrandType brand,
-        PatternType pattern,
         @NotNull
         StyleType style
     ) {

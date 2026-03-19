@@ -102,6 +102,7 @@ public class GeminiBlueprintContract {
         }
 
         List<String> required = Arrays.stream(CategoryType.values())
+            .filter(categoryType -> categoryType != CategoryType.HEADWEAR)
             .map(CategoryType::getCode)
             .toList();
 
@@ -139,7 +140,6 @@ public class GeminiBlueprintContract {
         properties.put(SchemaKeys.MATERIAL, enumSchema(MaterialType.class));
         properties.put(SchemaKeys.FIT, enumSchema(FitType.class));
         properties.put(SchemaKeys.BRAND, enumSchema(BrandType.class));
-        properties.put(SchemaKeys.PATTERN, enumSchema(PatternType.class));
         properties.put(SchemaKeys.STYLE, enumSchema(StyleType.class));
 
         return objectSchema(
@@ -208,7 +208,6 @@ public class GeminiBlueprintContract {
         private static final String COLOR = "color";
         private static final String TYPE = "type";
         private static final String BRAND = "brand";
-        private static final String PATTERN = "pattern";
         private static final String STYLE = "style";
         private static final String SLOT_KEY = "slot_key";
         private static final String ITEM_NAME = "item_name";

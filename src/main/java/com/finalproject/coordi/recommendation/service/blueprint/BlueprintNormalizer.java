@@ -44,7 +44,6 @@ public class BlueprintNormalizer {
             attributes.material(),
             attributes.fit(),
             attributes.brand(),
-            attributes.pattern(),
             attributes.style()
         );
 

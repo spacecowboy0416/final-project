@@ -20,14 +20,13 @@ public final class CoordinationEnums {
      * 2. GenderType: 성별 분류 코드
      * 3. StyleType: 코디 무드/스타일 분류 코드
      * 4. ColorType: 주요 색상 분류 코드
-     * 5. PatternType: 패턴 분류 코드
-     * 6. MaterialType: 의류 소재 분류 코드
-     * 7. BrandType: 주요 브랜드 분류 코드 (각 카테고리별 유명 브랜드 매핑)
-     * 8. FitType: 의류 핏 분류 코드
-     * 9. ItemCategoryType: 실제 아이템 카테고리 분류 코드(검색/매핑용)
-     * 10. CategoryType: 코디 슬롯 키 분류 코드(tops/bottom
+     * 5. MaterialType: 의류 소재 분류 코드
+     * 6. BrandType: 주요 브랜드 분류 코드 (각 카테고리별 유명 브랜드 매핑)
+     * 7. FitType: 의류 핏 분류 코드
+     * 8. ItemCategoryType: 실제 아이템 카테고리 분류 코드(검색/매핑용)
+     * 9. CategoryType: 코디 슬롯 키 분류 코드(tops/bottom
      * outerwear/shoes/accessories)
-     * 11. PriorityType: 슬롯별 필수도 분류 코드
+     * 10. PriorityType: 슬롯별 필수도 분류 코드
      */
 
     // 약속/출근/캐주얼 등 상황(TPO) 분류 코드
@@ -122,28 +121,6 @@ public final class CoordinationEnums {
         @JsonCreator
         public static ColorType fromCode(String rawCode) {
             return EnumResolver.fromCode(ColorType.class, rawCode);
-        }
-    }
-
-    // 패턴 분류 코드
-    @Getter
-    @RequiredArgsConstructor
-    public enum PatternType implements CodedKeywordedEnum {
-        SOLID("solid", "무지"),
-        STRIPE("stripe", "스트라이프"),
-        CHECK("check", "체크"),
-        PRINT("print", "프린팅"),
-        GRAPHIC("graphic", "그래픽"),
-        FLORAL("floral", "꽃무늬"),
-        LOGO("logo", "로고"),
-        CAMO("camo", "카모");
-
-        private final String code;
-        private final String keyword;
-
-        @JsonCreator
-        public static PatternType fromCode(String rawCode) {
-            return EnumResolver.fromCode(PatternType.class, rawCode);
         }
     }
 

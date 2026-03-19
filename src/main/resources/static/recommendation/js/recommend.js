@@ -35,6 +35,14 @@
     ACCESSORIES: "액세서리",
   };
 
+  const EMPTY_SLOT_COPY = {
+    HEADWEAR: {
+      brand: "선택 안 함",
+      itemName: "모자 없음",
+      reasoning: "이번 코디는 헤드웨어 없이 자연스럽게 완성했어요.",
+    },
+  };
+
   const WEATHER_LABELS = {
     CLEAR: "맑음",
     PARTLY_CLOUDY: "구름 조금",
@@ -430,11 +438,14 @@
   }
 
   function createItemMarkup(item) {
+    const isEmptySlot = isEmptyCoordinationSlot(item);
     const imageSource = resolveItemImageSource(item);
     const imageMarkup = imageSource
       ? `<img class="recommend-item-card__image" src="${escapeHtml(
           imageSource
         )}" alt="${escapeHtml(item.itemName || "추천 아이템")}">`
+      : isEmptySlot
+      ? createEmptySlotImageMarkup(item)
       : `<div class="recommend-item-card__image"></div>`;
 
     const priceText =
@@ -450,6 +461,12 @@
         )}" target="_blank" rel="noopener noreferrer">상품 보러가기</a>`
       : "";
 
+    const displayCopy = resolveEmptySlotCopy(item);
+    const priceMarkup = isEmptySlot
+      ? ""
+      : `<p class="recommend-item-card__price">${escapeHtml(priceText)}</p>`;
+    const actionAreaMarkup = isEmptySlot ? "" : actionMarkup;
+
     return `
       <article class="recommend-item-card">
         ${imageMarkup}
@@ -459,19 +476,29 @@
           )}</span>
           <div>
             <p class="recommend-item-card__brand">${escapeHtml(
-              item.brandName || "브랜드 정보 없음"
+              displayCopy.brand
             )}</p>
             <h4 class="recommend-item-card__name">${escapeHtml(
-              item.itemName || "상품명 정보 없음"
+              displayCopy.itemName
             )}</h4>
           </div>
-          <p class="recommend-item-card__price">${escapeHtml(priceText)}</p>
+          ${priceMarkup}
           <p class="recommend-item-card__reason">${escapeHtml(
-            item.reasoning || "추천 이유 정보가 없습니다."
+            displayCopy.reasoning
           )}</p>
-          ${actionMarkup}
+          ${actionAreaMarkup}
         </div>
       </article>
+    `;
+  }
+
+  function createEmptySlotImageMarkup(item) {
+    const slotLabel = SLOT_LABELS[item.slotKey] || "아이템";
+    return `
+      <div class="recommend-item-card__image recommend-item-card__image--placeholder">
+        <span class="recommend-item-card__placeholder-icon" aria-hidden="true"></span>
+        <span class="recommend-item-card__placeholder-label">${escapeHtml(slotLabel)}</span>
+      </div>
     `;
   }
 
@@ -488,6 +515,26 @@
       return "";
     }
     return `data:${state.imageMimeType || "image/jpeg"};base64,${state.imageBase64}`;
+  }
+
+  function isEmptyCoordinationSlot(item) {
+    if (!item || item.slotKey !== "HEADWEAR") {
+      return false;
+    }
+
+    return !item.imageUrl && !hasText(item.itemName) && !item.isMyItem;
+  }
+
+  function resolveEmptySlotCopy(item) {
+    if (isEmptyCoordinationSlot(item)) {
+      return EMPTY_SLOT_COPY[item.slotKey] || EMPTY_SLOT_COPY.HEADWEAR;
+    }
+
+    return {
+      brand: item.brandName || "브랜드 정보 없음",
+      itemName: item.itemName || "상품명 정보 없음",
+      reasoning: item.reasoning || "추천 이유 정보가 없습니다.",
+    };
   }
 
   function renderEmptyItems(message) {
@@ -620,5 +667,9 @@
       .replaceAll(">", "&gt;")
       .replaceAll('"', "&quot;")
       .replaceAll("'", "&#39;");
+  }
+
+  function hasText(value) {
+    return typeof value === "string" && value.trim().length > 0;
   }
 })();

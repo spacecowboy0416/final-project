@@ -76,7 +76,6 @@ public class NaverShoppingQueryPolicy {
             case BRAND -> (queryContext != null && queryContext.brandEnabled())
                     ? keywordOf(item.attributes().brand())
                     : null;
-            case PATTERN -> keywordOf(item.attributes().pattern());
             case STYLE -> keywordOf(item.attributes().style());
         };
     }
@@ -111,7 +110,7 @@ public class NaverShoppingQueryPolicy {
     }
 
     public enum QueryTokenType {
-        GENDER, COLOR, CATEGORY, FIT, MATERIAL, BRAND, PATTERN, STYLE;
+        GENDER, COLOR, CATEGORY, FIT, MATERIAL, BRAND, STYLE;
     }
 
     public record SearchQueryContext(boolean brandEnabled) {
