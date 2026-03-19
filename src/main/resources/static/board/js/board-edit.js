@@ -3,7 +3,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const titleEl = document.getElementById("title");
     const contentEl = document.getElementById("content");
-    const isPublicEl = document.getElementById("isPublic");
     const updateBtn = document.getElementById("updateBtn");
     const cancelBtn = document.getElementById("cancelBtn");
 
@@ -23,7 +22,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
             titleEl.value = post.title ?? "";
             contentEl.value = post.content ?? "";
-            isPublicEl.value = String(post.isPublic);
         } catch (error) {
             console.error(error);
             alert("게시글 정보를 불러오지 못했습니다.");
@@ -46,8 +44,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     title,
-                    content,
-                    isPublic: isPublicEl.value === "true"
+                    content
                 })
             });
 

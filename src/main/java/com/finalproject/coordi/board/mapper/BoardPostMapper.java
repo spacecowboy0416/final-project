@@ -15,6 +15,9 @@ public interface BoardPostMapper {
     // 게시글 등록
     int insertBoardPost(BoardPostRow post);
 
+    // 저장 코디 날씨 상태 조회
+    String findWeatherStatusByRecId(@Param("recId") Long recId);
+
     // 게시글 상세 조회
     BoardPostRow findBoardPostDetailById(@Param("postId") Long postId);
 
@@ -34,6 +37,9 @@ public interface BoardPostMapper {
             @Param("tpo") String tpo
     );
 
+    // 게시글 목록 카드용 미리보기 아이템 조회
+    List<BoardRecommendationItemRow> findPreviewItemsByRecId(@Param("recId") Long recId);
+
     // 코디 아이템 조회
     List<BoardRecommendationItemRow> findRecommendationItemsByPostId(@Param("postId") Long postId);
 
@@ -50,8 +56,7 @@ public interface BoardPostMapper {
     int updateBoardPost(
             @Param("postId") Long postId,
             @Param("title") String title,
-            @Param("content") String content,
-            @Param("isPublic") boolean isPublic
+            @Param("content") String content
     );
 
     // 삭제

@@ -6,12 +6,14 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import com.finalproject.coordi.board.dto.request.BoardCommentCreateRequest;
+import com.finalproject.coordi.board.dto.request.BoardCommentUpdateRequest;
 import com.finalproject.coordi.board.dto.request.BoardPostCreateRequest;
 import com.finalproject.coordi.board.dto.request.BoardPostUpdateRequest;
 import com.finalproject.coordi.board.dto.response.BoardCommentResponse;
 import com.finalproject.coordi.board.dto.response.BoardPostCreateResponse;
 import com.finalproject.coordi.board.dto.response.BoardPostDetailResponse;
 import com.finalproject.coordi.board.dto.response.BoardPostListResponse;
+import com.finalproject.coordi.board.dto.response.BoardSavedCoordiResponse;
 import com.finalproject.coordi.board.service.BoardCommentService;
 import com.finalproject.coordi.board.service.BoardPostService;
 import com.finalproject.coordi.users.annotation.LoginUser;
@@ -30,7 +32,6 @@ public class BoardApiController {
     private final BoardCommentService boardCommentService;
 
     // 게시글 작성
-    // 로그인한 사용자의 userId를 @LoginUser로 받아 서비스에 전달
     @PostMapping
     public BoardPostCreateResponse createPost(
             @LoginUser UsersDto loginUser,
@@ -39,8 +40,15 @@ public class BoardApiController {
         return boardPostService.createPost(loginUser.getUserId(), request);
     }
 
+    // 저장 코디 목록 조회
+    @GetMapping("/coordis")
+    public List<BoardSavedCoordiResponse> getSavedCoordis(
+            @LoginUser UsersDto loginUser
+    ) {
+        return boardPostService.getSavedCoordis(loginUser.getUserId());
+    }
+
     // 게시글 목록 조회
-    // weather/style/tpo 필터를 선택적으로 받는다.
     @GetMapping
     public BoardPostListResponse getPostList(
             @RequestParam(name = "weather", required = false) String weather,
@@ -54,14 +62,17 @@ public class BoardApiController {
 
     // 게시글 상세 조회
     @GetMapping("/{postId}")
-    public BoardPostDetailResponse getPostDetail(@PathVariable Long postId) {
-        return boardPostService.getPostDetail(postId);
+    public BoardPostDetailResponse getPostDetail(
+            @PathVariable("postId") Long postId,
+            @LoginUser UsersDto loginUser
+    ) {
+        return boardPostService.getPostDetail(postId, loginUser.getUserId());
     }
 
     // 게시글 수정
     @PutMapping("/{postId}")
     public void updatePost(
-            @PathVariable Long postId,
+            @PathVariable("postId") Long postId,
             @LoginUser UsersDto loginUser,
             @RequestBody @Valid BoardPostUpdateRequest request
     ) {
@@ -71,7 +82,7 @@ public class BoardApiController {
     // 게시글 삭제
     @DeleteMapping("/{postId}")
     public void deletePost(
-            @PathVariable Long postId,
+            @PathVariable("postId") Long postId,
             @LoginUser UsersDto loginUser
     ) {
         boardPostService.deletePost(postId, loginUser.getUserId());
@@ -80,7 +91,7 @@ public class BoardApiController {
     // 댓글 작성
     @PostMapping("/{postId}/comments")
     public void createComment(
-            @PathVariable Long postId,
+            @PathVariable("postId") Long postId,
             @LoginUser UsersDto loginUser,
             @RequestBody @Valid BoardCommentCreateRequest request
     ) {
@@ -89,16 +100,30 @@ public class BoardApiController {
 
     // 댓글 목록 조회
     @GetMapping("/{postId}/comments")
-    public List<BoardCommentResponse> getComments(@PathVariable Long postId) {
-        return boardCommentService.getComments(postId);
+    public List<BoardCommentResponse> getComments(
+            @PathVariable("postId") Long postId,
+            @LoginUser UsersDto loginUser
+    ) {
+        return boardCommentService.getComments(postId, loginUser.getUserId());
     }
+
+	// 댓글 수정
+	@PutMapping("/comments/{commentId}")
+	public void updateComment(
+	        @PathVariable("commentId") Long commentId,
+	        @LoginUser UsersDto loginUser,
+	        @RequestBody @Valid BoardCommentUpdateRequest request
+	) {
+	    boardCommentService.updateComment(commentId, loginUser.getUserId(), request);
+	}
 
     // 댓글 삭제
     @DeleteMapping("/comments/{commentId}")
     public void deleteComment(
-            @PathVariable Long commentId,
+            @PathVariable("commentId") Long commentId,
             @LoginUser UsersDto loginUser
     ) {
         boardCommentService.deleteComment(commentId, loginUser.getUserId());
     }
+    
 }

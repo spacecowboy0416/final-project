@@ -1,43 +1,51 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
-	<th:block th:replace="~{layout/common :: configFragment}"></th:block>
+    <th:block th:replace="~{layout/common :: configFragment}"></th:block>
     <meta charset="UTF-8">
     <title>게시글 상세</title>
 
-	<link rel="stylesheet" th:href="@{/board/css/board-common.css}">
-	<link rel="stylesheet" th:href="@{/board/css/board-detail.css}">
+    <link rel="stylesheet" th:href="@{/board/css/board-common.css}">
+    <link rel="stylesheet" th:href="@{/board/css/board-detail.css}">
 </head>
 <body>
 <div th:replace="~{layout/common :: headerFragment}"></div>
 
 <main class="board-page board-detail-page">
-    <section id="postDetail" class="board-detail-card"></section>
 
-    <section class="board-section-card">
-        <div class="board-section-title-wrap">
-            <h3>코디 구성</h3>
-            <p>게시글에 연결된 아이템 정보입니다.</p>
+    <section id="postDetail" class="board-detail-shell"></section>
+
+    <section class="board-detail-block">
+        <div class="board-detail-block__header">
+            <div>
+                <p class="board-detail-block__eyebrow">Coordi Items</p>
+                <h3>코디 구성</h3>
+                <p>게시글에 연결된 코디 아이템을 확인해보세요.</p>
+            </div>
         </div>
         <div id="coordiItems" class="board-item-list"></div>
     </section>
 
-    <section class="board-section-card">
-        <div class="board-section-title-wrap">
-            <h3>댓글</h3>
-            <p>다른 사용자와 코디 의견을 나눠보세요.</p>
+    <section class="board-detail-block">
+        <div class="board-detail-block__header">
+            <div>
+                <p class="board-detail-block__eyebrow">Comments</p>
+                <h3>댓글</h3>
+                <p>다른 사용자와 자유롭게 코디 의견을 나눠보세요.</p>
+            </div>
         </div>
 
-        <div class="board-comment-form">
+        <div class="board-comment-compose">
             <label for="commentContent">댓글 작성</label>
-            <textarea id="commentContent" maxlength="500" placeholder="댓글을 입력해주세요."></textarea>
-            <div class="board-comment-form__actions">
+            <textarea id="commentContent" maxlength="500" placeholder="코디에 대한 의견을 남겨보세요."></textarea>
+            <div class="board-comment-compose__footer">
                 <button type="button" class="board-primary-btn" id="commentSubmitBtn">댓글 등록</button>
             </div>
         </div>
 
         <div id="commentList" class="board-comment-list"></div>
     </section>
+
 </main>
 
 <footer th:replace="~{layout/common :: footerFragment}"></footer>

@@ -1,9 +1,10 @@
 package com.finalproject.coordi.board.dto.response;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 // 게시판 목록 1건 응답 DTO
-// 목록에서는 대표 코디 정보와 필터용 정보만 포함
+// 목록에서는 게시글 기본 정보 + 미리보기 아이템 목록을 포함한다.
 public record BoardPostListItemResponse(
         Long postId,
         Long userId,
@@ -21,8 +22,7 @@ public record BoardPostListItemResponse(
         String weatherStatus,
         Double temp,
         String placeName,
-        String topItemName,
-        String bottomItemName,
-        String thumbnailImageUrl
+        List<BoardPostPreviewItemResponse> previewItems,
+        int extraItemCount
 ) {
 }

@@ -23,13 +23,13 @@ public class BoardPageController {
 
     // 게시글 상세 페이지
     @GetMapping("/board/{postId}")
-    public String boardDetailPage(@PathVariable Long postId) {
+    public String boardDetailPage(@PathVariable("postId") Long postId) {
         return "board/board-detail";
     }
 
     // 게시글 수정 페이지
     @GetMapping("/board/{postId}/edit")
-    public String boardEditPage(@PathVariable Long postId) {
+    public String boardEditPage(@PathVariable("postId") Long postId) {
         return "board/board-edit";
     }
 }

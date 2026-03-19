@@ -10,6 +10,7 @@ public record BoardCommentResponse(
         String nickname,
         String content,
         LocalDateTime createdAt,
-        LocalDateTime updatedAt
+        LocalDateTime updatedAt,
+        boolean mine
 ) {
 }

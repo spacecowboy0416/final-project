@@ -36,5 +36,10 @@ public class BoardPostRow {
     // 게시판 목록용 대표 코디 정보
     private String topItemName;
     private String bottomItemName;
-    private String thumbnailImageUrl;
+    
+    // 게시판 목록용 코디 이미지 4개
+    private String topItemImageUrl;
+    private String bottomItemImageUrl;
+    private String outerItemImageUrl;
+    private String shoesItemImageUrl;
 }

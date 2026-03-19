@@ -27,6 +27,7 @@ public record BoardPostDetailResponse(
         Integer humidity,
         Double windSpeed,
         String placeName,
+        boolean mine,
         List<BoardRecommendationItemResponse> items,
         List<BoardCommentResponse> comments
 ) {

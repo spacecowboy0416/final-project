@@ -26,12 +26,21 @@ public interface BoardCommentMapper {
 
     // 댓글이 속한 게시글 ID 조회
     Long findPostIdByCommentId(@Param("commentId") Long commentId);
+    
+	// 댓글 수정
+	int updateBoardComment(
+	        @Param("commentId") Long commentId,
+	        @Param("content") String content
+	);
 
     // 댓글 존재 여부 확인
     Integer existsComment(@Param("commentId") Long commentId);
 
     // 댓글 소프트 삭제
     int softDeleteComment(@Param("commentId") Long commentId);
+
+    // 게시글에 달린 댓글 전체 소프트 삭제
+    int softDeleteCommentsByPostId(@Param("postId") Long postId);
 
     // 게시글의 comment_count 증가
     int increaseCommentCount(@Param("postId") Long postId);

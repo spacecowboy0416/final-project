@@ -67,7 +67,6 @@
     <!-- 게시판 목록 조회 -->
     <!-- ========================= -->
     <select id="findBoardPostList" resultType="BoardPostRow">
-
         SELECT
             bp.post_id,
             bp.user_id,
@@ -84,29 +83,32 @@
             r.style_type,
             r.tpo_type,
 
+            ws.weather_id,
             ws.weather_status,
             ws.temp,
             ws.place_name
 
         FROM board_post bp
-        JOIN users u ON u.user_id = bp.user_id
-        JOIN recommendation r ON r.rec_id = bp.rec_id
-        LEFT JOIN weather_snapshot ws ON ws.weather_id = r.weather_id
+        JOIN users u
+          ON u.user_id = bp.user_id
+        JOIN recommendation r
+          ON r.rec_id = bp.rec_id
+        LEFT JOIN weather_snapshot ws
+          ON ws.weather_id = r.weather_id
 
         WHERE bp.deleted_at IS NULL
           AND bp.is_public = TRUE
 
-        <!-- 🔥 동적 필터 -->
         <if test="weather != null and weather != ''">
-            AND ws.weather_status = #{weather}
+            AND LOWER(ws.weather_status) = LOWER(#{weather})
         </if>
 
         <if test="style != null and style != ''">
-            AND r.style_type = #{style}
+            AND LOWER(r.style_type) = LOWER(#{style})
         </if>
 
         <if test="tpo != null and tpo != ''">
-            AND r.tpo_type = #{tpo}
+            AND LOWER(r.tpo_type) = LOWER(#{tpo})
         </if>
 
         ORDER BY bp.created_at DESC
@@ -126,16 +128,46 @@
           AND bp.is_public = TRUE
 
         <if test="weather != null and weather != ''">
-            AND ws.weather_status = #{weather}
+            AND LOWER(ws.weather_status) = LOWER(#{weather})
         </if>
 
         <if test="style != null and style != ''">
-            AND r.style_type = #{style}
+            AND LOWER(r.style_type) = LOWER(#{style})
         </if>
 
         <if test="tpo != null and tpo != ''">
-            AND r.tpo_type = #{tpo}
+            AND LOWER(r.tpo_type) = LOWER(#{tpo})
         </if>
+    </select>
+
+    <!-- ========================= -->
+    <!-- 게시글 목록 카드용 미리보기 아이템 조회 -->
+    <!-- ========================= -->
+    <select id="findPreviewItemsByRecId" resultType="BoardRecommendationItemRow">
+        SELECT
+            ri.rec_item_id AS rec_item_id,
+            ri.slot_key AS slot_key,
+            ri.priority AS priority,
+            p.name AS product_name,
+            p.image_url AS image_url
+        FROM recommendation_item ri
+        LEFT JOIN product p
+          ON p.product_id = ri.product_id
+        WHERE ri.rec_id = #{recId}
+        ORDER BY
+            CASE
+                WHEN ri.slot_key = 'tops' THEN 1
+                WHEN ri.slot_key = 'bottoms' THEN 2
+                WHEN ri.slot_key = 'shoes' THEN 3
+                WHEN ri.slot_key = 'outerwear' THEN 4
+                WHEN ri.slot_key = 'accessories' THEN 5
+                ELSE 6
+            END,
+            CASE
+                WHEN ri.priority = 'essential' THEN 1
+                ELSE 2
+            END,
+            ri.rec_item_id ASC
     </select>
 
     <!-- ========================= -->
@@ -155,7 +187,6 @@
         UPDATE board_post
         SET title = #{title},
             content = #{content},
-            is_public = #{isPublic},
             updated_at = CURRENT_TIMESTAMP
         WHERE post_id = #{postId}
           AND deleted_at IS NULL
@@ -223,17 +254,48 @@
     <!-- ========================= -->
     <select id="findRecommendationItemsByPostId" resultType="BoardRecommendationItemRow">
         SELECT
-            ri.item_id,
-            ri.rec_id,
-            ri.category,
-            ri.item_name,
-            ri.item_image_url,
-            ri.display_order
+            ri.rec_item_id AS rec_item_id,
+            ri.slot_key AS slot_key,
+            ri.priority AS priority,
+
+            p.name AS product_name,
+            p.brand AS brand,
+            p.price AS price,
+            p.image_url AS image_url,
+            p.link AS link,
+            p.color AS color,
+            p.material AS material,
+            p.fit AS fit,
+            p.style AS style,
+            p.season AS season
+
         FROM board_post bp
-        JOIN recommendation_item ri ON ri.rec_id = bp.rec_id
+        JOIN recommendation_item ri
+            ON ri.rec_id = bp.rec_id
+        LEFT JOIN product p
+            ON p.product_id = ri.product_id
         WHERE bp.post_id = #{postId}
           AND bp.deleted_at IS NULL
-        ORDER BY ri.display_order ASC, ri.item_id ASC
+        ORDER BY
+            CASE ri.slot_key
+                WHEN 'tops' THEN 1
+                WHEN 'bottoms' THEN 2
+                WHEN 'outerwear' THEN 3
+                WHEN 'shoes' THEN 4
+                WHEN 'accessories' THEN 5
+                ELSE 6
+            END,
+            ri.rec_item_id ASC
+    </select>
+
+    <!-- ========================= -->
+    <!-- 저장 코디의 날씨 상태 조회 -->
+    <!-- ========================= -->
+    <select id="findWeatherStatusByRecId" resultType="string">
+        SELECT ws.weather_status
+        FROM recommendation r
+        LEFT JOIN weather_snapshot ws ON ws.weather_id = r.weather_id
+        WHERE r.rec_id = #{recId}
     </select>
 
 </mapper>
