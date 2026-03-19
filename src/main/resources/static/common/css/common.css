@@ -154,3 +154,29 @@ img {
         padding: 20px 15px;
     }
 }
+
+/* =========================================
+   6. 공용 모달 (팀 전체 사용)
+   ========================================= */
+/* 배경 오버레이 (팀원 공통 사용 가능) */
+.modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); z-index: 2000; align-items: flex-end; justify-content: center; }
+@media (min-width: 768px) {
+    .modal-overlay { align-items: center; }
+}
+
+/* 모달 애니메이션 (팀원 공통 사용 가능) */
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+@keyframes popIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+/* 공용 알림/확인 모달 디자인 */
+.global-modal-box { background: #fff; width: 90%; max-width: 360px; border-radius: 20px; padding: 30px 24px; text-align: center; animation: popIn 0.2s ease-out; position: relative; top: -10%; }
+.global-modal-title { margin: 0 0 10px 0; font-size: 1.2rem; font-weight: 800; color: #111; }
+.global-modal-msg { margin: 0 0 24px 0; font-size: 0.95rem; color: #666; line-height: 1.5; word-break: keep-all; }
+.global-modal-actions { display: flex; gap: 10px; justify-content: center; }
+.btn-global { flex: 1; padding: 12px; border-radius: 10px; font-weight: bold; font-size: 0.95rem; border: none; cursor: pointer; transition: 0.2s; }
+.btn-global.cancel { background: #f1f3f5; color: #555; }
+.btn-global.cancel:hover { background: #e2e6ea; }
+.btn-global.confirm { background: #111; color: #fff; }
+.btn-global.confirm:hover { background: #333; }
+.btn-global.danger { background: #dc3545; color: #fff; }
+.btn-global.danger:hover { background: #c82333; }
