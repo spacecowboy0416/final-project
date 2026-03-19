@@ -35,13 +35,7 @@
     ACCESSORIES: "액세서리",
   };
 
-  const EMPTY_SLOT_COPY = {
-    HEADWEAR: {
-      brand: "선택 안 함",
-      itemName: "모자 없음",
-      reasoning: "이번 코디는 헤드웨어 없이 자연스럽게 완성했어요.",
-    },
-  };
+  const OPTIONAL_HIDDEN_SLOTS = new Set(["HEADWEAR", "ACCESSORIES"]);
 
   const WEATHER_LABELS = {
     CLEAR: "맑음",
@@ -70,6 +64,11 @@
     marker: null,
     geocoder: null,
     isSubmitting: false,
+    isSaving: false,
+    currentRequestPayload: null,
+    hasSavedCurrentResult: false,
+    developerPanelOpen: false,
+    currentDebugResult: null,
   };
 
   const elements = {
@@ -102,8 +101,14 @@
     resultExplanation: document.getElementById("resultExplanation"),
     resultItems: document.getElementById("resultItems"),
     resultItemCount: document.getElementById("resultItemCount"),
+    saveRecommendationButton: document.getElementById("saveRecommendationButton"),
     backToComposeButton: document.getElementById("backToComposeButton"),
     map: document.getElementById("map"),
+    resultLayout: document.getElementById("resultLayout"),
+    developerToggleButton: document.getElementById("developerToggleButton"),
+    developerPanel: document.getElementById("developerPanel"),
+    developerSearchQueries: document.getElementById("developerSearchQueries"),
+    developerBlueprint: document.getElementById("developerBlueprint"),
   };
 
   document.addEventListener("DOMContentLoaded", initRecommendPage);
@@ -128,6 +133,8 @@
     elements.imageFile.addEventListener("change", handleImageChange);
     elements.useCurrentLocationButton.addEventListener("click", handleUseCurrentLocation);
     elements.backToComposeButton.addEventListener("click", handleBackToCompose);
+    elements.saveRecommendationButton.addEventListener("click", handleSaveRecommendation);
+    elements.developerToggleButton.addEventListener("click", toggleDeveloperPanel);
   }
 
   async function handleRecommendSubmit(event) {
@@ -143,7 +150,7 @@
       setFeedback("", "");
 
       const payload = buildRequestPayload();
-      const response = await fetch("/api/recommendations", {
+      const response = await fetch("/api/recommendations/debug", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -157,7 +164,11 @@
       }
 
       state.currentResult = body;
+      state.currentRequestPayload = payload;
+      state.hasSavedCurrentResult = false;
+      state.currentDebugResult = body;
       renderResult(body, payload.naturalText);
+      updateSaveButtonState();
       toggleScreen("result");
       setFeedback("추천 결과를 불러왔습니다.", "success");
     } catch (error) {
@@ -170,7 +181,49 @@
 
   function handleBackToCompose() {
     toggleScreen("compose");
+    setDeveloperPanelOpen(false);
     setFeedback("", "");
+  }
+
+  async function handleSaveRecommendation() {
+    if (state.isSaving || state.hasSavedCurrentResult) {
+      return;
+    }
+
+    if (!state.currentRequestPayload) {
+      setFeedback("먼저 추천 결과를 생성해주세요.", "error");
+      return;
+    }
+
+    try {
+      setSaving(true);
+      setFeedback("", "");
+
+      const response = await fetch("/api/recommendations/debug?persist=true", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(state.currentRequestPayload),
+      });
+
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(resolveErrorMessage(body));
+      }
+
+      state.currentResult = body;
+      state.currentDebugResult = body;
+      state.hasSavedCurrentResult = true;
+      renderResult(body, state.currentRequestPayload.naturalText);
+      setFeedback("추천 결과를 저장했습니다.", "success");
+    } catch (error) {
+      console.error("추천 저장 실패", error);
+      setFeedback(error.message || "추천 저장에 실패했습니다.", "error");
+    } finally {
+      setSaving(false);
+      updateSaveButtonState();
+    }
   }
 
   async function handleUseCurrentLocation() {
@@ -414,16 +467,20 @@
       result.aiExplanation || "추천 설명이 아직 준비되지 않았습니다.";
 
     const coordination = Array.isArray(result.coordination) ? result.coordination : [];
-    elements.resultItemCount.textContent = `${coordination.length}개 아이템`;
+    const visibleCoordination = coordination.filter((item) =>
+      shouldRenderCoordinationItem(item)
+    );
+    elements.resultItemCount.textContent = `${visibleCoordination.length}개 아이템`;
 
-    if (!coordination.length) {
+    if (!visibleCoordination.length) {
       renderEmptyItems("추천 아이템이 없습니다.");
       return;
     }
 
-    elements.resultItems.innerHTML = coordination
+    elements.resultItems.innerHTML = visibleCoordination
       .map((item) => createItemMarkup(item))
       .join("");
+    renderDeveloperPanel(result);
   }
 
   function buildResultMetaText(result) {
@@ -438,67 +495,48 @@
   }
 
   function createItemMarkup(item) {
-    const isEmptySlot = isEmptyCoordinationSlot(item);
+    const normalizedSlotKey = normalizeSlotKey(item && item.slotKey);
     const imageSource = resolveItemImageSource(item);
     const imageMarkup = imageSource
       ? `<img class="recommend-item-card__image" src="${escapeHtml(
           imageSource
         )}" alt="${escapeHtml(item.itemName || "추천 아이템")}">`
-      : isEmptySlot
-      ? createEmptySlotImageMarkup(item)
       : `<div class="recommend-item-card__image"></div>`;
 
-    const priceText =
-      typeof item.salePrice === "number"
-        ? `${item.salePrice.toLocaleString("ko-KR")}원`
-        : "가격 정보 없음";
+    const priceText = item.isMyItem
+      ? "main item"
+      : typeof item.salePrice === "number"
+      ? `${item.salePrice.toLocaleString("ko-KR")}원`
+      : "가격 정보 없음";
 
-    const actionMarkup = item.isMyItem
-      ? '<span class="recommend-item-card__link recommend-item-card__link--my-item">my item</span>'
-      : item.productDetailUrl
+    const actionMarkup = item.productDetailUrl
       ? `<a class="recommend-item-card__link" href="${escapeHtml(
           item.productDetailUrl
         )}" target="_blank" rel="noopener noreferrer">상품 보러가기</a>`
       : "";
-
-    const displayCopy = resolveEmptySlotCopy(item);
-    const priceMarkup = isEmptySlot
-      ? ""
-      : `<p class="recommend-item-card__price">${escapeHtml(priceText)}</p>`;
-    const actionAreaMarkup = isEmptySlot ? "" : actionMarkup;
 
     return `
       <article class="recommend-item-card">
         ${imageMarkup}
         <div class="recommend-item-card__body">
           <span class="recommend-item-card__slot">${escapeHtml(
-            SLOT_LABELS[item.slotKey] || item.slotKey || "추천"
+            SLOT_LABELS[normalizedSlotKey] || item.slotKey || "추천"
           )}</span>
           <div>
             <p class="recommend-item-card__brand">${escapeHtml(
-              displayCopy.brand
+              item.brandName || "브랜드 정보 없음"
             )}</p>
             <h4 class="recommend-item-card__name">${escapeHtml(
-              displayCopy.itemName
+              item.itemName || "상품명 정보 없음"
             )}</h4>
           </div>
-          ${priceMarkup}
+          <p class="recommend-item-card__price">${escapeHtml(priceText)}</p>
           <p class="recommend-item-card__reason">${escapeHtml(
-            displayCopy.reasoning
+            item.reasoning || "추천 이유 정보가 없습니다."
           )}</p>
-          ${actionAreaMarkup}
+          ${actionMarkup}
         </div>
       </article>
-    `;
-  }
-
-  function createEmptySlotImageMarkup(item) {
-    const slotLabel = SLOT_LABELS[item.slotKey] || "아이템";
-    return `
-      <div class="recommend-item-card__image recommend-item-card__image--placeholder">
-        <span class="recommend-item-card__placeholder-icon" aria-hidden="true"></span>
-        <span class="recommend-item-card__placeholder-label">${escapeHtml(slotLabel)}</span>
-      </div>
     `;
   }
 
@@ -518,23 +556,44 @@
   }
 
   function isEmptyCoordinationSlot(item) {
-    if (!item || item.slotKey !== "HEADWEAR") {
+    const normalizedSlotKey = normalizeSlotKey(item && item.slotKey);
+    if (!item || !OPTIONAL_HIDDEN_SLOTS.has(normalizedSlotKey)) {
       return false;
     }
 
-    return !item.imageUrl && !hasText(item.itemName) && !item.isMyItem;
+    // 선택 슬롯은 실제 상품 근거가 없으면 결과 카드에서 숨긴다.
+    return (
+      !item.isMyItem &&
+      !hasText(item.imageUrl) &&
+      !hasText(item.productDetailUrl) &&
+      typeof item.salePrice !== "number" &&
+      !hasText(item.itemName)
+    );
   }
 
-  function resolveEmptySlotCopy(item) {
-    if (isEmptyCoordinationSlot(item)) {
-      return EMPTY_SLOT_COPY[item.slotKey] || EMPTY_SLOT_COPY.HEADWEAR;
+  function shouldRenderCoordinationItem(item) {
+    // 선택 슬롯이 비어 있으면 결과 카드에서 숨긴다.
+    return !isEmptyCoordinationSlot(item);
+  }
+
+  function normalizeSlotKey(slotKey) {
+    if (!hasText(slotKey)) {
+      return "";
     }
 
-    return {
-      brand: item.brandName || "브랜드 정보 없음",
-      itemName: item.itemName || "상품명 정보 없음",
-      reasoning: item.reasoning || "추천 이유 정보가 없습니다.",
+    const upperSlotKey = slotKey.trim().toUpperCase();
+    const slotKeyMap = {
+      HEADWEAR: "HEADWEAR",
+      HEADWEARS: "HEADWEAR",
+      TOPS: "TOPS",
+      BOTTOMS: "BOTTOMS",
+      OUTERWEAR: "OUTERWEAR",
+      SHOES: "SHOES",
+      ACCESSORIES: "ACCESSORIES",
+      ACCESSORY: "ACCESSORIES",
     };
+
+    return slotKeyMap[upperSlotKey] || upperSlotKey;
   }
 
   function renderEmptyItems(message) {
@@ -546,12 +605,35 @@
     elements.resultItemCount.textContent = "";
   }
 
+  function renderDeveloperPanel(result) {
+    const safeResult = result || {};
+    const slotSearchQueries = safeResult.slotSearchQueries || {};
+    const rawBlueprint = safeResult.rawBlueprint || {};
+
+    elements.developerSearchQueries.textContent = toPrettyJson(slotSearchQueries);
+    elements.developerBlueprint.textContent = toPrettyJson(rawBlueprint);
+  }
+
   function toggleScreen(screen) {
     const isResult = screen === "result";
     elements.composeView.classList.toggle("recommend-screen--hidden", isResult);
     elements.composeView.classList.toggle("recommend-screen--active", !isResult);
     elements.resultView.classList.toggle("recommend-screen--hidden", !isResult);
     elements.resultView.classList.toggle("recommend-screen--active", isResult);
+  }
+
+  function toggleDeveloperPanel() {
+    setDeveloperPanelOpen(!state.developerPanelOpen);
+  }
+
+  function setDeveloperPanelOpen(isOpen) {
+    state.developerPanelOpen = isOpen;
+    elements.developerPanel.classList.toggle("recommend-dev-panel--hidden", !isOpen);
+    elements.resultLayout.classList.toggle("recommend-result-layout--with-dev", isOpen);
+    elements.developerToggleButton.setAttribute("aria-expanded", String(isOpen));
+    elements.developerToggleButton.textContent = isOpen
+      ? "개발자 영역 닫기"
+      : "개발자 영역 보기";
   }
 
   function setSubmitting(isSubmitting) {
@@ -562,6 +644,29 @@
       "recommend-loading-overlay--hidden",
       !isSubmitting
     );
+  }
+
+  function setSaving(isSaving) {
+    state.isSaving = isSaving;
+    updateSaveButtonState();
+  }
+
+  function updateSaveButtonState() {
+    const isDisabled =
+      state.isSaving || state.isSubmitting || !state.currentResult || state.hasSavedCurrentResult;
+    elements.saveRecommendationButton.disabled = isDisabled;
+
+    if (state.isSaving) {
+      elements.saveRecommendationButton.textContent = "저장 중...";
+      return;
+    }
+
+    if (state.hasSavedCurrentResult) {
+      elements.saveRecommendationButton.textContent = "저장 완료";
+      return;
+    }
+
+    elements.saveRecommendationButton.textContent = "저장";
   }
 
   function setFeedback(message, tone) {
@@ -671,5 +776,14 @@
 
   function hasText(value) {
     return typeof value === "string" && value.trim().length > 0;
+  }
+
+  function toPrettyJson(value) {
+    try {
+      return JSON.stringify(value ?? {}, null, 2);
+    } catch (error) {
+      console.error("디버그 데이터 직렬화 실패", error);
+      return "{}";
+    }
   }
 })();

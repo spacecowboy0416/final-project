@@ -1,5 +1,7 @@
 package com.finalproject.coordi.recommendation.controller;
 
+import com.finalproject.coordi.exception.BusinessException;
+import com.finalproject.coordi.exception.ErrorCode;
 import com.finalproject.coordi.recommendation.dto.api.CoordinationOutputDto;
 import com.finalproject.coordi.recommendation.dto.api.RecommendationDebugResponseDto;
 import com.finalproject.coordi.recommendation.dto.api.UserRequestDto;
@@ -74,9 +76,16 @@ public class RecommendationController {
     @PostMapping("/api/recommendations/debug")
     @ResponseBody
     public ResponseEntity<RecommendationDebugResponseDto> recommendDebug(
+        @LoginUser UsersDto loginUser,
+        @RequestParam(value = "persist", defaultValue = "false") boolean persist,
         @Valid @RequestBody UserRequestDto request
     ) {
-        return ResponseEntity.ok(orchestratorService.coordinateDebug(request));
+        Long userId = loginUser == null ? null : loginUser.getUserId();
+        if (persist && userId == null) {
+            // 저장 요청은 로그인 사용자만 허용한다.
+            throw new BusinessException(ErrorCode.AUTH_FAILED);
+        }
+        return ResponseEntity.ok(orchestratorService.coordinateDebug(request, userId, persist));
     }
 
     @GetMapping("/api/recommendations/debug/shopping")

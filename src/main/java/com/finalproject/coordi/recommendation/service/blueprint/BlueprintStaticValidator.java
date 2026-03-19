@@ -30,7 +30,7 @@ public class BlueprintStaticValidator {
         validateSlot(coordination.bottoms(), CategoryType.BOTTOMS);
         validateSlot(coordination.outerwear(), CategoryType.OUTERWEAR);
         validateSlot(coordination.shoes(), CategoryType.SHOES);
-        validateSlot(coordination.accessories(), CategoryType.ACCESSORIES);
+        validateOptionalSlot(coordination.accessories(), CategoryType.ACCESSORIES);
         validateAiExplanation(aiBlueprint.aiExplanation());
         return rawBlueprint;
     }

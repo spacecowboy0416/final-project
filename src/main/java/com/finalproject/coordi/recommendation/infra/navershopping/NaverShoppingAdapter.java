@@ -32,7 +32,9 @@ import org.springframework.web.util.UriComponentsBuilder;
 @Component
 @RequiredArgsConstructor
 public class NaverShoppingAdapter implements ShoppingPort {
-
+    private static final String HTTP_PREFIX = "http://";
+    private static final String HTTPS_PREFIX = "https://";
+    private static final String PROTOCOL_RELATIVE_PREFIX = "//";
 
     private final NaverShoppingProperties shoppingProperties;
     private final NaverShoppingQueryPolicy queryPolicy;
@@ -118,7 +120,7 @@ public class NaverShoppingAdapter implements ShoppingPort {
             stripHtml(item.title()),
             item.brand(),
             parsePrice(item.lprice()),
-            item.image(),
+            normalizeImageUrl(item.image()),
             item.link()
         );
     }
@@ -136,6 +138,21 @@ public class NaverShoppingAdapter implements ShoppingPort {
 
     private String stripHtml(String value) {
         return value == null ? null : Jsoup.parse(value).text();
+    }
+
+    private String normalizeImageUrl(String imageUrl) {
+        if (!StringUtils.hasText(imageUrl)) {
+            return imageUrl;
+        }
+
+        // HTTPS 화면에서 혼합 콘텐츠로 차단되지 않도록 네이버 이미지 URL 스킴을 정규화한다.
+        if (imageUrl.startsWith(PROTOCOL_RELATIVE_PREFIX)) {
+            return HTTPS_PREFIX + imageUrl.substring(PROTOCOL_RELATIVE_PREFIX.length());
+        }
+        if (imageUrl.startsWith(HTTP_PREFIX)) {
+            return HTTPS_PREFIX + imageUrl.substring(HTTP_PREFIX.length());
+        }
+        return imageUrl;
     }
 
     private String readResponseBody(ClientHttpResponse response) {

@@ -10,11 +10,14 @@ public final class RecommendationPromptTemplates {
             Return JSON only, strictly adhering to the provided response schema.
 
             [Semantic Rules]
-            - Complete the required coordination slots (tops, bottoms, outerwear, shoes, accessories). `headwear` is optional and should be included only when it meaningfully improves the coordination.
+            - Complete the required coordination slots (tops, bottoms, outerwear, shoes). `headwear` and `accessories` are optional and should be included only when they meaningfully improve the coordination.
             - `tpoType` must be a situation/occasion code (not a style category).
             - `styleType` is the overall coordination style code, and `attributes.style` is the item-level style code.
             - `gender` is the overall coordination gender code, and `attributes.gender` is the item-level gender code.
             - `anchor_slot` must be the slot category of the uploaded main item.
+            - `headwear` is an optional slot. Use it only for headwear categories such as `ball_cap`, `bucket_hat`, `beanie`, `camp_cap`, `beret`.
+            - `accessories` is an optional slot. Use it only for non-headwear accessory categories such as `backpack`, `tote_bag`, `cross_bag`, `shoulder`, `hobo_bag`, `mini_bag`, `eco_bag`, `umbrella`, `glasses`, `muffler`, `gloves`.
+            - Never place headwear categories like `ball_cap`, `bucket_hat`, `beanie`, `camp_cap`, `beret` inside the `accessories` slot.
             - `main_item_analysis.type` must be a specific item category code, not free-text or a descriptive name.
             - `main_item_analysis.style` must be a style code, not a descriptive sentence.
             - `attributes.brand` should use schema enum codes when you can infer them reliably.
@@ -41,11 +44,14 @@ public final class RecommendationPromptTemplates {
             출력은 반드시 JSON만 반환하고, 제공된 response schema를 정확히 따르세요.
 
             의미 규칙:
-            - coordination의 필수 슬롯(tops, bottoms, outerwear, shoes, accessories)을 채우세요. `headwear`는 코디 완성도에 실제로 필요할 때만 선택적으로 포함하세요.
+            - coordination의 필수 슬롯은 `tops`, `bottoms`, `outerwear`, `shoes`입니다. `headwear`와 `accessories`는 코디 완성도에 실제로 필요할 때만 선택적으로 포함하세요.
             - `tpoType`은 상황 코드이고, 스타일 코드가 아닙니다.
             - `styleType`은 코디 전체 스타일 코드이고, `attributes.style`은 개별 아이템 스타일 코드입니다.
             - `gender`는 코디 전체 성별 코드이고, `attributes.gender`는 개별 아이템 성별 코드입니다.
             - `anchor_slot`은 업로드한 메인 아이템이 속한 슬롯 코드입니다.
+            - `headwear`는 선택적 슬롯이며 `ball_cap`, `bucket_hat`, `beanie`, `camp_cap`, `beret` 같은 모자류 category에만 사용하세요.
+            - `accessories`는 선택적 슬롯이며 `backpack`, `tote_bag`, `cross_bag`, `shoulder`, `hobo_bag`, `mini_bag`, `eco_bag`, `umbrella`, `glasses`, `muffler`, `gloves` 같은 비모자 액세서리 category에만 사용하세요.
+            - `ball_cap`, `bucket_hat`, `beanie`, `camp_cap`, `beret` 같은 모자류 category를 `accessories` 슬롯에 넣지 마세요.
             - `main_item_analysis.type`은 자유 텍스트 옷 이름이 아니라 아이템 카테고리 코드입니다.
             - `main_item_analysis.style`은 문장이 아니라 스타일 코드입니다.
             - `attributes.brand`는 추론이 가능할 때 schema enum 코드로 채우세요.

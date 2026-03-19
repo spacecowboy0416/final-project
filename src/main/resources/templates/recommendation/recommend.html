@@ -35,7 +35,8 @@
                                    name="naturalText"
                                    placeholder="예: 내일 비 오는데 출근룩 차분하게 추천해줘"
                                    maxlength="1000"
-                                   autocomplete="off">
+                                   autocomplete="off"
+                                   value="예: 내일 비 오는데 출근룩 차분하게 추천해줘">
                             <button id="submitButton" class="recommend-search-button" type="submit">
                                 추천 받기
                             </button>
@@ -148,30 +149,63 @@
                 </section>
 
                 <section id="resultView" class="recommend-screen recommend-screen--hidden" aria-label="추천 결과 화면">
-                    <div class="recommend-result-shell">
-                        <div class="recommend-result-top">
-                            <div>
-                                <p class="recommend-kicker">RECOMMENDATION RESULT</p>
-                                <h2 id="resultQueryText" class="recommend-result-title"></h2>
-                                <p id="resultMetaText" class="recommend-result-meta"></p>
+                    <div id="resultLayout" class="recommend-result-layout">
+                        <div class="recommend-result-shell">
+                            <div class="recommend-result-top">
+                                <div>
+                                    <p class="recommend-kicker">RECOMMENDATION RESULT</p>
+                                    <h2 id="resultQueryText" class="recommend-result-title"></h2>
+                                    <p id="resultMetaText" class="recommend-result-meta"></p>
+                                </div>
+                                <div class="recommend-result-actions">
+                                    <button id="saveRecommendationButton" class="recommend-ghost-button" type="button">
+                                        저장
+                                    </button>
+                                    <button id="developerToggleButton" class="recommend-ghost-button" type="button" aria-expanded="false" aria-controls="developerPanel">
+                                        개발자 영역 보기
+                                    </button>
+                                    <button id="backToComposeButton" class="recommend-ghost-button" type="button">
+                                        다시 추천하기
+                                    </button>
+                                </div>
                             </div>
-                            <button id="backToComposeButton" class="recommend-ghost-button" type="button">
-                                다시 추천하기
-                            </button>
+
+                            <article class="recommend-summary-card">
+                                <p class="recommend-summary-card__eyebrow">AI EXPLANATION</p>
+                                <p id="resultExplanation" class="recommend-summary-card__text"></p>
+                            </article>
+
+                            <section class="recommend-items-section" aria-labelledby="resultItemsTitle">
+                                <div class="recommend-items-section__header">
+                                    <h3 id="resultItemsTitle">추천 아이템</h3>
+                                    <span id="resultItemCount" class="recommend-items-section__count"></span>
+                                </div>
+                                <div id="resultItems" class="recommend-items-grid"></div>
+                            </section>
                         </div>
 
-                        <article class="recommend-summary-card">
-                            <p class="recommend-summary-card__eyebrow">AI EXPLANATION</p>
-                            <p id="resultExplanation" class="recommend-summary-card__text"></p>
-                        </article>
-
-                        <section class="recommend-items-section" aria-labelledby="resultItemsTitle">
-                            <div class="recommend-items-section__header">
-                                <h3 id="resultItemsTitle">추천 아이템</h3>
-                                <span id="resultItemCount" class="recommend-items-section__count"></span>
+                        <aside id="developerPanel" class="recommend-dev-panel recommend-dev-panel--hidden" aria-label="개발자 디버그 정보">
+                            <div class="recommend-dev-panel__header">
+                                <div>
+                                    <p class="recommend-summary-card__eyebrow">DEVELOPER</p>
+                                    <h3 class="recommend-dev-panel__title">Search Query / Blueprint</h3>
+                                </div>
                             </div>
-                            <div id="resultItems" class="recommend-items-grid"></div>
-                        </section>
+
+                            <section class="recommend-dev-section">
+                                <div class="recommend-dev-section__header">
+                                    <h4>Search Query</h4>
+                                </div>
+                                <pre id="developerSearchQueries" class="recommend-dev-code">아직 추천 결과가 없습니다.</pre>
+                            </section>
+
+                            <section class="recommend-dev-section">
+                                <div class="recommend-dev-section__header">
+                                    <h4>Blueprint</h4>
+                                </div>
+                                <pre id="developerBlueprint" class="recommend-dev-code">아직 추천 결과가 없습니다.</pre>
+                            </section>
+                        </aside>
                     </div>
                 </section>
 

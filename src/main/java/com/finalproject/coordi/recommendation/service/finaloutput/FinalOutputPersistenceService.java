@@ -13,7 +13,6 @@ import com.finalproject.coordi.recommendation.dto.persistent.RecommendationItemD
 import com.finalproject.coordi.recommendation.mapper.RecommendationMapper;
 import com.finalproject.coordi.recommendation.service.productSearch.ShoppingPort.SearchedProduct;
 import com.finalproject.coordi.recommendation.service.productSearch.ShoppingPort.ShoppingSearchQuery;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +28,7 @@ public class FinalOutputPersistenceService {
     private static final String INPUT_MODE_TEXT = "TEXT";
     private static final String PRODUCT_OPTION_SEARCH_TOP1 = "SEARCH_TOP1";
     private static final String SOURCE_TYPE_PRODUCT = "PRODUCT";
-    private static final String SELECTION_STAGE_FINAL_OUTPUT_TOP1 = "FINAL_OUTPUT_TOP1";
+    private static final String DEFAULT_PRODUCT_SOURCE = "NAVER";
     private static final double DEFAULT_MATCH_SCORE = 1.0d;
     private static final String EMPTY_JSON = "{}";
 
@@ -80,12 +79,11 @@ public class FinalOutputPersistenceService {
                 .productId(productId)
                 .searchQuery(extractSearchQuery(categoryType, slotSearchQueries))
                 .priority(extractPriority(categoryType, normalizedBlueprint))
-                .selectionStage(SELECTION_STAGE_FINAL_OUTPUT_TOP1)
                 .matchScore(productId == null ? 0.0d : DEFAULT_MATCH_SCORE)
-                .scoringDetailsJson(buildScoringDetailsJson(categoryType, productId))
                 .reason(extractReason(categoryType, normalizedBlueprint))
                 .build();
             recommendationMapper.insertRecommendationItem(recommendationItemDto);
+            linkRecommendationItemToCloset(userId, productId, recommendationItemDto.getRecItemId());
         }
     }
 
@@ -114,7 +112,7 @@ public class FinalOutputPersistenceService {
         }
 
         String source = top1Product.marketplaceProvider() == null || top1Product.marketplaceProvider().isBlank()
-            ? "NAVER"
+            ? DEFAULT_PRODUCT_SOURCE
             : top1Product.marketplaceProvider();
 
         ProductDto productDto = ProductDto.builder()
@@ -197,12 +195,21 @@ public class FinalOutputPersistenceService {
         return aiExplanation == null ? "" : aiExplanation;
     }
 
-    private String buildScoringDetailsJson(CategoryType categoryType, Long productId) {
-        Map<String, Object> scoringDetails = new LinkedHashMap<>();
-        scoringDetails.put("slotKey", categoryType.getCode());
-        scoringDetails.put("selectionStage", SELECTION_STAGE_FINAL_OUTPUT_TOP1);
-        scoringDetails.put("productResolved", productId != null);
-        return toJson(scoringDetails);
+    // 추천 상품이 실제 product 로 확정된 경우에만 사용자 closet ownership 을 연결한다.
+    private void linkRecommendationItemToCloset(Long userId, Long productId, Long recItemId) {
+        if (userId == null || productId == null || recItemId == null) {
+            return;
+        }
+
+        Long closetItemId = recommendationMapper.findClosetItemIdByUserIdAndProductId(userId, productId);
+        if (closetItemId == null) {
+            recommendationMapper.insertClosetItem(userId, productId);
+            closetItemId = recommendationMapper.findClosetItemIdByUserIdAndProductId(userId, productId);
+        }
+
+        if (closetItemId != null) {
+            recommendationMapper.updateRecommendationItemClosetItemId(recItemId, closetItemId);
+        }
     }
 
     private String toJson(Object source) {

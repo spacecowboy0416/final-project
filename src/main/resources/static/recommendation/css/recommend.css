@@ -348,6 +348,12 @@
     gap: 16px;
 }
 
+.recommend-result-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
 .recommend-location-toolbar strong {
     display: block;
     color: #ffffff;
@@ -471,10 +477,21 @@
     color: #ffffff;
 }
 
+.recommend-result-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+    align-items: start;
+}
+
+.recommend-result-layout.recommend-result-layout--with-dev {
+    grid-template-columns: minmax(0, 1.7fr) minmax(300px, 0.9fr);
+}
+
 .recommend-result-shell {
     display: grid;
     gap: 15px;
-    width: min(100%, 735px);
+    width: 100%;
     margin: 0 auto;
 }
 
@@ -637,6 +654,66 @@
     cursor: default;
 }
 
+.recommend-dev-panel {
+    display: grid;
+    gap: 16px;
+    padding: 18px;
+    border-radius: 22px;
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.04));
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.recommend-dev-panel--hidden {
+    display: none;
+}
+
+.recommend-dev-panel__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.recommend-dev-panel__title,
+.recommend-dev-section h4 {
+    margin: 0;
+    color: #ffffff;
+}
+
+.recommend-dev-panel__title {
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+}
+
+.recommend-dev-section {
+    display: grid;
+    gap: 8px;
+}
+
+.recommend-dev-section__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.recommend-dev-code {
+    margin: 0;
+    min-height: 180px;
+    max-height: 420px;
+    overflow: auto;
+    padding: 14px;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(6, 6, 6, 0.48);
+    color: rgba(255, 255, 255, 0.82);
+    font-size: 12px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
 #resultView .recommend-kicker {
     margin: 0 0 6px;
     font-size: 10px;
@@ -760,9 +837,14 @@
     .recommend-upload-actions,
     .recommend-location-toolbar,
     .recommend-result-top,
-    .recommend-items-section__header {
+    .recommend-items-section__header,
+    .recommend-result-actions {
         flex-direction: column;
         align-items: stretch;
+    }
+
+    .recommend-result-layout.recommend-result-layout--with-dev {
+        grid-template-columns: 1fr;
     }
 }
 

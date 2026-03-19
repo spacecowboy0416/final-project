@@ -72,7 +72,7 @@ public record RawBlueprintDto(
         ItemInfo outerwear,
         @Valid @NotNull
         ItemInfo shoes,
-        @Valid @NotNull
+        @Valid
         ItemInfo accessories
     ) {
     }

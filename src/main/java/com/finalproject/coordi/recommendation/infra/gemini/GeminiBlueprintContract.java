@@ -103,6 +103,7 @@ public class GeminiBlueprintContract {
 
         List<String> required = Arrays.stream(CategoryType.values())
             .filter(categoryType -> categoryType != CategoryType.HEADWEAR)
+            .filter(categoryType -> categoryType != CategoryType.ACCESSORIES)
             .map(CategoryType::getCode)
             .toList();
 

@@ -23,9 +23,7 @@ public class RecommendationItemDto {
     private Long productId;
     private String searchQuery;
     private String priority;
-    private String selectionStage;
     private Double matchScore;
-    private String scoringDetailsJson;
     private String reason;
 }
 

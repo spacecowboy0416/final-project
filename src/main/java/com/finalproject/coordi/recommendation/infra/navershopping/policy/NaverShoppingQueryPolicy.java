@@ -25,13 +25,13 @@ public class NaverShoppingQueryPolicy {
             BRAND, GENDER, COLOR, CATEGORY);
 
     private static final List<QueryTokenType> BOTTOMS_TOKEN_ORDER = List.of(
-            BRAND, GENDER, COLOR, CATEGORY);
+            BRAND, GENDER, FIT, COLOR, CATEGORY);
 
     private static final List<QueryTokenType> OUTERWEAR_TOKEN_ORDER = List.of(
             BRAND, GENDER, COLOR, CATEGORY);
 
     private static final List<QueryTokenType> SHOES_TOKEN_ORDER = List.of(
-            BRAND, COLOR, CATEGORY);
+            COLOR, CATEGORY);
 
     private static final List<QueryTokenType> ACCESSORIES_TOKEN_ORDER = List.of(
             COLOR, CATEGORY);

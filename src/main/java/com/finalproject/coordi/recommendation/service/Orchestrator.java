@@ -63,11 +63,27 @@ public class Orchestrator {
      * 디버그 화면용으로 중간 산출물과 stage timing까지 함께 반환하는 진입점이다.
      */
     public RecommendationDebugResponseDto coordinateDebug(@Valid UserRequestDto request) {
+        return coordinateDebug(request, null, false);
+    }
+
+    /**
+     * 디버그 화면 요청에서 필요 시 저장까지 함께 수행한다.
+     */
+    public RecommendationDebugResponseDto coordinateDebug(@Valid UserRequestDto request, Long userId, boolean persist) {
         PipelineArtifacts pipelineArtifacts = runPipelineStages(request);
-        CoordinationOutputDto coordinationOutput = finalOutputBuilder.build(
-            pipelineArtifacts.normalizedBlueprint(),
-            pipelineArtifacts.effectiveProducts()
-        );
+        CoordinationOutputDto coordinationOutput = persist
+            ? finalOutputBuilder.buildAndPersist(
+                request,
+                userId,
+                pipelineArtifacts.payload(),
+                pipelineArtifacts.normalizedBlueprint(),
+                pipelineArtifacts.effectiveProducts(),
+                pipelineArtifacts.slotSearchQueries()
+            )
+            : finalOutputBuilder.build(
+                pipelineArtifacts.normalizedBlueprint(),
+                pipelineArtifacts.effectiveProducts()
+            );
         PipelineResult pipelineResult = new PipelineResult(
             pipelineArtifacts.rawBlueprint(),
             coordinationOutput,

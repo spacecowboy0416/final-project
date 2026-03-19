@@ -25,6 +25,10 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class FinalOutputBuilder {
     private static final String AI_EXPLANATION = "";
+    private static final List<CategoryType> OPTIONAL_OUTPUT_SLOTS = List.of(
+        CategoryType.HEADWEAR,
+        CategoryType.ACCESSORIES
+    );
 
     private final FinalOutputPersistenceService finalOutputPersistenceService;
 
@@ -58,7 +62,15 @@ public class FinalOutputBuilder {
         Map<CategoryType, ShoppingSearchQuery> slotSearchQueries
     ) {
         CoordinationOutputDto outputDto = build(normalizedBlueprint, effectiveProducts);
-        // 임시 우회: recommend 실사용 화면 검증 전까지 DB 저장은 수행하지 않는다.
+        // 일반 추천 API는 최종 응답 기준으로 recommendation 결과를 저장한다.
+        finalOutputPersistenceService.save(
+            userId,
+            request,
+            payload,
+            normalizedBlueprint,
+            effectiveProducts,
+            slotSearchQueries
+        );
         return outputDto;
     }
 
@@ -80,29 +92,55 @@ public class FinalOutputBuilder {
                 tempMax = itemInfo.tempRange().get(1);
             }
 
-            coordinationItems.add(
-                new CoordinationItemOutputDto(
-                    categoryType,
-                    top1Product == null ? (itemInfo == null ? "" : itemInfo.itemName()) : top1Product.productName(),
-                    top1Product == null ? null : top1Product.productImageUrl(),
-                    isAnchorSlot,
-                    top1Product == null || isAnchorSlot ? null : top1Product.brandName(),
-                    top1Product == null ? null : top1Product.salePrice(),
-                    top1Product == null ? null : top1Product.productDetailUrl(),
-                    itemInfo == null ? null : itemInfo.category(),
-                    top1Product == null ? 0.0d : 1.0d,
-                    tempMin,
-                    tempMax,
-                    itemInfo == null ? null : itemInfo.priority(),
-                    itemInfo == null ? "" : itemInfo.reasoning(),
-                    itemInfo == null || itemInfo.attributes() == null ? null : itemInfo.attributes().color(),
-                    itemInfo == null || itemInfo.attributes() == null ? null : itemInfo.attributes().material(),
-                    itemInfo == null || itemInfo.attributes() == null ? null : itemInfo.attributes().fit(),
-                    itemInfo == null || itemInfo.attributes() == null ? null : itemInfo.attributes().style()
-                )
+            CoordinationItemOutputDto coordinationItem = new CoordinationItemOutputDto(
+                categoryType,
+                top1Product == null ? (itemInfo == null ? "" : itemInfo.itemName()) : top1Product.productName(),
+                top1Product == null ? null : top1Product.productImageUrl(),
+                isAnchorSlot,
+                top1Product == null || isAnchorSlot ? null : top1Product.brandName(),
+                top1Product == null ? null : top1Product.salePrice(),
+                top1Product == null ? null : top1Product.productDetailUrl(),
+                itemInfo == null ? null : itemInfo.category(),
+                top1Product == null ? 0.0d : 1.0d,
+                tempMin,
+                tempMax,
+                itemInfo == null ? null : itemInfo.priority(),
+                itemInfo == null ? "" : itemInfo.reasoning(),
+                itemInfo == null || itemInfo.attributes() == null ? null : itemInfo.attributes().color(),
+                itemInfo == null || itemInfo.attributes() == null ? null : itemInfo.attributes().material(),
+                itemInfo == null || itemInfo.attributes() == null ? null : itemInfo.attributes().fit(),
+                itemInfo == null || itemInfo.attributes() == null ? null : itemInfo.attributes().style()
             );
+
+            if (shouldSkipOptionalSlot(coordinationItem)) {
+                continue;
+            }
+
+            coordinationItems.add(coordinationItem);
         }
         return coordinationItems;
+    }
+
+    /**
+     * 선택 슬롯은 실제 출력 근거가 없는 경우 응답에서 제거한다.
+     */
+    private boolean shouldSkipOptionalSlot(CoordinationItemOutputDto coordinationItem) {
+        if (coordinationItem == null || !OPTIONAL_OUTPUT_SLOTS.contains(coordinationItem.slotKey())) {
+            return false;
+        }
+
+        return !coordinationItem.isMyItem()
+            && !hasText(coordinationItem.imageUrl())
+            && !hasText(coordinationItem.productDetailUrl())
+            && coordinationItem.salePrice() == null
+            && !hasText(coordinationItem.itemName());
+    }
+
+    /**
+     * 문자열 출력 근거 존재 여부를 공통 판정한다.
+     */
+    private boolean hasText(String value) {
+        return value != null && !value.isBlank();
     }
 
     // 슬롯별 effectiveProducts 에서 TOP1 상품을 추출한다.

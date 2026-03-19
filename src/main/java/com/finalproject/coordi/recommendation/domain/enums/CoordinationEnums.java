@@ -276,7 +276,6 @@ public final class CoordinationEnums {
         BACKPACK("backpack", "백팩"),
         TOTE_BAG("tote_bag", "토트백"),
         CROSS_BAG("cross_bag", "크로스백"),
-        MESSENGER_BAG("messenger", "메신저백"),
         SHOULDER_BAG("shoulder", "숄더백"),
         HOBO_BAG("hobo_bag", "호보백"),
         MINI_BAG("mini_bag", "미니백"),
