@@ -15,6 +15,7 @@ public record CoordinationItemOutputDto(
     CategoryType slotKey,
     String itemName,
     String imageUrl,
+    boolean isMyItem,
     String brandName,
     Integer salePrice,
     String productDetailUrl,

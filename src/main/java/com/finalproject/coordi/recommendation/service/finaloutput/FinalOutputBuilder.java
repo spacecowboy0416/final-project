@@ -58,7 +58,7 @@ public class FinalOutputBuilder {
         Map<CategoryType, ShoppingSearchQuery> slotSearchQueries
     ) {
         CoordinationOutputDto outputDto = build(normalizedBlueprint, effectiveProducts);
-        finalOutputPersistenceService.save(userId, request, payload, normalizedBlueprint, effectiveProducts, slotSearchQueries);
+        // 임시 우회: recommend 실사용 화면 검증 전까지 DB 저장은 수행하지 않는다.
         return outputDto;
     }
 
@@ -85,6 +85,7 @@ public class FinalOutputBuilder {
                     categoryType,
                     top1Product == null ? (itemInfo == null ? "" : itemInfo.itemName()) : top1Product.productName(),
                     top1Product == null ? null : top1Product.productImageUrl(),
+                    isAnchorSlot,
                     top1Product == null || isAnchorSlot ? null : top1Product.brandName(),
                     top1Product == null ? null : top1Product.salePrice(),
                     top1Product == null ? null : top1Product.productDetailUrl(),

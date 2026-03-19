@@ -2,192 +2,195 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <th:block th:replace="~{layout/common :: configFragment}"></th:block>
-    <title>추천 페이지</title>
-    <style>
-        .recommend-wrap { max-width: 1080px; margin: 24px auto; padding: 0 16px; }
-        .recommend-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-        .card { border: 1px solid #d9dee5; border-radius: 12px; background: #fff; padding: 16px; }
-        .card h2 { margin: 0 0 12px; font-size: 18px; }
-        .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
-        .field label { font-size: 13px; font-weight: 600; color: #334155; }
-        .field input, .field select, .field textarea {
-            border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px 10px; font-size: 14px;
-        }
-        .field textarea { min-height: 96px; resize: vertical; }
-        .actions { display: flex; gap: 8px; margin-top: 8px; }
-        .btn { border: 0; border-radius: 8px; padding: 10px 14px; cursor: pointer; font-weight: 600; }
-        .btn-primary { background: #111827; color: #fff; }
-        .btn-secondary { background: #e2e8f0; color: #111827; }
-        .json-box {
-            background: #0f172a; color: #e2e8f0; border-radius: 8px; padding: 12px;
-            min-height: 520px; overflow: auto; font-size: 12px; line-height: 1.5;
-        }
-        .hint { margin-top: 8px; color: #64748b; font-size: 12px; }
-        @media (max-width: 980px) {
-            .recommend-grid { grid-template-columns: 1fr; }
-            .json-box { min-height: 300px; }
-        }
-    </style>
+    <title>코디 추천</title>
+
+    <link rel="stylesheet" th:href="@{/main/css/main.css}">
+    <link rel="stylesheet" th:href="@{/recommendation/css/recommend.css}">
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body>
 <div th:replace="~{layout/common :: headerFragment}"></div>
-<main class="recommend-wrap">
-    <div class="recommend-grid">
-        <section class="card">
-            <h2>입력</h2>
-            <form id="recommendForm">
-                <div class="field">
-                    <label for="naturalText">요청 문장</label>
-                    <textarea id="naturalText" required>비 오는 날 출근룩 추천해줘</textarea>
+
+<main class="main-content recommend-page">
+    <div id="bgOverlay" class="recommend-overlay"></div>
+
+    <section class="wrap recommend-wrap-shell">
+        <div class="mainCard recommend-card">
+            <div id="recommendRoot"
+                 class="recommend-root"
+                 th:attr="data-initial-natural-text=${initialNaturalText},data-kakao-map-api-key=${kakaoMapApiKey},data-recommendation-image-max-bytes=${recommendationImageMaxBytes}">
+
+                <section id="composeView" class="recommend-screen recommend-screen--active" aria-label="추천 입력 화면">
+                    <div class="recommend-search-bar">
+                        <div class="recommend-search-copy">
+                            <p class="recommend-kicker">PERSONAL OUTFIT RECOMMENDATION</p>
+                            <h1 class="recommend-title">어떤 룩이 필요한지 자연스럽게 적어주세요</h1>
+                        </div>
+
+                        <form id="recommendForm" class="recommend-search-form">
+                            <label class="sr-only" for="naturalText">추천 요청 문장</label>
+                            <input id="naturalText"
+                                   class="recommend-search-input"
+                                   type="text"
+                                   name="naturalText"
+                                   placeholder="예: 내일 비 오는데 출근룩 차분하게 추천해줘"
+                                   maxlength="1000"
+                                   autocomplete="off">
+                            <button id="submitButton" class="recommend-search-button" type="submit">
+                                추천 받기
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="recommend-compose-grid">
+                        <section class="recommend-panel recommend-panel--media" aria-labelledby="uploadSectionTitle">
+                            <div class="recommend-panel__header">
+                                <p class="recommend-panel__eyebrow">IMAGE INPUT</p>
+                                <h2 id="uploadSectionTitle" class="recommend-panel__title">사진과 취향 설정</h2>
+                            </div>
+
+                            <div id="imagePreviewCard" class="recommend-image-card">
+                                <img id="imagePreview" class="recommend-image-card__image" alt="업로드 이미지 미리보기">
+                                <div class="recommend-image-card__empty">
+                                    <strong>사진을 올리면 여기서 바로 확인할 수 있어요</strong>
+                                    <p>전신 또는 상반신이 비교적 선명한 사진을 권장합니다.</p>
+                                </div>
+                            </div>
+
+                            <div class="recommend-upload-actions">
+                                <label for="imageFile" class="recommend-upload-button">사진 업로드</label>
+                                <input id="imageFile" type="file" accept="image/*" hidden>
+                                <p id="imageMetaText" class="recommend-inline-note">아직 업로드된 사진이 없습니다.</p>
+                            </div>
+
+                            <div class="recommend-setting-grid">
+                                <label class="recommend-select-field">
+                                    <span>성별</span>
+                                    <select id="gender" name="gender">
+                                        <option value="UNISEX">공용</option>
+                                        <option value="MALE">남성</option>
+                                        <option value="FEMALE">여성</option>
+                                    </select>
+                                </label>
+
+                                <label class="recommend-switch" for="brandEnabled">
+                                    <div>
+                                        <span class="recommend-switch__label">브랜드 포함</span>
+                                        <p class="recommend-switch__desc">브랜드 키워드를 쇼핑 검색어에 반영합니다.</p>
+                                    </div>
+                                    <input id="brandEnabled" type="checkbox" checked>
+                                    <span class="recommend-switch__slider" aria-hidden="true"></span>
+                                </label>
+                            </div>
+                        </section>
+
+                        <section class="recommend-panel recommend-panel--context" aria-labelledby="contextSectionTitle">
+                            <div class="recommend-panel__header">
+                                <p class="recommend-panel__eyebrow">CONTEXT</p>
+                                <h2 id="contextSectionTitle" class="recommend-panel__title">시간과 위치 컨텍스트</h2>
+                            </div>
+
+                            <div class="recommend-context-stack">
+                                <label class="recommend-select-field">
+                                    <span>일정 시간</span>
+                                    <input id="scheduleTime" type="datetime-local" name="scheduleTime">
+                                </label>
+
+                                <div class="recommend-location-toolbar">
+                                    <div>
+                                        <strong id="locationLabel">위치를 불러오는 중입니다</strong>
+                                        <p id="locationSubLabel">현재 위치를 기준으로 날씨를 맞춥니다.</p>
+                                    </div>
+                                    <button id="useCurrentLocationButton" class="recommend-ghost-button" type="button">
+                                        현재 위치
+                                    </button>
+                                </div>
+
+                                <div id="map" class="recommend-map" aria-label="지도"></div>
+
+                                <article class="recommend-weather-card" aria-labelledby="weatherCardTitle">
+                                    <div class="recommend-weather-card__header">
+                                        <div>
+                                            <p class="recommend-weather-card__eyebrow">LIVE WEATHER</p>
+                                            <h3 id="weatherCardTitle">선택한 위치의 날씨</h3>
+                                        </div>
+                                        <span id="weatherStatusBadge" class="recommend-weather-badge">불러오는 중</span>
+                                    </div>
+
+                                    <div class="recommend-weather-card__body">
+                                        <div class="recommend-weather-main">
+                                            <strong id="weatherTemperature">-</strong>
+                                            <p id="weatherDescription">날씨 정보를 가져오는 중입니다.</p>
+                                        </div>
+                                        <dl class="recommend-weather-list">
+                                            <div>
+                                                <dt>체감 온도</dt>
+                                                <dd id="weatherFeelsLike">-</dd>
+                                            </div>
+                                            <div>
+                                                <dt>습도</dt>
+                                                <dd id="weatherHumidity">-</dd>
+                                            </div>
+                                            <div>
+                                                <dt>바람</dt>
+                                                <dd id="weatherWind">-</dd>
+                                            </div>
+                                            <div>
+                                                <dt>강수량</dt>
+                                                <dd id="weatherPrecipitation">-</dd>
+                                            </div>
+                                        </dl>
+                                    </div>
+                                </article>
+                            </div>
+                        </section>
+                    </div>
+                </section>
+
+                <section id="resultView" class="recommend-screen recommend-screen--hidden" aria-label="추천 결과 화면">
+                    <div class="recommend-result-shell">
+                        <div class="recommend-result-top">
+                            <div>
+                                <p class="recommend-kicker">RECOMMENDATION RESULT</p>
+                                <h2 id="resultQueryText" class="recommend-result-title"></h2>
+                                <p id="resultMetaText" class="recommend-result-meta"></p>
+                            </div>
+                            <button id="backToComposeButton" class="recommend-ghost-button" type="button">
+                                다시 추천하기
+                            </button>
+                        </div>
+
+                        <article class="recommend-summary-card">
+                            <p class="recommend-summary-card__eyebrow">AI EXPLANATION</p>
+                            <p id="resultExplanation" class="recommend-summary-card__text"></p>
+                        </article>
+
+                        <section class="recommend-items-section" aria-labelledby="resultItemsTitle">
+                            <div class="recommend-items-section__header">
+                                <h3 id="resultItemsTitle">추천 아이템</h3>
+                                <span id="resultItemCount" class="recommend-items-section__count"></span>
+                            </div>
+                            <div id="resultItems" class="recommend-items-grid"></div>
+                        </section>
+                    </div>
+                </section>
+
+                <div id="loadingOverlay" class="recommend-loading-overlay recommend-loading-overlay--hidden" aria-live="polite">
+                    <div class="recommend-loading-box">
+                        <div class="recommend-spinner" aria-hidden="true"></div>
+                        <strong>추천을 생성하고 있습니다</strong>
+                        <p>사진과 날씨를 조합해 코디를 찾는 중입니다.</p>
+                    </div>
                 </div>
-                <div class="field">
-                    <label for="gender">성별</label>
-                    <select id="gender">
-                        <option value="UNISEX">UNISEX</option>
-                        <option value="MALE">MALE</option>
-                        <option value="FEMALE">FEMALE</option>
-                    </select>
-                </div>
-                <div class="field">
-                    <label for="scheduleTime">일정 시각</label>
-                    <input id="scheduleTime" type="datetime-local" required>
-                </div>
-                <div class="field">
-                    <label for="districtName">구/군 이름</label>
-                    <input id="districtName" type="text" value="강남구" required>
-                </div>
-                <div class="field">
-                    <label for="latitude">위도</label>
-                    <input id="latitude" type="number" step="any" value="37.5172" required>
-                </div>
-                <div class="field">
-                    <label for="longitude">경도</label>
-                    <input id="longitude" type="number" step="any" value="127.0473" required>
-                </div>
-                <div class="field">
-                    <label for="imageFile">이미지 파일</label>
-                    <input id="imageFile" type="file" accept="image/*" required>
-                </div>
-                <div class="field">
-                    <label style="display:flex; align-items:center; gap:6px;">
-                        <input id="brandEnabled" type="checkbox" checked style="width:auto;">
-                        브랜드 키워드 포함
-                    </label>
-                </div>
-                <div class="actions">
-                    <button class="btn btn-primary" type="submit">추천 요청</button>
-                    <button class="btn btn-secondary" id="clearButton" type="button">초기화</button>
-                </div>
-                <p class="hint">최대 이미지 크기: <span th:text="${recommendationImageMaxBytes}"></span> bytes</p>
-            </form>
-        </section>
-        <section class="card">
-            <h2>출력</h2>
-            <pre id="outputJson" class="json-box">{}</pre>
-        </section>
-    </div>
+
+                <p id="feedbackMessage" class="recommend-feedback" aria-live="polite"></p>
+            </div>
+        </div>
+    </section>
 </main>
+
 <footer th:replace="~{layout/common :: footerFragment}"></footer>
-<script th:inline="javascript">
-    const recommendationImageMaxBytes = /*[[${recommendationImageMaxBytes}]]*/ 5242880;
-    const recommendForm = document.getElementById("recommendForm");
-    const outputJson = document.getElementById("outputJson");
-    const clearButton = document.getElementById("clearButton");
 
-    document.getElementById("scheduleTime").value = toDateTimeLocalString(new Date());
-
-    recommendForm.addEventListener("submit", async (event) => {
-        event.preventDefault();
-        try {
-            const requestPayload = await buildRequestPayload();
-            outputJson.textContent = JSON.stringify({ input: requestPayload }, null, 2);
-
-            const response = await fetch("/api/recommendations", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(requestPayload)
-            });
-
-            const body = await response.json();
-            outputJson.textContent = JSON.stringify({
-                input: requestPayload,
-                output: body,
-                status: response.status
-            }, null, 2);
-        } catch (error) {
-            outputJson.textContent = JSON.stringify({
-                error: error.message
-            }, null, 2);
-        }
-    });
-
-    clearButton.addEventListener("click", () => {
-        outputJson.textContent = "{}";
-    });
-
-    async function buildRequestPayload() {
-        const imageFileInput = document.getElementById("imageFile");
-        const imageFile = imageFileInput.files && imageFileInput.files[0];
-        if (!imageFile) {
-            throw new Error("이미지 파일을 선택해주세요.");
-        }
-        if (imageFile.size > recommendationImageMaxBytes) {
-            throw new Error("이미지 크기가 제한을 초과했습니다.");
-        }
-
-        const weather = await fetchWeatherSummary();
-        const imageBase64 = await fileToBase64(imageFile);
-        return {
-            naturalText: document.getElementById("naturalText").value,
-            gender: document.getElementById("gender").value,
-            scheduleTime: toOffsetDateTimeString(document.getElementById("scheduleTime").value),
-            weather,
-            imageBase64,
-            imageMimeType: imageFile.type || "image/jpeg",
-            brandEnabled: document.getElementById("brandEnabled").checked
-        };
-    }
-
-    async function fetchWeatherSummary() {
-        const latitude = Number(document.getElementById("latitude").value);
-        const longitude = Number(document.getElementById("longitude").value);
-        const response = await fetch(`/api/main/summary?lat=${latitude}&lon=${longitude}`);
-        if (!response.ok) {
-            throw new Error("날씨 정보를 가져오지 못했습니다.");
-        }
-        const body = await response.json();
-        return {
-            status: body.weatherStatus,
-            temperature: body.temperature,
-            feelsLike: body.feelsLike
-        };
-    }
-
-    async function fileToBase64(file) {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => {
-                const result = typeof reader.result === "string" ? reader.result : "";
-                resolve(result.includes(",") ? result.split(",")[1] : result);
-            };
-            reader.onerror = () => reject(new Error("이미지 인코딩에 실패했습니다."));
-            reader.readAsDataURL(file);
-        });
-    }
-
-    function toOffsetDateTimeString(localDateTime) {
-        const date = new Date(localDateTime);
-        return date.toISOString();
-    }
-
-    function toDateTimeLocalString(date) {
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, "0");
-        const day = String(date.getDate()).padStart(2, "0");
-        const hours = String(date.getHours()).padStart(2, "0");
-        const minutes = String(date.getMinutes()).padStart(2, "0");
-        return `${year}-${month}-${day}T${hours}:${minutes}`;
-    }
-</script>
+<script th:src="@{/recommendation/js/recommend.js}"></script>
 </body>
 </html>

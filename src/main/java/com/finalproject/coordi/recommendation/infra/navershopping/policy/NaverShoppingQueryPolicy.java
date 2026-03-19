@@ -34,7 +34,7 @@ public class NaverShoppingQueryPolicy {
             BRAND, COLOR, CATEGORY);
 
     private static final List<QueryTokenType> ACCESSORIES_TOKEN_ORDER = List.of(
-            BRAND, GENDER, COLOR,CATEGORY);
+            COLOR, CATEGORY);
 
     public int start() {
         return START;

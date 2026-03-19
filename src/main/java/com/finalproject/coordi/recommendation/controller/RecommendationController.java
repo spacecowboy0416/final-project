@@ -41,7 +41,12 @@ public class RecommendationController {
 
     // 추천 입력/출력 페이지를 반환한다.
     @GetMapping("/recommend")
-    public String recommendPage(Model model) {
+    public String recommendPage(
+        @RequestParam(value = "q", required = false) String naturalText,
+        Model model
+    ) {
+        model.addAttribute("initialNaturalText", naturalText == null ? "" : naturalText);
+        model.addAttribute("kakaoMapApiKey", kakaoMapProperties.getJsKey());
         model.addAttribute("recommendationImageMaxBytes", recommendationProperties.getMaxSize().toBytes());
         return "recommendation/recommend";
     }
