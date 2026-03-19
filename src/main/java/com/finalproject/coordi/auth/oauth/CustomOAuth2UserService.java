@@ -1,6 +1,6 @@
 package com.finalproject.coordi.auth.oauth;
 
-import com.finalproject.coordi.exception.auth.AuthFailedException;
+import com.finalproject.coordi.auth.service.RedisService;
 import com.finalproject.coordi.users.dto.UsersDto;
 import com.finalproject.coordi.users.service.UsersService;
 import lombok.RequiredArgsConstructor;
@@ -9,6 +9,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,10 @@ import java.util.Map;
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     private final UsersService usersService;
+    private final RedisService redisService; // Redis 연동 추가
+
+    private static final String OAUTH2_ERROR_CODE_SUSPENDED_USER = "suspended_user";
+    private static final String OAUTH2_ERROR_CODE_AUTH_FAILED = "auth_failed";
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
@@ -45,6 +50,16 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         
         // UserDto를 DB에 저장하거나 업데이트하여 최종 UserDto 반환
         UsersDto savedUser = usersService.saveOrUpdate(usersDto);
+
+        // [정지 유저 체크] 로그인을 시도하는 유저가 정지 상태인지 확인합니다.
+        if ("SUSPENDED".equals(savedUser.getStatus())) {
+            // Redis에 정지 상태를 캐시하여 필터에서도 즉시 차단되도록 합니다.
+            redisService.setSuspendedUser(savedUser.getUserId());
+            throw new OAuth2AuthenticationException(
+                    new OAuth2Error(OAUTH2_ERROR_CODE_SUSPENDED_USER, "U102", null),
+                    "U102"
+            );
+        }
         
         // attributes는 수정 불가일 수 있으므로 복사해서 필요한 정보(isNewUser) 추가
         Map<String, Object> customAttributes = new HashMap<>(attributes);
@@ -108,6 +123,9 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                     .build();
         }
         // 지원하지 않는 소셜 서비스인 경우 예외 처리
-        throw new AuthFailedException();
+        throw new OAuth2AuthenticationException(
+                new OAuth2Error(OAUTH2_ERROR_CODE_AUTH_FAILED, "T100", null),
+                "T100"
+        );
     }
 }

@@ -28,8 +28,18 @@ public class RedisService {
         return (String) redisTemplate.opsForValue().get("RT:" + userId);
     }
 
-    // 로그아웃 시 Redis에서 토큰 정보를 삭제합
+    // 로그아웃 시 Redis에서 토큰 정보를 삭제
     public void deleteRefreshToken(Long userId) {
         redisTemplate.delete("RT:" + userId);
+    }
+
+    //특정 유저를 정지 목록(캐시)에 등록 (1시간 동안 캐시)
+    public void setSuspendedUser(Long userId) {
+        redisTemplate.opsForValue().set("SUSPENDED:" + userId, "TRUE", 1, TimeUnit.HOURS);
+    }
+
+    //해당 유저가 정지 목록에 있는지 확인
+    public boolean isSuspendedUser(Long userId) {
+        return Boolean.TRUE.equals(redisTemplate.hasKey("SUSPENDED:" + userId));
     }
 }

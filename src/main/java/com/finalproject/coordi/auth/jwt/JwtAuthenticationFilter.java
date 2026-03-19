@@ -56,6 +56,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     response.sendRedirect("/?error=duplicate_login"); // 메인 페이지로 리다이렉트
                     return;
                 }
+                // [정지 유저 체크] 실시간으로 정지된 계정인지 확인합니다.
+                if (redisService.isSuspendedUser(userId)) {
+                    log.warn("정지 유저 접속 감지: 접속을 강제 종료합니다.");
+                    clearTokenCookies(response);
+                    response.sendRedirect("/?error=suspended_user");
+                    return;
+                }
 
                 // AccessToken 재발급
                 String newAccessToken = jwtProvider.createAccessToken(userId, role);

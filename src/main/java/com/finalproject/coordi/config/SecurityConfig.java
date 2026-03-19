@@ -6,11 +6,13 @@ import com.finalproject.coordi.auth.jwt.JwtProvider;
 import com.finalproject.coordi.auth.oauth.CustomOAuth2UserService;
 import com.finalproject.coordi.auth.service.RedisService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -20,19 +22,20 @@ import java.nio.charset.StandardCharsets;
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
+@Slf4j
 // 애플리케이션 전역의 인가(Authorization) 및 인증(Authentication) 규칙을 관장하는 보안 설정 클래스입니다.
 public class SecurityConfig {
 
         private final CustomOAuth2UserService customOAuth2UserService;
         private final OAuth2SuccessHandler oAuth2SuccessHandler;
         private final JwtProvider jwtProvider;
-        private final RedisService redisService; // 추가
+        private final RedisService redisService;
 
         // 애플리케이션으로 유입되는 HTTP 요청에 대한 세부 보안 필터 체인 규칙을 정의합니다.
         @Bean
         public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
                 http
-
+                
                                 // RESTful API와 무상태(Stateless) 기반의 통신을 수행하므로, CSRF 방어 및 기본 로그인 폼 기능을 비활성화합니다.
                                 .csrf(csrf -> csrf.disable()) 
                                 .formLogin(form -> form.disable()) 
@@ -62,8 +65,7 @@ public class SecurityConfig {
                                                         "/api/main/**", "/api/recommendations/**")
                                                 .permitAll()
                                                 // 상기 명시되지 않은 모든 나머지 요청은 로그인된(인증된) 사용자만 허용합니다.
-                                                //.anyRequest().authenticated() // 개발완료되면 주석 풀기
-                                                .anyRequest().permitAll()  // [[[[[[개발완료되면 없애야함]]]]]]
+                                                .anyRequest().permitAll()  // [[[[[[개발완료되면 .authenticated()로 바꿔야 함]]]]]]
                                                 )
 
                                 // 외부 플랫폼(Google, Kakao 등)을 활용한 OAuth2 로그인 프로세스의 세부 흐름을 설정합니다.
@@ -73,9 +75,20 @@ public class SecurityConfig {
                                                                 .userService(customOAuth2UserService)) 
                                                 .successHandler(oAuth2SuccessHandler) 
                                                 .failureHandler((request, response, exception) -> {
-                                                        // 소셜 인증 실패 시 발생한 에러 원인을 파라미터로 포함시켜 메인 페이지로 리다이렉트 처리합니다.
-                                                        String encodedMsg = URLEncoder.encode(exception.getMessage(),
-                                                                        StandardCharsets.UTF_8);
+                                                        log.error("소셜 로그인 실패: {}", exception.getMessage());
+
+                                                        // 정지된 유저인 경우 (OAuth2AuthenticationException 에러코드 기반)
+                                                        if (exception instanceof OAuth2AuthenticationException oauth2Ex) {
+                                                                String errorCode = oauth2Ex.getError().getErrorCode();
+                                                                if ("suspended_user".equals(errorCode)) {
+                                                                        response.sendRedirect("/?error=suspended_user");
+                                                                        return;
+                                                                }
+                                                        }
+
+                                                        // 그 외 소셜 인증 실패 처리
+                                                        String msg = exception.getMessage();
+                                                        String encodedMsg = URLEncoder.encode(msg != null ? msg : "인증 실패", StandardCharsets.UTF_8);
                                                         response.sendRedirect("/?error=true&message=" + encodedMsg);
                                                 }))
 
