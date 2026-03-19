@@ -18,7 +18,7 @@ spring:
     url: jdbc:mysql://${RDS_HOSTNAME}:${RDS_PORT}/${RDS_DB_NAME}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul
     username: ${RDS_USERNAME}
     password: ${RDS_PASSWORD}
-    
+
   data:
     redis:
       host: ${REDIS_HOST:localhost}
@@ -49,11 +49,13 @@ spring:
             client-authentication-method: client_secret_post
             authorization-grant-type: authorization_code
             redirect-uri: "{baseUrl}/login/oauth2/code/kakao"
-            scope: profile_nickname, account_email
-            client-name: Kakao
+            scope:
+              - profile_nickname
         provider:
+          google:
+            authorization-uri: https://accounts.google.com/o/oauth2/v2/auth?prompt=select_account # 로그인 시마다 항상 로그인창이 뜨도록 설정
           kakao:
-            authorization-uri: https://kauth.kakao.com/oauth/authorize
+            authorization-uri: https://kauth.kakao.com/oauth/authorize?prompt=login
             token-uri: https://kauth.kakao.com/oauth/token
             user-info-uri: https://kapi.kakao.com/v2/user/me
             user-name-attribute: id
@@ -85,7 +87,7 @@ mybatis:
     log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
   type-aliases-package: com.finalproject.coordi
 
-# 6. Doc 관리 
+# 6. Doc 관리
 
 # 7. Swagger (SpringDoc)
 springdoc:
@@ -100,9 +102,9 @@ springdoc:
 external:
   api:
     gemini:
-      endpoint: ${GEMINI_ENDPOINT:https://generativelanguage.googleapis.com} 
+      endpoint: ${GEMINI_ENDPOINT:https://generativelanguage.googleapis.com}
       model: ${GEMINI_MODEL:gemini-3.1-flash-lite-preview}
-      url: ${GEMINI_URL:https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent} 
+      url: ${GEMINI_URL:https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent}
       key: ${GEMINI_API_KEY}
       cache:
         enabled: ${GEMINI_PROMPT_CACHE_ENABLED:true}
@@ -119,7 +121,7 @@ external:
         key-prefix: ${WEATHER_REDIS_KEY_PREFIX:weather:district}
     kakao:
       local:
-        rest-api-key: ${KAKAO_CLIENT_ID}
+        rest-api-key: ${KAKAO_REST_API_KEY}
         coord2region-url: https://dapi.kakao.com/v2/local/geo/coord2regioncode.json
     kakao-map:
       endpoint: ${KAKAO_MAP_ENDPOINT:https://dapi.kakao.com/v2/local/geo/coord2address.json}
