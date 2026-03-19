@@ -9,7 +9,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -26,13 +25,6 @@ public class SecurityConfig {
         private final CustomOAuth2UserService customOAuth2UserService;
         private final OAuth2SuccessHandler oAuth2SuccessHandler;
         private final JwtProvider jwtProvider;
-
-        // 정적 리소스 자원(CSS, JS, 이미지 등)에 대한 요청은 보안 검증 절차를 생략하도록 필터망 적용을 예외 처리(ignoring)합니다.
-        @Bean
-        public WebSecurityCustomizer webSecurityCustomizer() {
-                return (web) -> web.ignoring()
-                        .requestMatchers("/css/**", "/js/**", "/images/**", "/admin/images/**", "/favicon.ico", "/error");
-        }
 
         // 애플리케이션으로 유입되는 HTTP 요청에 대한 세부 보안 필터 체인 규칙을 정의합니다.
         @Bean
@@ -53,18 +45,24 @@ public class SecurityConfig {
 
                                 // URI 경로별로 요구되는 접근 권한(인가) 수준을 지정합니다.
                                 .authorizeHttpRequests(auth -> auth
-                                                // 최고 관리자 전용 경로
-                                                .requestMatchers("/admin/super/**").hasRole("MASTER")
                                                 // 일반 관리자 및 최고 관리자 접근 허용 경로
                                                 .requestMatchers("/admin/**", "/admin-management/**")
                                                 .hasAnyRole("ADMIN", "MASTER")
                                                 // 인증 절차 없이 누구나 자유롭게 접근할 수 있는 퍼블릭 엔드포인트를 지정합니다.
-                                                .requestMatchers("/", "/login/**", "/oauth2/**", "/static/**",
-                                                                "/css/**", "/js/**", "/common/**", 
-                                                                "/main/**",  "/api/main/**")
+                                                .requestMatchers(
+                                                        // 기본 페이지 및 인증
+                                                        "/", "/oauth2/**", "/logout", "/recommend/**",
+                                                        // 도메인별 리소스(js,css,image 등)
+                                                        "/common/**", "/login/**", "/main/**", "/recommendation/**", "/user/**",
+                                                        // 보완
+                                                        "/favicon.ico", "/css/**", "/js/**", "/images/**", "/image/**", "/admin/images/**", "/error",
+                                                        // 공개 API
+                                                        "/api/main/**", "/api/recommendations/**")
                                                 .permitAll()
                                                 // 상기 명시되지 않은 모든 나머지 요청은 로그인된(인증된) 사용자만 허용합니다.
-                                                .anyRequest().authenticated())
+                                                //.anyRequest().authenticated() // 개발완료되면 주석 풀기
+                                                .anyRequest().permitAll()  // [[[[[[개발완료되면 없애야함]]]]]]
+                                                )
 
                                 // 외부 플랫폼(Google, Kakao 등)을 활용한 OAuth2 로그인 프로세스의 세부 흐름을 설정합니다.
                                 .oauth2Login(oauth2 -> oauth2
