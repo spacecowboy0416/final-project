@@ -280,12 +280,14 @@ public final class CoordinationEnums {
         RAIN_BOOTS("rain_boots", "레인부츠"),
         SLIPPER("slipper", "슬리퍼"),
 
-        // 액세서리
+        // Headwear
         BALL_CAP("ball_cap", "볼캡"),
         BUCKET_HAT("bucket_hat", "버킷햇"),
         BEANIE("beanie", "비니"),
         CAMP_CAP("camp_cap", "캠프캡"),
         BERET("beret", "베레모"),
+
+        // 액세서리
         BACKPACK("backpack", "백팩"),
         TOTE_BAG("tote_bag", "토트백"),
         CROSS_BAG("cross_bag", "크로스백"),

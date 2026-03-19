@@ -112,6 +112,7 @@
     <main>
         <h2>추천 파이프라인 뼈대 테스트</h2>
         <p>현재 Gemini 모델: <strong th:text="${geminiModel} ?: 'unknown'">unknown</strong></p>
+        <p style="margin-bottom: 12px; color: #1d4ed8; font-size: 13px;">이 페이지는 현재 TOP1 추천과 슬롯별 검색 쿼리를 기준으로 파이프라인을 확인합니다.</p>
 
         <div class="panel grid-3">
             <div>
@@ -157,7 +158,7 @@
 
             <div class="panel">
                 <h3>3. 제어</h3>
-                <button id="submitBtn" type="button" style="width: 100%; height: 40px; font-weight: bold;">요청
+                <button id="submitBtn" type="button" style="width: 100%; height: 40px; font-weight: bold;">Debug 요청
                     전송</button>
                 <h4 style="margin-top: 10px;">전송 Payload (미리보기)</h4>
                 <pre id="payloadPreview"></pre>
@@ -176,7 +177,7 @@
             <div class="panel">
                 <h4>Search Queries</h4>
                 <ul id="queryList"></ul>
-                <h3>중간 산출물 (Gemini Blueprint & Queries)</h3>
+                <h3>중간 산출물 (Gemini Blueprint & Slot Queries)</h3>
                 <pre id="geminiResponseBox">응답 없음</pre>
             </div>
 
@@ -339,11 +340,11 @@ function renderDebugResult(items) {
         reader.readAsDataURL(file);
     });
 
-    els.submitBtn.addEventListener('click', async () => {
-        els.statusText.textContent = "요청 중...";
-        try {
-            const payload = buildPayload();
-            const response = await fetch('/api/recommendations/debug', {
+        els.submitBtn.addEventListener('click', async () => {
+            els.statusText.textContent = "요청 중...";
+            try {
+                const payload = buildPayload();
+                const response = await fetch('/api/recommendations/debug', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -351,6 +352,7 @@ function renderDebugResult(items) {
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
             const data = await response.json();
             els.geminiResponseBox.textContent = JSON.stringify(data.rawBlueprint, null, 2);
+            renderQueries(data.slotSearchQueries);
             renderCoordination(data.coordination);
             els.statusText.textContent = "완료";
         } catch (error) {
@@ -358,6 +360,18 @@ function renderDebugResult(items) {
             document.getElementById('errorText').textContent = error.message;
         }
     });
+
+    function renderQueries(queries) {
+        els.queryList.innerHTML = '';
+        if (!queries) {
+            return;
+        }
+        Object.entries(queries).forEach(([slotKey, searchKeyword]) => {
+            const li = document.createElement('li');
+            li.textContent = `${slotKey}: ${searchKeyword}`;
+            els.queryList.appendChild(li);
+        });
+    }
 
     els.shoppingDebugBtn.addEventListener('click', async () => {
         const query = els.shoppingDebugQuery.value.trim();

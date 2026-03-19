@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component;
 /**
  * 최종 API 응답 DTO를 조립한다.
  * effectiveProducts(필터 적용 여부와 무관한 최종 상품 맵)에서 슬롯별 TOP1을 선택해
- * 코디 아이템을 만들고, 필요 시 저장까지 수행한다.
+ * 코디 아이템을 만든다. 저장은 표준 추천 경로에서만 별도로 수행한다.
  */
 @Component
 @RequiredArgsConstructor
@@ -32,31 +32,33 @@ public class FinalOutputBuilder {
      * @param effectiveProducts 실제 최종 출력에 사용할 슬롯별 상품 맵
      *                          (FAST: 비필터 searchedProductsBySlot,
      *                           LEGACY: imageFilter 통과 filteredProductsBySlot)
-     * @param slotSearchQueries 슬롯별 검색 쿼리 (DB 저장용)
      */
-    public CoordinationOutputDto buildAndPersist(
-        UserRequestDto request,
-        Long userId,
-        boolean shouldPersist,
-        PayloadDto payload,
+    public CoordinationOutputDto build(
         NormalizedBlueprintDto normalizedBlueprint,
-        Map<CategoryType, List<SearchedProduct>> effectiveProducts,
-        Map<CategoryType, ShoppingSearchQuery> slotSearchQueries
+        Map<CategoryType, List<SearchedProduct>> effectiveProducts
     ) {
         RawBlueprintDto.AiBlueprint aiBlueprint = normalizedBlueprint == null ? null : normalizedBlueprint.aiBlueprint();
         String blueprintId = UUID.randomUUID().toString();
         List<CoordinationItemOutputDto> coordinationItems = buildCoordinationItems(normalizedBlueprint, effectiveProducts);
-        CoordinationOutputDto outputDto = new CoordinationOutputDto(
+        return new CoordinationOutputDto(
             blueprintId,
             aiBlueprint == null ? null : aiBlueprint.tpoType(),
             aiBlueprint == null ? null : aiBlueprint.styleType(),
             aiBlueprint == null ? EMPTY_STYLING_RULE : aiBlueprint.stylingRuleApplied(),
             coordinationItems
         );
+    }
 
-        if (shouldPersist) {
-            finalOutputPersistenceService.save(userId, request, payload, normalizedBlueprint, effectiveProducts, slotSearchQueries);
-        }
+    public CoordinationOutputDto buildAndPersist(
+        UserRequestDto request,
+        Long userId,
+        PayloadDto payload,
+        NormalizedBlueprintDto normalizedBlueprint,
+        Map<CategoryType, List<SearchedProduct>> effectiveProducts,
+        Map<CategoryType, ShoppingSearchQuery> slotSearchQueries
+    ) {
+        CoordinationOutputDto outputDto = build(normalizedBlueprint, effectiveProducts);
+        finalOutputPersistenceService.save(userId, request, payload, normalizedBlueprint, effectiveProducts, slotSearchQueries);
         return outputDto;
     }
 

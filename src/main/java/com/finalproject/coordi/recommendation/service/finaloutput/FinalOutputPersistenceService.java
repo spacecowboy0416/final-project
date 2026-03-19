@@ -56,10 +56,10 @@ public class FinalOutputPersistenceService {
             .productOption(PRODUCT_OPTION_SEARCH_TOP1)
             .tpoType(normalizedBlueprint.aiBlueprint() == null || normalizedBlueprint.aiBlueprint().tpoType() == null
                 ? null
-                : normalizedBlueprint.aiBlueprint().tpoType().code())
+                : normalizedBlueprint.aiBlueprint().tpoType().getCode())
             .styleType(normalizedBlueprint.aiBlueprint() == null || normalizedBlueprint.aiBlueprint().styleType() == null
                 ? null
-                : normalizedBlueprint.aiBlueprint().styleType().code())
+                : normalizedBlueprint.aiBlueprint().styleType().getCode())
             .isSaved(true)
             .aiBlueprint(toJson(normalizedBlueprint.rawBlueprint()))
             .aiExplanation(payload == null ? "" : payload.userPrompt())
@@ -75,7 +75,7 @@ public class FinalOutputPersistenceService {
             Long productId = upsertTop1Product(categoryType, normalizedBlueprint, effectiveProducts);
             RecommendationItemDto recommendationItemDto = RecommendationItemDto.builder()
                 .recId(recId)
-                .slotKey(categoryType.code())
+                .slotKey(categoryType.getCode())
                 .sourceType(SOURCE_TYPE_PRODUCT)
                 .productId(productId)
                 .searchQuery(extractSearchQuery(categoryType, slotSearchQueries))
@@ -100,7 +100,7 @@ public class FinalOutputPersistenceService {
         }
 
         ProductCategoryCode productCategoryCode = ProductCategoryCode.fromSlotType(categoryType);
-        Long categoryId = recommendationMapper.findCategoryIdByCode(productCategoryCode.code());
+        Long categoryId = recommendationMapper.findCategoryIdByCode(productCategoryCode.getCode());
         if (categoryId == null) {
             return null;
         }
@@ -123,7 +123,7 @@ public class FinalOutputPersistenceService {
             .categoryId(categoryId)
             .gender(normalizedBlueprint.aiBlueprint() == null || normalizedBlueprint.aiBlueprint().gender() == null
                 ? null
-                : normalizedBlueprint.aiBlueprint().gender().code())
+                : normalizedBlueprint.aiBlueprint().gender().getCode())
             .name(top1Product.productName())
             .brand(top1Product.brandName())
             .price(top1Product.salePrice())
@@ -131,16 +131,16 @@ public class FinalOutputPersistenceService {
             .link(top1Product.productDetailUrl())
             .color(itemInfo == null || itemInfo.attributes() == null || itemInfo.attributes().color() == null
                 ? null
-                : itemInfo.attributes().color().code())
+                : itemInfo.attributes().color().getCode())
             .material(itemInfo == null || itemInfo.attributes() == null || itemInfo.attributes().material() == null
                 ? null
-                : itemInfo.attributes().material().code())
+                : itemInfo.attributes().material().getCode())
             .fit(itemInfo == null || itemInfo.attributes() == null || itemInfo.attributes().fit() == null
                 ? null
-                : itemInfo.attributes().fit().code())
+                : itemInfo.attributes().fit().getCode())
             .style(itemInfo == null || itemInfo.attributes() == null || itemInfo.attributes().style() == null
                 ? null
-                : itemInfo.attributes().style().code())
+                : itemInfo.attributes().style().getCode())
             .tempMin(tempMin)
             .tempMax(tempMax)
             .build();
@@ -181,7 +181,7 @@ public class FinalOutputPersistenceService {
         if (itemInfo == null || itemInfo.priority() == null) {
             return null;
         }
-        return itemInfo.priority().code();
+        return itemInfo.priority().getCode();
     }
 
     private String extractReason(CategoryType categoryType, NormalizedBlueprintDto normalizedBlueprint) {
@@ -191,7 +191,7 @@ public class FinalOutputPersistenceService {
 
     private String buildScoringDetailsJson(CategoryType categoryType, Long productId) {
         Map<String, Object> scoringDetails = new LinkedHashMap<>();
-        scoringDetails.put("slotKey", categoryType.code());
+        scoringDetails.put("slotKey", categoryType.getCode());
         scoringDetails.put("selectionStage", SELECTION_STAGE_FINAL_OUTPUT_TOP1);
         scoringDetails.put("productResolved", productId != null);
         return toJson(scoringDetails);

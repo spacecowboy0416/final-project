@@ -1,13 +1,12 @@
 package com.finalproject.coordi.recommendation.service.productSearch;
 
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.CategoryType;
-import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.GenderType;
-import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.StyleType;
-import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.TpoType;
-import com.finalproject.coordi.recommendation.domain.enums.ShoppingQueryEnums.QueryTokenType;
 import com.finalproject.coordi.recommendation.dto.api.RawBlueprintDto;
 import com.finalproject.coordi.recommendation.dto.internal.NormalizedBlueprintDto;
 import com.finalproject.coordi.recommendation.infra.navershopping.NaverShoppingSchemaProvider;
+import com.finalproject.coordi.recommendation.infra.navershopping.policy.NaverShoppingQueryPolicy;
+import com.finalproject.coordi.recommendation.infra.navershopping.policy.NaverShoppingQueryPolicy.QueryTokenType;
+import com.finalproject.coordi.recommendation.infra.navershopping.policy.NaverShoppingQueryPolicy.SearchQueryContext;
 import com.finalproject.coordi.recommendation.service.productSearch.ShoppingPort.ShoppingSearchQuery;
 
 import java.util.LinkedHashSet;
@@ -21,6 +20,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class SearchQueryExtractor {
     private final NaverShoppingSchemaProvider schemaProvider;
+    private final NaverShoppingQueryPolicy queryPolicy;
 
     public Map<CategoryType, ShoppingSearchQuery> extract(NormalizedBlueprintDto normalizedBlueprint) {
         Map<CategoryType, ShoppingSearchQuery> queriesBySlot = new EnumMap<>(CategoryType.class);
@@ -28,7 +28,7 @@ public class SearchQueryExtractor {
             return queriesBySlot;
         }
 
-        GenderType gender = resolveGender(normalizedBlueprint);
+        SearchQueryContext queryContext = buildQueryContext(normalizedBlueprint);
         normalizedBlueprint.itemsBySlot().forEach((categoryType, item) -> {
             if (item == null) {
                 return;
@@ -37,9 +37,7 @@ public class SearchQueryExtractor {
             String searchQuery = buildSearchQuery(
                 categoryType,
                 item,
-                gender,
-                normalizedBlueprint.aiBlueprint().styleType(),
-                normalizedBlueprint.aiBlueprint().tpoType()
+                queryContext
             );
             if (searchQuery == null || searchQuery.isBlank()) {
                 return;
@@ -56,13 +54,11 @@ public class SearchQueryExtractor {
     private String buildSearchQuery(
         CategoryType slotKey,
         RawBlueprintDto.ItemInfo item,
-        GenderType gender,
-        StyleType styleType,
-        TpoType tpoType
+        SearchQueryContext queryContext
     ) {
         Set<String> mappedTokens = new LinkedHashSet<>();
-        for (QueryTokenType tokenType : schemaProvider.tokenOrder()) {
-            addToken(mappedTokens, extractToken(slotKey, tokenType, item, gender, styleType, tpoType));
+        for (QueryTokenType tokenType : queryPolicy.tokenOrder()) {
+            addToken(mappedTokens, extractToken(slotKey, tokenType, item, queryContext));
         }
         return String.join(" ", mappedTokens);
     }
@@ -71,14 +67,12 @@ public class SearchQueryExtractor {
         CategoryType slotKey,
         QueryTokenType tokenType,
         RawBlueprintDto.ItemInfo item,
-        GenderType gender,
-        StyleType styleType,
-        TpoType tpoType
+        SearchQueryContext queryContext
     ) {
         if (tokenType == null) {
             return null;
         }
-        return tokenType.extractToken(slotKey, item, gender, styleType, tpoType);
+        return queryPolicy.extractToken(tokenType, slotKey, item, queryContext);
     }
 
     private void addToken(Set<String> tokens, String value) {
@@ -88,10 +82,15 @@ public class SearchQueryExtractor {
         tokens.add(value);
     }
 
-    private GenderType resolveGender(NormalizedBlueprintDto normalizedBlueprint) {
+    private SearchQueryContext buildQueryContext(NormalizedBlueprintDto normalizedBlueprint) {
         if (normalizedBlueprint == null || normalizedBlueprint.aiBlueprint() == null) {
-            return null;
+            return new SearchQueryContext(null, null, null);
         }
-        return normalizedBlueprint.aiBlueprint().gender();
+        RawBlueprintDto.AiBlueprint aiBlueprint = normalizedBlueprint.aiBlueprint();
+        return new SearchQueryContext(
+            aiBlueprint.gender(),
+            aiBlueprint.styleType(),
+            aiBlueprint.tpoType()
+        );
     }
 }

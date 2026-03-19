@@ -22,6 +22,7 @@ public class BlueprintStaticValidator {
             throw RecommendationException.blueprintTypeMismatch();
         }
 
+        validateSlot(coordination.headwear(), CategoryType.HEADWEAR);
         validateSlot(coordination.tops(), CategoryType.TOPS);
         validateSlot(coordination.bottoms(), CategoryType.BOTTOMS);
         validateSlot(coordination.outerwear(), CategoryType.OUTERWEAR);

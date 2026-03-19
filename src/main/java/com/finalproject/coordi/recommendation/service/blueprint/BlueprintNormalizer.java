@@ -25,6 +25,7 @@ public class BlueprintNormalizer {
 
     private List<RawBlueprintDto.ItemInfo> itemInfos(RawBlueprintDto.Coordination coordination) {
         return List.of(
+            coordination.headwear(),
             coordination.tops(),
             coordination.bottoms(),
             coordination.outerwear(),

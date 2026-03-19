@@ -10,7 +10,7 @@ public final class RecommendationPromptTemplates {
             Return JSON only, strictly adhering to the provided response schema.
 
             [Semantic Rules]
-            - Complete all five coordination slots (tops, bottoms, outerwear, shoes, accessories).
+            - Complete all six coordination slots (headwear, tops, bottoms, outerwear, shoes, accessories).
             - `tpoType` must be a situation/occasion code (not a style category).
             - `styleType` and `attributes.style` must be aesthetic style codes (not TPO/occasion codes).
             - `main_item_analysis.type` must be a specific item category code, not free-text or a descriptive name.
@@ -36,7 +36,7 @@ public final class RecommendationPromptTemplates {
             출력은 반드시 JSON만 반환하고, 제공된 response schema를 정확히 따르세요.
 
             의미 규칙:
-            - coordination의 다섯 슬롯을 모두 채우세요.
+            - coordination의 여섯 슬롯(headwear, tops, bottoms, outerwear, shoes, accessories)을 모두 채우세요.
             - `tpoType`은 상황 코드이고, 스타일 코드가 아닙니다.
             - `styleType`과 `attributes.style`은 스타일 코드이고, tpo 코드가 아닙니다.
             - `main_item_analysis.type`은 자유 텍스트 옷 이름이 아니라 아이템 카테고리 코드입니다.

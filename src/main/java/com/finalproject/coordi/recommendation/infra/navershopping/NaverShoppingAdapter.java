@@ -3,6 +3,7 @@ package com.finalproject.coordi.recommendation.infra.navershopping;
 import com.finalproject.coordi.exception.recommendation.RecommendationException;
 import com.finalproject.coordi.recommendation.infra.navershopping.NaverShoppingSchemaProvider.NaverShoppingItemResponse;
 import com.finalproject.coordi.recommendation.infra.navershopping.NaverShoppingSchemaProvider.NaverShoppingSearchResponse;
+import com.finalproject.coordi.recommendation.infra.navershopping.policy.NaverShoppingQueryPolicy;
 import com.finalproject.coordi.recommendation.service.productSearch.ShoppingPort;
 import com.finalproject.coordi.recommendation.service.productSearch.ShoppingPort.SearchedProduct;
 import com.finalproject.coordi.recommendation.service.productSearch.ShoppingPort.ShoppingSearchQuery;
@@ -35,6 +36,7 @@ public class NaverShoppingAdapter implements ShoppingPort {
 
 
     private final NaverShoppingProperties shoppingProperties;
+    private final NaverShoppingQueryPolicy queryPolicy;
     private final NaverShoppingSchemaProvider schemaProvider;
     @Qualifier("naverShoppingRestClient")
     private final RestClient naverShoppingRestClient;
@@ -47,8 +49,8 @@ public class NaverShoppingAdapter implements ShoppingPort {
         URI requestUri = UriComponentsBuilder.fromUriString(shoppingProperties.getEndpoint())
             .queryParam("query", query.searchKeyword())
             .queryParam("display", query.resultLimit())
-            .queryParam("start", schemaProvider.start())
-            .queryParam("sort", schemaProvider.sort().apiValue())
+            .queryParam("start", queryPolicy.start())
+            .queryParam("sort", queryPolicy.sort().apiValue())
             .encode()
             .build()
             .toUri();

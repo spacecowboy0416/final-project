@@ -99,13 +99,14 @@ public class GeminiSchemaProvider {
                         ),
                         "coordination", objectSchema(
                             Map.of(
+                                "headwear", coordinationSlotSchema(),
                                 "tops", coordinationSlotSchema(),
                                 "bottoms", coordinationSlotSchema(),
                                 "outerwear", coordinationSlotSchema(),
                                 "shoes", coordinationSlotSchema(),
                                 "accessories", coordinationSlotSchema()
                             ),
-                            List.of("tops", "bottoms", "outerwear", "shoes", "accessories")
+                            List.of("headwear", "tops", "bottoms", "outerwear", "shoes", "accessories")
                         ),
                         "styling_rule_applied", stringSchema(1L, null)
                     ),
@@ -187,7 +188,7 @@ public class GeminiSchemaProvider {
 
     private Schema enumSchema(Class<? extends CodedEnum> enumType) {
         List<String> codes = Arrays.stream(enumType.getEnumConstants())
-            .map(CodedEnum::code)
+            .map(CodedEnum::getCode)
             .collect(Collectors.toList());
         return Schema.builder()
             .type(new Type(Type.Known.STRING))

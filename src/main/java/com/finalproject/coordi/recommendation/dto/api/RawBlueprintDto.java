@@ -59,6 +59,8 @@ public record RawBlueprintDto(
 
     public record Coordination(
         @Valid @NotNull
+        ItemInfo headwear,
+        @Valid @NotNull
         ItemInfo tops,
         @Valid @NotNull
         ItemInfo bottoms,
