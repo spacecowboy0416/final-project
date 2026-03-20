@@ -2,8 +2,10 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 관리자 페이지: 사용자 관리용 데이터베이스 쿼리 -->
 <mapper namespace="com.finalproject.coordi.admin.user.mapper.UserMapperInter">
 
+    <!-- 사용자 목록 조회 (필터링 및 정렬 기능 포함) -->
     <select id="findAll" resultType="com.finalproject.coordi.admin.user.domain.User">
         SELECT
             user_id, provider, provider_user_id, email, nickname, profile_image_url,
@@ -31,6 +33,7 @@
         </choose>
     </select>
 
+    <!-- 특정 사용자 정보 조회 -->
     <select id="findById" parameterType="long" resultType="com.finalproject.coordi.admin.user.domain.User">
         SELECT
             user_id, provider, provider_user_id, email, nickname, profile_image_url,
@@ -41,12 +44,14 @@
             user_id = #{userId}
     </select>
 
+    <!-- 사용자 상태(활성/비활성) 업데이트 -->
     <update id="updateUserStatus">
         UPDATE users
         SET status = #{status}
         WHERE user_id = #{userId}
     </update>
 
+    <!-- 사용자 정보(권한/상태) 수정 -->
     <update id="updateUser">
         UPDATE users
         <set>
