@@ -27,6 +27,7 @@ public class UsersService {
         return userMapper.findById(userId);
     }
 
+    // 소셜 로그인 정보로 사용자 정보 조회
     public UsersDto findByProviderAndProviderUserId(String provider, String providerUserId) {
         return userMapper.findByProviderAndProviderUserId(provider, providerUserId);
     }
