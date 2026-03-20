@@ -14,7 +14,7 @@
 <main class="board-page board-editor-page">
 
     <section class="board-editor-hero">
-        <div>
+        <div class="board-editor-hero__intro">
             <p class="board-editor-hero__eyebrow">Board Write</p>
             <h1>나만의 코디 공유하기</h1>
             <p>저장한 코디를 불러오고, 설명을 더해 게시글로 정리해보세요.</p>
@@ -22,46 +22,54 @@
     </section>
 
     <section class="board-editor-layout">
-        <div class="board-editor-main">
-            <section class="board-editor-card">
-                <div class="board-editor-card__header">
-                    <div>
-                        <h2>게시글 정보</h2>
-                        <p>제목과 내용을 작성해 게시글을 완성하세요.</p>
-                    </div>
+        <!-- 왼쪽: 작성 카드 -->
+        <section class="board-editor-card board-editor-main-card">
+            <div class="board-editor-card__header">
+                <div>
+                    <h2>게시글 작성</h2>
+                    <p>제목과 내용을 입력하고, 연결할 코디를 선택해 게시글을 완성하세요.</p>
+                </div>
+            </div>
+
+            <input type="hidden" id="recId">
+
+            <div class="board-form-grid">
+                <div class="board-field">
+                    <label for="title">제목</label>
+                    <input type="text" id="title" maxlength="120" placeholder="예: 비 오는 날 출근 코디">
                 </div>
 
-                <input type="hidden" id="recId">
+                <div class="board-field">
+                    <label for="content">내용</label>
+                    <textarea id="content" placeholder="코디를 선택한 이유나 스타일 포인트를 적어보세요."></textarea>
+                </div>
+            </div>
 
-                <div class="board-form-grid">
-                    <div class="board-field">
-                        <label for="title">제목</label>
-                        <input type="text" id="title" maxlength="120" placeholder="예: 비 오는 날 출근 코디">
-                    </div>
-
-                    <div class="board-field">
-                        <label for="content">내용</label>
-                        <textarea id="content" placeholder="코디를 선택한 이유나 스타일 포인트를 적어보세요."></textarea>
-                    </div>
+            <div class="board-editor-coordi-picker">
+                <div class="board-editor-coordi-picker__text">
+                    <h3>저장 코디 불러오기</h3>
+                    <p>게시글에 연결할 코디를 선택하면 오른쪽 미리보기 카드에서 바로 확인할 수 있어요.</p>
                 </div>
 
-                <div class="board-form-actions">
-                    <button type="button" class="board-secondary-btn" id="cancelBtn">취소</button>
-                    <button type="button" class="board-primary-btn" id="createBtn">등록</button>
-                </div>
-            </section>
-        </div>
+                <button type="button" class="board-dark-btn" id="loadCoordiBtn">
+                    저장 코디 불러오기
+                </button>
+            </div>
 
+            <div class="board-form-actions">
+                <button type="button" class="board-ghost-btn" id="cancelBtn">취소</button>
+                <button type="button" class="board-dark-btn" id="createBtn">등록</button>
+            </div>
+        </section>
+
+        <!-- 오른쪽: 미리보기 카드 -->
         <aside class="board-editor-side">
             <section class="board-editor-card board-selected-coordi-card">
                 <div class="board-editor-card__header">
                     <div>
-                        <h2>선택한 코디</h2>
-                        <p>게시글에 연결될 저장 코디입니다.</p>
+                        <h2>선택한 코디 미리보기</h2>
+                        <p>불러온 코디가 이 영역에 표시됩니다.</p>
                     </div>
-                    <button type="button" class="board-secondary-btn" id="loadCoordiBtn">
-                        저장 코디 불러오기
-                    </button>
                 </div>
 
                 <div id="selectedCoordiPreview" class="board-selected-coordi__empty">
@@ -75,13 +83,15 @@
 
 <div id="coordiModal" class="board-modal hidden">
     <div class="board-modal__backdrop"></div>
+
     <div class="board-modal__content">
         <div class="board-modal__header">
             <div>
                 <h3>저장한 코디 선택</h3>
                 <p>게시글과 연결할 코디를 골라주세요.</p>
             </div>
-            <button type="button" class="board-secondary-btn" id="closeCoordiModalBtn">닫기</button>
+
+            <button type="button" class="board-ghost-btn" id="closeCoordiModalBtn">닫기</button>
         </div>
 
         <div id="coordiList" class="board-coordi-list"></div>
@@ -90,6 +100,7 @@
 
 <footer th:replace="~{layout/common :: footerFragment}"></footer>
 
+<script th:src="@{/board/js/board-common.js}"></script>
 <script th:src="@{/board/js/board-write.js}"></script>
 </body>
 </html>

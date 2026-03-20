@@ -13,33 +13,42 @@
 
 <main class="board-page board-detail-page">
 
-    <section id="postDetail" class="board-detail-shell"></section>
-
-    <section class="board-detail-block">
-        <div class="board-detail-block__header">
-            <div>
-                <p class="board-detail-block__eyebrow">Coordi Items</p>
-                <h3>코디 구성</h3>
-                <p>게시글에 연결된 코디 아이템을 확인해보세요.</p>
-            </div>
-        </div>
-        <div id="coordiItems" class="board-item-list"></div>
+    <!-- 상단 바깥 액션 -->
+    <section class="board-detail-top-actions">
+        <a href="/board" class="board-detail-back-link">← 목록으로</a>
+        <div id="postTopButtons" class="board-detail-top-buttons"></div>
     </section>
 
-    <section class="board-detail-block">
+    <!-- 제목 + 내용 카드 -->
+    <section id="postHeaderCard" class="board-detail-shell"></section>
+
+    <!-- 통합 카드 -->
+    <section id="postUnifiedCard" class="board-detail-shell"></section>
+
+    <!-- 댓글 카드 -->
+    <section class="board-detail-block board-detail-comment-card">
         <div class="board-detail-block__header">
             <div>
                 <p class="board-detail-block__eyebrow">Comments</p>
                 <h3>댓글</h3>
-                <p>다른 사용자와 자유롭게 코디 의견을 나눠보세요.</p>
             </div>
+            <span id="commentCountText" class="board-detail-inline-count">0개</span>
         </div>
 
         <div class="board-comment-compose">
-            <label for="commentContent">댓글 작성</label>
-            <textarea id="commentContent" maxlength="500" placeholder="코디에 대한 의견을 남겨보세요."></textarea>
+            <div class="board-comment-compose__top">
+                <label for="commentContent">댓글 작성</label>
+                <span id="commentLengthText" class="board-comment-compose__length">0 / 500</span>
+            </div>
+
+            <textarea
+                id="commentContent"
+                maxlength="500"
+                placeholder="코디에 대한 의견을 남겨보세요."
+            ></textarea>
+
             <div class="board-comment-compose__footer">
-                <button type="button" class="board-primary-btn" id="commentSubmitBtn">댓글 등록</button>
+                <button type="button" class="board-dark-btn" id="commentSubmitBtn">댓글 등록</button>
             </div>
         </div>
 
@@ -50,6 +59,7 @@
 
 <footer th:replace="~{layout/common :: footerFragment}"></footer>
 
+<script th:src="@{/board/js/board-common.js}"></script>
 <script th:src="@{/board/js/board-detail.js}"></script>
 </body>
 </html>

@@ -14,55 +14,63 @@
 <main class="board-page board-editor-page">
 
     <section class="board-editor-hero">
-        <div>
+        <div class="board-editor-hero__intro">
             <p class="board-editor-hero__eyebrow">Board Edit</p>
             <h1>게시글 다듬기</h1>
-            <p>제목, 내용, 공개 여부를 수정해 게시글을 정리할 수 있어요.</p>
+            <p>제목과 내용을 수정하고, 연결된 코디를 함께 확인해보세요.</p>
         </div>
     </section>
 
-    <section class="board-editor-layout board-editor-layout--single">
-        <div class="board-editor-main">
-            <section class="board-editor-card">
+    <section class="board-editor-layout">
+        <!-- 왼쪽: 수정 카드 -->
+        <section class="board-editor-card board-editor-main-card">
+            <div class="board-editor-card__header">
+                <div>
+                    <h2>게시글 수정</h2>
+                    <p>작성한 게시글 내용을 다시 정리해보세요.</p>
+                </div>
+            </div>
+
+            <div class="board-form-grid">
+                <div class="board-field">
+                    <label for="title">제목</label>
+                    <input type="text" id="title" maxlength="120" placeholder="제목을 입력하세요">
+                </div>
+
+                <div class="board-field">
+                    <label for="content">내용</label>
+                    <textarea id="content" placeholder="내용을 입력하세요"></textarea>
+                </div>
+            </div>
+
+            <div class="board-form-actions">
+                <button type="button" class="board-ghost-btn" id="cancelBtn">취소</button>
+                <button type="button" class="board-dark-btn" id="updateBtn">수정</button>
+            </div>
+        </section>
+
+        <!-- 오른쪽: 현재 연결된 코디 미리보기 -->
+        <aside class="board-editor-side">
+            <section class="board-editor-card board-selected-coordi-card">
                 <div class="board-editor-card__header">
                     <div>
-                        <h2>게시글 수정</h2>
-                        <p>작성한 게시글 내용을 다시 정리해보세요.</p>
+                        <h2>현재 연결된 코디</h2>
+                        <p>이 게시글에 연결된 코디를 미리 확인할 수 있어요.</p>
                     </div>
                 </div>
 
-                <div class="board-form-grid">
-                    <div class="board-field">
-                        <label for="title">제목</label>
-                        <input type="text" id="title" maxlength="120" placeholder="제목을 입력하세요">
-                    </div>
-
-                    <div class="board-field">
-                        <label for="content">내용</label>
-                        <textarea id="content" placeholder="내용을 입력하세요"></textarea>
-                    </div>
-
-                    <div class="board-field">
-                        <label for="isPublic">공개 여부</label>
-                        <select id="isPublic">
-                            <option value="true">공개</option>
-                            <option value="false">비공개</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="board-form-actions">
-                    <button type="button" class="board-secondary-btn" id="cancelBtn">취소</button>
-                    <button type="button" class="board-primary-btn" id="updateBtn">수정</button>
+                <div id="selectedCoordiPreview" class="board-selected-coordi__empty">
+                    연결된 코디 정보를 불러오는 중입니다.
                 </div>
             </section>
-        </div>
+        </aside>
     </section>
 
 </main>
 
 <footer th:replace="~{layout/common :: footerFragment}"></footer>
 
+<script th:src="@{/board/js/board-common.js}"></script>
 <script th:src="@{/board/js/board-edit.js}"></script>
 </body>
 </html>

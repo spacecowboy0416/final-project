@@ -13,82 +13,77 @@
 
 <main class="board-list-page">
 
-    <!-- 상단 소개 영역 -->
+    <!-- 상단 소개 + 버튼 + 필터 통합 카드 -->
     <section class="board-hero">
-        <div class="board-hero__text">
-            <p class="board-hero__eyebrow">Fashion Community</p>
-            <h1 class="board-hero__title">코디 공유 게시판</h1>
-            <p class="board-hero__desc">
-                날씨와 스타일, 상황에 맞는 코디를 피드처럼 둘러보고
-                저장한 코디를 게시글로 자연스럽게 공유해보세요.
-            </p>
+        <div class="board-hero__top">
+            <div class="board-hero__text">
+                <p class="board-hero__eyebrow">Fashion Community</p>
+                <h1 class="board-hero__title">코디 공유 게시판</h1>
+            </div>
+
+            <a href="/board/write" class="board-dark-btn board-write-btn">코디 공유하기</a>
         </div>
 
-        <div class="board-hero__action">
-            <a href="/board/write" class="board-write-btn">코디 공유하기</a>
-        </div>
-    </section>
+        <p class="board-hero__desc">
+            날씨와 스타일, 상황에 맞는 코디를 피드처럼 둘러보고
+            저장한 코디를 게시글로 자연스럽게 공유해보세요.
+        </p>
 
-    <!-- 필터 영역 -->
-    <section class="board-filter-panel">
-        <div class="board-filter-panel__header">
-            <div>
-                <h2>필터</h2>
-                <p>태그로 원하는 코디만 빠르게 골라볼 수 있어요.</p>
-            </div>
-        </div>
+        <div class="board-hero__bottom">
+            <div class="board-filter-panel">
+                <div class="board-filter-inline">
+                    <span>날씨</span>
+                    <select id="weather">
+                        <option value="">전체</option>
+                        <option value="clear">맑음</option>
+                        <option value="partly_cloudy">구름 조금</option>
+                        <option value="cloudy">흐림</option>
+                        <option value="windy">바람 많음</option>
+                        <option value="rain">비</option>
+                        <option value="cloudy_rain">흐리고 비</option>
+                        <option value="thunderstorm">뇌우</option>
+                        <option value="thunderstorm_rain">뇌우와 비</option>
+                        <option value="snow">눈</option>
+                        <option value="cloudy_snow">흐리고 눈</option>
+                        <option value="sleet">진눈깨비</option>
+                        <option value="hail">우박</option>
+                    </select>
+                </div>
 
-        <div class="board-filter-panel__body">
-            <div class="board-filter-group">
-                <label for="weather">날씨</label>
-                <select id="weather">
-                    <option value="">전체</option>
-                    <option value="clear">맑음</option>
-                    <option value="partly_cloudy">구름 조금</option>
-                    <option value="cloudy">흐림</option>
-                    <option value="windy">바람 많음</option>
-                    <option value="rain">비</option>
-                    <option value="cloudy_rain">흐리고 비</option>
-                    <option value="thunderstorm">뇌우</option>
-                    <option value="thunderstorm_rain">뇌우와 비</option>
-                    <option value="snow">눈</option>
-                    <option value="cloudy_snow">흐리고 눈</option>
-                    <option value="sleet">진눈깨비</option>
-                    <option value="hail">우박</option>
-                </select>
-            </div>
+                <div class="board-filter-inline">
+                    <span>스타일</span>
+						<select id="style">
+						    <option value="">전체</option>
+						    <option value="minimal">미니멀</option>
+						    <option value="casual">캐주얼</option>
+						    <option value="street">스트릿</option>
+						    <option value="classic">클래식</option>
+						    <option value="lovely">러블리</option>
+						    <option value="amikaji">아메카지</option>
+						    <option value="gorpcore">고프코어</option>
+						    <option value="chic">시크</option>
+						</select>
+                </div>
 
-            <div class="board-filter-group">
-                <label for="style">스타일</label>
-                <select id="style">
-                    <option value="">전체</option>
-                    <option value="minimal">minimal</option>
-                    <option value="comfortable">comfortable</option>
-                    <option value="street">street</option>
-                    <option value="sporty">sporty</option>
-                    <option value="classic">classic</option>
-                    <option value="glam">glam</option>
-                </select>
-            </div>
+                <div class="board-filter-inline">
+                    <span>TPO</span>
+						<select id="tpo">
+						    <option value="">전체</option>
+						    <option value="daily">일상</option>
+						    <option value="office">출근</option>
+						    <option value="date">데이트</option>
+						    <option value="wedding">하객</option>
+						    <option value="formal">격식</option>
+						    <option value="exercise">운동</option>
+						    <option value="travel">여행</option>
+						    <option value="camping">캠핑</option>
+						</select>
+                </div>
 
-            <div class="board-filter-group">
-                <label for="tpo">TPO</label>
-                <select id="tpo">
-                    <option value="">전체</option>
-                    <option value="date">date</option>
-                    <option value="work">work</option>
-                    <option value="casual">casual</option>
-                    <option value="exercise">exercise</option>
-                    <option value="travel">travel</option>
-                    <option value="formal">formal</option>
-                    <option value="funeral">funeral</option>
-                    <option value="wedding">wedding</option>
-                </select>
-            </div>
-
-            <div class="board-filter-actions">
-                <button type="button" class="board-primary-btn" id="searchBtn">검색</button>
-                <button type="button" class="board-secondary-btn" id="resetBtn">초기화</button>
+                <div class="board-filter-actions">
+                    <button type="button" class="board-dark-btn board-search-btn" id="searchBtn">검색</button>
+                    <button type="button" class="board-ghost-btn board-reset-btn" id="resetBtn">초기화</button>
+                </div>
             </div>
         </div>
     </section>
@@ -110,6 +105,7 @@
 
 <footer th:replace="~{layout/common :: footerFragment}"></footer>
 
+<script th:src="@{/board/js/board-common.js}"></script>
 <script th:src="@{/board/js/board-list.js}"></script>
 </body>
 </html>

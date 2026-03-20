@@ -16,11 +16,11 @@
     --line: #e7eaf0;
     --line-strong: #d9dee8;
 
-    --primary: #5b5ce6;
-    --primary-dark: #4547d6;
-    --primary-soft: #eef0ff;
+    --primary:#4b5563;
+    --primary-dark: #000000;
+    --primary-soft: #f3f4f6;
 
-    --danger: #e5484d;
+    --danger: #ef4444;
     --danger-soft: #fff1f2;
 
     --shadow-sm: 0 8px 20px rgba(15, 23, 42, 0.05);
@@ -39,7 +39,7 @@ body {
     padding: 0;
     font-family: "Pretendard", "Noto Sans KR", Arial, sans-serif;
     background:
-        radial-gradient(circle at top left, rgba(91, 92, 230, 0.06), transparent 18%),
+        radial-gradient(circle at top left, rgba(17, 17, 17, 0.04), transparent 18%),
         radial-gradient(circle at top right, rgba(17, 17, 17, 0.03), transparent 18%),
         var(--bg);
     color: var(--text);
@@ -84,7 +84,7 @@ button {
     margin: 0 0 10px;
     font-size: 12px;
     font-weight: 800;
-    color: var(--primary);
+    color: var(--text-muted);
     letter-spacing: 0.12em;
     text-transform: uppercase;
 }
@@ -107,61 +107,107 @@ button {
     font-size: 15px;
 }
 
-.board-primary-btn,
-.board-secondary-btn,
+/* ===== 공통 버튼 베이스 ===== */
+.board-dark-btn,
 .board-danger-btn,
 .board-ghost-btn {
-    min-height: 48px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
     padding: 0 18px;
-    border-radius: 999px;
+    border-radius: 16px;
+    font-size: 13px;
     font-weight: 700;
-    transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease, border-color 0.16s ease, color 0.16s ease;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition:
+        transform 0.18s ease,
+        background 0.18s ease,
+        box-shadow 0.18s ease,
+        border-color 0.18s ease,
+        color 0.18s ease;
+    backdrop-filter: blur(10px);
 }
 
-.board-primary-btn {
-    border: none;
-    background: var(--text);
-    color: #fff;
-    box-shadow: 0 10px 24px rgba(17, 17, 17, 0.16);
+/* ===== 검정 버튼 ===== */
+.board-dark-btn {
+    background: linear-gradient(180deg, rgba(58, 58, 58, 0.92) 0%, rgba(34, 34, 34, 0.96) 100%);
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        0 8px 20px rgba(0, 0, 0, 0.16);
 }
 
-.board-primary-btn:hover {
+.board-dark-btn:hover {
     transform: translateY(-1px);
-    box-shadow: 0 14px 28px rgba(17, 17, 17, 0.2);
+    background: linear-gradient(180deg, rgba(66, 66, 66, 0.95) 0%, rgba(38, 38, 38, 0.98) 100%);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.1),
+        0 12px 24px rgba(0, 0, 0, 0.2);
 }
 
-.board-secondary-btn {
-    border: 1px solid var(--line-strong);
-    background: #fff;
-    color: var(--text);
+.board-dark-btn:active {
+    transform: translateY(0);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.06),
+        0 4px 10px rgba(0, 0, 0, 0.16);
 }
 
-.board-secondary-btn:hover {
-    transform: translateY(-1px);
-    border-color: #cfd5df;
-}
-
-.board-danger-btn {
-    border: none;
-    background: var(--danger);
-    color: #fff;
-    box-shadow: 0 10px 24px rgba(229, 72, 77, 0.16);
-}
-
-.board-danger-btn:hover {
-    transform: translateY(-1px);
-}
-
+/* ===== 흰색 버튼 ===== */
 .board-ghost-btn {
-    border: 1px solid var(--line);
-    background: var(--surface-soft);
+    background: rgba(255, 255, 255, 0.82);
     color: var(--text);
+    border-color: rgba(70, 78, 92, 0.12);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.58),
+        0 4px 12px rgba(15, 23, 42, 0.04);
 }
 
 .board-ghost-btn:hover {
     transform: translateY(-1px);
+    background: rgba(255, 255, 255, 0.94);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.64),
+        0 8px 18px rgba(15, 23, 42, 0.06);
 }
 
+.board-ghost-btn:active {
+    transform: translateY(0);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.5),
+        0 4px 10px rgba(15, 23, 42, 0.04);
+}
+
+/* ===== 삭제 버튼 ===== */
+.board-danger-btn {
+    background: linear-gradient(180deg, #de6b6b 0%, #c95656 100%);
+    color: #fff;
+    border-color: rgba(201, 86, 86, 0.28);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.1),
+        0 8px 20px rgba(201, 86, 86, 0.14);
+}
+
+.board-danger-btn:hover {
+    transform: translateY(-1px);
+    background: linear-gradient(180deg, #e07a7a 0%, #cf5f5f 100%);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.12),
+        0 12px 24px rgba(201, 86, 86, 0.18);
+}
+
+.board-danger-btn:active {
+    transform: translateY(0);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        0 4px 10px rgba(201, 86, 86, 0.12);
+}
+
+/* ===== 입력 필드 ===== */
 .board-field {
     display: flex;
     flex-direction: column;
@@ -195,8 +241,8 @@ button {
 .board-field input:focus,
 .board-field select:focus,
 .board-field textarea:focus {
-    border-color: rgba(91, 92, 230, 0.45);
-    box-shadow: 0 0 0 5px rgba(91, 92, 230, 0.1);
+    border-color: rgba(17, 17, 17, 0.22);
+    box-shadow: 0 0 0 5px rgba(17, 17, 17, 0.06);
 }
 
 .board-field textarea {
@@ -295,5 +341,13 @@ button {
     .board-page-header h1,
     .board-form-header h1 {
         font-size: 30px;
+    }
+
+    .board-dark-btn,
+    .board-danger-btn,
+    .board-ghost-btn {
+        min-height: 44px;
+        padding: 0 16px;
+        font-size: 13px;
     }
 }

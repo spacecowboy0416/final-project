@@ -1,18 +1,62 @@
+// board-detail.js
 document.addEventListener("DOMContentLoaded", () => {
+    const {
+        sortItemsBySlotOrder,
+        formatWeather,
+		formatStyle,
+		formatTpo,
+        formatDate,
+        formatDegree,
+        formatSlotLabel,
+        getInitial,
+        escapeHtml,
+        escapeAttr
+    } = window.BoardCommon || {};
+
+    if (!window.BoardCommon) {
+        console.error("board-common.js가 먼저 로드되어야 합니다.");
+        return;
+    }
+
+    // ===== 기본 요소 =====
     const currentPostId = window.location.pathname.split("/").pop();
-    const postDetailEl = document.getElementById("postDetail");
-    const coordiItemsEl = document.getElementById("coordiItems");
+
+    const postTopButtonsEl = document.getElementById("postTopButtons");
+    const postHeaderCardEl = document.getElementById("postHeaderCard");
+    const postUnifiedCardEl = document.getElementById("postUnifiedCard");
     const commentListEl = document.getElementById("commentList");
     const commentContentEl = document.getElementById("commentContent");
     const commentSubmitBtn = document.getElementById("commentSubmitBtn");
+    const commentLengthTextEl = document.getElementById("commentLengthText");
+    const commentCountTextEl = document.getElementById("commentCountText");
 
-    let currentPost = null;
+    // ===== 필수 요소 방어 =====
+    if (
+        !currentPostId ||
+        !postTopButtonsEl ||
+        !postHeaderCardEl ||
+        !postUnifiedCardEl ||
+        !commentListEl ||
+        !commentContentEl ||
+        !commentSubmitBtn ||
+        !commentLengthTextEl ||
+        !commentCountTextEl
+    ) {
+        console.error("board-detail.js: 필요한 DOM 요소를 찾지 못했습니다.");
+        return;
+    }
 
+    // ===== 초기 이벤트 =====
+    updateCommentLengthText();
+    commentContentEl.addEventListener("input", updateCommentLengthText);
     commentSubmitBtn.addEventListener("click", createComment);
 
+    // ===== 게시글 상세 조회 =====
     async function loadDetail() {
         try {
-            postDetailEl.innerHTML = `<div class="board-loading">게시글을 불러오는 중입니다...</div>`;
+            postHeaderCardEl.innerHTML = `<div class="board-loading">게시글을 불러오는 중입니다...</div>`;
+            postUnifiedCardEl.innerHTML = "";
+            postTopButtonsEl.innerHTML = "";
 
             const response = await fetch(`/api/board/posts/${currentPostId}`);
             if (!response.ok) {
@@ -20,124 +64,154 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             const post = await response.json();
-            currentPost = post;
 
-            renderPostDetail(post);
-            renderItems(post.items || []);
+            renderTopButtons(post);
+            renderHeaderCard(post);
+            renderUnifiedCard(post);
             renderComments(post.comments || []);
+            updateCommentCount(post.comments || []);
             bindPostActionEvents();
             bindCommentActionEvents();
         } catch (error) {
             console.error(error);
-            postDetailEl.innerHTML = `<div class="board-error">게시글 정보를 불러오지 못했습니다.</div>`;
-            coordiItemsEl.innerHTML = "";
+            postHeaderCardEl.innerHTML = `<div class="board-error">게시글 정보를 불러오지 못했습니다.</div>`;
+            postUnifiedCardEl.innerHTML = "";
+            postTopButtonsEl.innerHTML = "";
             commentListEl.innerHTML = "";
+            updateCommentCount([]);
         }
     }
 
-    function renderPostDetail(post) {
-        const imageUrl = getPostThumbnail(post);
+    // ===== 상단 버튼 =====
+    function renderTopButtons(post) {
         const canEditPost = Boolean(post.canEdit || post.canDelete || post.isAuthor || post.mine);
 
-        postDetailEl.innerHTML = `
-            <div class="board-detail-hero">
-                <div class="board-detail-hero__image-wrap">
-                    ${imageUrl
-                        ? `<img class="board-detail-hero__image" src="${escapeAttr(imageUrl)}" alt="${escapeAttr(post.title ?? "게시글 이미지")}" onerror="this.outerHTML='<div class=&quot;board-detail-hero__image-empty&quot;></div>'">`
-                        : `<div class="board-detail-hero__image-empty"></div>`
-                    }
+        if (!canEditPost) {
+            postTopButtonsEl.innerHTML = "";
+            return;
+        }
+
+        postTopButtonsEl.innerHTML = `
+            <button type="button" class="board-ghost-btn" id="editPostBtn">수정</button>
+            <button type="button" class="board-danger-btn" id="deletePostBtn">삭제</button>
+        `;
+    }
+
+    // ===== 헤더 카드 =====
+    function renderHeaderCard(post) {
+        const authorName = post.nickname ?? post.authorNickname ?? "익명";
+
+        postHeaderCardEl.innerHTML = `
+            <div class="board-detail-header-card">
+                <div class="board-detail-header-top">
+                    <div class="board-detail-header-left">
+                        <div class="board-detail-meta-top">
+                            <span>조회 ${escapeHtml(String(post.viewCount ?? 0))}</span>
+                            <span>댓글 ${escapeHtml(String((post.comments || []).length || post.commentCount || 0))}</span>
+                        </div>
+
+                        <div class="board-detail-title-row">
+                            <h1 class="board-detail-title">${escapeHtml(post.title ?? "제목 없음")}</h1>
+                            <span class="board-detail-author-inline">by ${escapeHtml(authorName)}</span>
+                        </div>
+                    </div>
+
+                    <div class="board-detail-meta-date">
+                        ${escapeHtml(formatDate(post.createdAt ?? post.createdDate ?? ""))}
+                    </div>
                 </div>
 
-                <div class="board-detail-hero__body">
-                    <div class="board-detail-chip-row">
-                        <span class="board-detail-chip">${escapeHtml(formatWeather(post.weatherStatus ?? post.weather ?? "-"))}</span>
-                        <span class="board-detail-chip">${escapeHtml(post.styleType ?? post.style ?? "-")}</span>
-                        <span class="board-detail-chip">${escapeHtml(post.tpoType ?? post.tpo ?? "-")}</span>
-                    </div>
-
-                    <h1 class="board-detail-title">${escapeHtml(post.title ?? "제목 없음")}</h1>
-
-                    <div class="board-detail-submeta">
-                        <span>작성자 ${escapeHtml(post.nickname ?? post.authorNickname ?? "-")}</span>
-                        <span>조회수 ${escapeHtml(String(post.viewCount ?? 0))}</span>
-                        <span>댓글 ${escapeHtml(String((post.comments || []).length || post.commentCount || 0))}</span>
-                    </div>
-
-                    <div class="board-detail-content-box">
-                        <p class="board-detail-content">${escapeHtml(post.content ?? "")}</p>
-                    </div>
-
-                    <div class="board-detail-meta-grid">
-                        <div class="board-detail-meta-item">
-                            <span>날씨</span>
-                            <strong>${escapeHtml(formatWeather(post.weatherStatus ?? post.weather ?? "-"))}</strong>
-                        </div>
-                        <div class="board-detail-meta-item">
-                            <span>온도</span>
-                            <strong>${escapeHtml(String(post.temp ?? "-"))}°</strong>
-                        </div>
-                        <div class="board-detail-meta-item">
-                            <span>체감온도</span>
-                            <strong>${escapeHtml(String(post.feelsLike ?? "-"))}°</strong>
-                        </div>
-                        <div class="board-detail-meta-item">
-                            <span>스타일</span>
-                            <strong>${escapeHtml(post.styleType ?? post.style ?? "-")}</strong>
-                        </div>
-                        <div class="board-detail-meta-item">
-                            <span>TPO</span>
-                            <strong>${escapeHtml(post.tpoType ?? post.tpo ?? "-")}</strong>
-                        </div>
-                        <div class="board-detail-meta-item">
-                            <span>공개 여부</span>
-                            <strong>${post.isPublic === false ? "비공개" : "공개"}</strong>
-                        </div>
-                    </div>
-
-                    <div class="board-detail-ai-box">
-                        <strong>AI 설명</strong>
-                        <p>${escapeHtml(post.aiExplanation ?? "AI 설명이 없습니다.")}</p>
-                    </div>
-
-                    <div class="board-detail-actions">
-                        <button type="button" class="board-ghost-btn" id="goListBtn">목록으로</button>
-                        ${canEditPost ? `<button type="button" class="board-secondary-btn" id="editPostBtn">게시글 수정</button>` : ""}
-                        ${canEditPost ? `<button type="button" class="board-danger-btn" id="deletePostBtn">게시글 삭제</button>` : ""}
-                    </div>
+                <div class="board-detail-header-content">
+                    <p class="board-detail-content">${escapeHtml(post.content ?? "")}</p>
                 </div>
             </div>
         `;
     }
 
-    function renderItems(items) {
-        if (items.length === 0) {
-            coordiItemsEl.innerHTML = `<div class="board-empty">등록된 코디 아이템이 없습니다.</div>`;
-            return;
-        }
+    // ===== 통합 카드 =====
+    function renderUnifiedCard(post) {
+        const items = sortItemsBySlotOrder(post.items || []);
 
-        coordiItemsEl.innerHTML = items.map(item => `
-            <article class="board-item-card">
-                ${item.imageUrl
-                    ? `<img class="board-item-thumb" src="${escapeAttr(item.imageUrl)}" alt="${escapeAttr(item.productName ?? "코디 아이템")}" onerror="this.outerHTML='<div class=&quot;board-item-thumb--empty&quot;></div>'">`
-                    : `<div class="board-item-thumb--empty"></div>`
-                }
-
-                <div class="board-item-info">
-                    <h4>${escapeHtml(item.productName ?? "-")}</h4>
-                    <p><strong>슬롯</strong> ${escapeHtml(item.slotKey ?? "-")}</p>
-                    <p><strong>브랜드</strong> ${escapeHtml(item.brand ?? "-")}</p>
-                    <p><strong>가격</strong> ${escapeHtml(String(item.price ?? "-"))}</p>
-                    <p><strong>색상</strong> ${escapeHtml(item.color ?? "-")}</p>
-                    <p><strong>소재</strong> ${escapeHtml(item.material ?? "-")}</p>
-                    <p><strong>핏</strong> ${escapeHtml(item.fit ?? "-")}</p>
-                    <p><strong>스타일</strong> ${escapeHtml(item.style ?? "-")}</p>
-                    <p><strong>시즌</strong> ${escapeHtml(item.season ?? "-")}</p>
-                    ${item.link ? `<a class="board-item-link" href="${escapeAttr(item.link)}" target="_blank" rel="noopener noreferrer">상품 링크 보기</a>` : ""}
+        postUnifiedCardEl.innerHTML = `
+            <div class="board-detail-unified-card">
+                <div class="board-detail-ai-box">
+                    <p class="board-detail-ai-title">AI 코디 설명</p>
+                    <p class="board-detail-ai-text">${escapeHtml(post.aiExplanation ?? "AI 설명이 없습니다.")}</p>
                 </div>
-            </article>
-        `).join("");
+
+                <div class="board-detail-section-divider"></div>
+
+                <div class="board-detail-section-bar">
+                    <div class="board-detail-section-bar__left">
+                        <h3>코디 구성</h3>
+                    </div>
+
+					<div class="board-detail-section-bar__right">
+					    <span class="board-detail-chip">${escapeHtml(formatWeather(post.weatherStatus ?? post.weather ?? "-"))}</span>
+					    <span class="board-detail-chip">${escapeHtml(formatStyle(post.styleType ?? post.style))}</span>
+					    <span class="board-detail-chip">${escapeHtml(formatTpo(post.tpoType ?? post.tpo))}</span>
+					</div>
+                </div>
+
+                <div class="board-item-list">
+                    ${items.length > 0 ? items.map(item => `
+                        <article class="board-item-card">
+                            <div class="board-item-visual">
+                                <span class="board-item-slot">${escapeHtml(formatSlotLabel(item.slotKey ?? "-"))}</span>
+
+                                ${item.imageUrl
+                                    ? `<img class="board-item-thumb" src="${escapeAttr(item.imageUrl)}" alt="${escapeAttr(item.productName ?? "코디 아이템")}" onerror="this.outerHTML='<div class=&quot;board-item-thumb--empty&quot;></div>'">`
+                                    : `<div class="board-item-thumb--empty"></div>`
+                                }
+
+                                <p class="board-item-name-under">${escapeHtml(item.productName ?? "-")}</p>
+                            </div>
+
+                            <div class="board-item-info">
+                                <div class="board-item-meta">
+                                    <div class="board-item-meta-row">
+                                        <span class="board-item-meta-label">브랜드</span>
+                                        <span class="board-item-meta-value">${escapeHtml(item.brand ?? "-")}</span>
+                                    </div>
+                                    <div class="board-item-meta-row">
+                                        <span class="board-item-meta-label">색상</span>
+                                        <span class="board-item-meta-value">${escapeHtml(item.color ?? "-")}</span>
+                                    </div>
+                                    <div class="board-item-meta-row">
+                                        <span class="board-item-meta-label">소재</span>
+                                        <span class="board-item-meta-value">${escapeHtml(item.material ?? "-")}</span>
+                                    </div>
+                                    <div class="board-item-meta-row">
+                                        <span class="board-item-meta-label">핏</span>
+                                        <span class="board-item-meta-value">${escapeHtml(item.fit ?? "-")}</span>
+                                    </div>
+                                    <div class="board-item-meta-row">
+                                        <span class="board-item-meta-label">스타일</span>
+                                        <span class="board-item-meta-value">${escapeHtml(item.style ?? "-")}</span>
+                                    </div>
+                                    <div class="board-item-meta-row">
+                                        <span class="board-item-meta-label">시즌</span>
+                                        <span class="board-item-meta-value">${escapeHtml(item.season ?? "-")}</span>
+                                    </div>
+                                    <div class="board-item-meta-row">
+                                        <span class="board-item-meta-label">온도</span>
+                                        <span class="board-item-meta-value">${formatDegree(item.temperature)}</span>
+                                    </div>
+                                </div>
+
+                                ${item.link
+                                    ? `<a class="board-item-link" href="${escapeAttr(item.link)}" target="_blank" rel="noopener noreferrer">상품 링크 보기</a>`
+                                    : ""
+                                }
+                            </div>
+                        </article>
+                    `).join("") : `<div class="board-empty">등록된 코디 아이템이 없습니다.</div>`}
+                </div>
+            </div>
+        `;
     }
 
+    // ===== 댓글 렌더링 =====
     function renderComments(comments) {
         if (comments.length === 0) {
             commentListEl.innerHTML = `<div class="board-empty">아직 댓글이 없습니다.</div>`;
@@ -153,19 +227,23 @@ document.addEventListener("DOMContentLoaded", () => {
             );
 
             const commentId = comment.commentId ?? comment.id;
+            const nickname = comment.nickname ?? "익명";
 
             return `
                 <div class="board-comment-card" data-comment-id="${escapeAttr(commentId)}">
                     <div class="board-comment-header">
                         <div class="board-comment-author-wrap">
-                            <p class="board-comment-author">${escapeHtml(comment.nickname ?? "익명")}</p>
-                            <span class="board-comment-date">${escapeHtml(formatDate(comment.createdAt ?? comment.createdDate ?? ""))}</span>
+                            <div class="board-comment-author-avatar">${escapeHtml(getInitial(nickname))}</div>
+                            <div class="board-comment-author-meta">
+                                <p class="board-comment-author">${escapeHtml(nickname)}</p>
+                                <span class="board-comment-date">${escapeHtml(formatDate(comment.createdAt ?? comment.createdDate ?? ""))}</span>
+                            </div>
                         </div>
 
                         ${canManageComment ? `
                             <div class="board-comment-actions">
-                                <button type="button" class="board-comment-action-btn" data-action="edit">수정</button>
-                                <button type="button" class="board-comment-action-btn board-comment-action-btn--danger" data-action="delete">삭제</button>
+                                <button type="button" class="board-ghost-btn board-comment-action-btn" data-action="edit">수정</button>
+                                <button type="button" class="board-danger-btn board-comment-action-btn" data-action="delete">삭제</button>
                             </div>
                         ` : ""}
                     </div>
@@ -175,8 +253,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     <div class="board-comment-edit-box" style="display:none;">
                         <textarea maxlength="500">${escapeHtml(comment.content ?? "")}</textarea>
                         <div class="board-comment-edit-actions">
-                            <button type="button" class="board-comment-action-btn" data-action="cancel-edit">취소</button>
-                            <button type="button" class="board-primary-btn" data-action="save-edit">저장</button>
+                            <button type="button" class="board-ghost-btn board-comment-action-btn" data-action="cancel-edit">취소</button>
+                            <button type="button" class="board-dark-btn board-comment-action-btn" data-action="save-edit">저장</button>
                         </div>
                     </div>
                 </div>
@@ -184,16 +262,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }).join("");
     }
 
+    // ===== 게시글 버튼 이벤트 =====
     function bindPostActionEvents() {
-        const goListBtn = document.getElementById("goListBtn");
         const editPostBtn = document.getElementById("editPostBtn");
         const deletePostBtn = document.getElementById("deletePostBtn");
-
-        if (goListBtn) {
-            goListBtn.addEventListener("click", () => {
-                location.href = "/board";
-            });
-        }
 
         if (editPostBtn) {
             editPostBtn.addEventListener("click", () => {
@@ -211,6 +283,8 @@ document.addEventListener("DOMContentLoaded", () => {
                         method: "DELETE"
                     });
 
+                    if (redirectToLoginIfNeeded(response)) return;
+
                     if (!response.ok) {
                         throw new Error("게시글 삭제 실패");
                     }
@@ -225,6 +299,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    // ===== 댓글 버튼 이벤트 =====
     function bindCommentActionEvents() {
         commentListEl.querySelectorAll(".board-comment-card").forEach(card => {
             const commentId = card.dataset.commentId;
@@ -267,6 +342,8 @@ document.addEventListener("DOMContentLoaded", () => {
                             body: JSON.stringify({ content })
                         });
 
+                        if (redirectToLoginIfNeeded(response)) return;
+
                         if (!response.ok) {
                             throw new Error("댓글 수정 실패");
                         }
@@ -289,6 +366,8 @@ document.addEventListener("DOMContentLoaded", () => {
                             method: "DELETE"
                         });
 
+                        if (redirectToLoginIfNeeded(response)) return;
+
                         if (!response.ok) {
                             throw new Error("댓글 삭제 실패");
                         }
@@ -303,6 +382,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    // ===== 댓글 등록 =====
     async function createComment() {
         const content = commentContentEl.value.trim();
 
@@ -319,11 +399,14 @@ document.addEventListener("DOMContentLoaded", () => {
                 body: JSON.stringify({ content })
             });
 
+            if (redirectToLoginIfNeeded(response)) return;
+
             if (!response.ok) {
                 throw new Error("댓글 등록에 실패했습니다.");
             }
 
             commentContentEl.value = "";
+            updateCommentLengthText();
             await loadDetail();
         } catch (error) {
             console.error(error);
@@ -331,71 +414,32 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    function getPostThumbnail(post) {
-        return (
-            post.thumbnailImageUrl ||
-            post.thumbnailUrl ||
-            post.imageUrl ||
-            post.topItemImageUrl ||
-            post.coordiImageUrl ||
-            post.recommendationImageUrl ||
-            post?.items?.[0]?.imageUrl ||
-            ""
-        );
-    }
+    // ===== 로그인 리다이렉트 처리 =====
+    function redirectToLoginIfNeeded(response) {
+        const isLoginRedirect =
+            response.status === 401 ||
+            response.redirected ||
+            response.url.includes("/login");
 
-    function formatDate(value) {
-        if (!value) return "-";
-
-        const date = new Date(value);
-        if (Number.isNaN(date.getTime())) {
-            return value;
+        if (isLoginRedirect) {
+            alert("로그인이 필요합니다.");
+            location.href = "/login";
+            return true;
         }
 
-        const yyyy = date.getFullYear();
-        const mm = String(date.getMonth() + 1).padStart(2, "0");
-        const dd = String(date.getDate()).padStart(2, "0");
-        const hh = String(date.getHours()).padStart(2, "0");
-        const mi = String(date.getMinutes()).padStart(2, "0");
-
-        return `${yyyy}.${mm}.${dd} ${hh}:${mi}`;
+        return false;
     }
 
-    function formatWeather(value) {
-        const map = {
-            clear: "맑음",
-            partly_cloudy: "구름 조금",
-            cloudy: "흐림",
-            windy: "바람 많음",
-            rain: "비",
-            cloudy_rain: "흐리고 비",
-            thunderstorm: "뇌우",
-            thunderstorm_rain: "뇌우와 비",
-            snow: "눈",
-            cloudy_snow: "흐리고 눈",
-            sleet: "진눈깨비",
-            hail: "우박"
-        };
-
-        return map[String(value).toLowerCase()] || value;
+    // ===== 댓글 길이 표시 =====
+    function updateCommentLengthText() {
+        commentLengthTextEl.textContent = `${commentContentEl.value.length} / 500`;
     }
 
-    function escapeHtml(value) {
-        return String(value ?? "")
-            .replaceAll("&", "&amp;")
-            .replaceAll("<", "&lt;")
-            .replaceAll(">", "&gt;")
-            .replaceAll('"', "&quot;")
-            .replaceAll("'", "&#39;");
+    // ===== 댓글 수 표시 =====
+    function updateCommentCount(comments) {
+        commentCountTextEl.textContent = `${comments.length}개`;
     }
 
-    function escapeAttr(value) {
-        return String(value ?? "")
-            .replaceAll("&", "&amp;")
-            .replaceAll('"', "&quot;")
-            .replaceAll("<", "&lt;")
-            .replaceAll(">", "&gt;");
-    }
-
+    // ===== 초기 로딩 =====
     loadDetail();
 });

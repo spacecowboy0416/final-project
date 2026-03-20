@@ -66,7 +66,8 @@ public class BoardApiController {
             @PathVariable("postId") Long postId,
             @LoginUser UsersDto loginUser
     ) {
-        return boardPostService.getPostDetail(postId, loginUser.getUserId());
+        Long loginUserId = (loginUser != null) ? loginUser.getUserId() : null;
+        return boardPostService.getPostDetail(postId, loginUserId);
     }
 
     // 게시글 수정
@@ -104,7 +105,8 @@ public class BoardApiController {
             @PathVariable("postId") Long postId,
             @LoginUser UsersDto loginUser
     ) {
-        return boardCommentService.getComments(postId, loginUser.getUserId());
+        Long loginUserId = (loginUser != null) ? loginUser.getUserId() : null;
+        return boardCommentService.getComments(postId, loginUserId);
     }
 
 	// 댓글 수정

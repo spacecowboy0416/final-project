@@ -1,4 +1,22 @@
+// board-write.js
 document.addEventListener("DOMContentLoaded", () => {
+    const {
+        formatWeather,
+		formatStyle,
+		formatTpo,
+        normalizeSlotKey,
+        getSlotOrderIndex,
+        formatSlotLabel,
+        escapeHtml,
+        escapeAttr
+    } = window.BoardCommon || {};
+
+    if (!window.BoardCommon) {
+        console.error("board-common.js가 먼저 로드되어야 합니다.");
+        return;
+    }
+
+    // ===== 입력 / 버튼 / 모달 요소 =====
     const recIdEl = document.getElementById("recId");
     const titleEl = document.getElementById("title");
     const contentEl = document.getElementById("content");
@@ -14,7 +32,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let selectedCoordi = null;
 
+    // ===== 필수 요소 방어 =====
+    if (
+        !recIdEl || !titleEl || !contentEl ||
+        !createBtn || !cancelBtn ||
+        !loadCoordiBtn || !coordiModal || !closeCoordiModalBtn ||
+        !coordiListEl || !selectedCoordiPreviewEl
+    ) {
+        console.error("board-write.js: 필요한 DOM 요소를 찾지 못했습니다.");
+        return;
+    }
+
+    // ===== 이벤트 바인딩 =====
     createBtn.addEventListener("click", createPost);
+
     cancelBtn.addEventListener("click", () => {
         location.href = "/board";
     });
@@ -22,19 +53,19 @@ document.addEventListener("DOMContentLoaded", () => {
     loadCoordiBtn.addEventListener("click", openCoordiModal);
     closeCoordiModalBtn.addEventListener("click", closeCoordiModal);
 
-    if (coordiModal) {
-        const backdrop = coordiModal.querySelector(".board-modal__backdrop");
-        if (backdrop) {
-            backdrop.addEventListener("click", closeCoordiModal);
-        }
+    const backdrop = coordiModal.querySelector(".board-modal__backdrop");
+    if (backdrop) {
+        backdrop.addEventListener("click", closeCoordiModal);
     }
 
+    // ===== 저장된 코디 모달 열기 =====
     async function openCoordiModal() {
         coordiModal.classList.remove("hidden");
         coordiListEl.innerHTML = `<div class="board-loading">저장한 코디를 불러오는 중입니다...</div>`;
 
         try {
             const response = await fetch("/api/board/posts/coordis");
+
             if (!response.ok) {
                 throw new Error("저장 코디 조회 실패");
             }
@@ -47,10 +78,12 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    // ===== 모달 닫기 =====
     function closeCoordiModal() {
         coordiModal.classList.add("hidden");
     }
 
+    // ===== 코디 목록 렌더링 =====
     function renderCoordiList(coordis) {
         if (!coordis || coordis.length === 0) {
             coordiListEl.innerHTML = `<div class="board-empty">저장된 코디가 없습니다.</div>`;
@@ -61,8 +94,8 @@ document.addEventListener("DOMContentLoaded", () => {
             <article class="board-coordi-card" data-index="${index}" data-recid="${escapeAttr(coordi.recId)}">
                 <div class="board-coordi-card__badge-row">
                     <span class="board-coordi-card__badge">${escapeHtml(formatWeather(coordi.weather ?? coordi.weatherStatus ?? "-"))}</span>
-                    <span class="board-coordi-card__badge">${escapeHtml(coordi.style ?? coordi.styleType ?? "-")}</span>
-                    <span class="board-coordi-card__badge">${escapeHtml(coordi.tpo ?? coordi.tpoType ?? "-")}</span>
+					<span class="board-coordi-card__badge">${escapeHtml(formatStyle(coordi.style ?? coordi.styleType))}</span>
+					<span class="board-coordi-card__badge">${escapeHtml(formatTpo(coordi.tpo ?? coordi.tpoType))}</span>
                 </div>
 
                 ${renderCoordiCardPreview(coordi)}
@@ -80,6 +113,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    // ===== 코디 카드 내부 미리보기 =====
     function renderCoordiCardPreview(coordi) {
         const items = getCoordiItems(coordi);
 
@@ -101,37 +135,36 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
     }
 
+    // ===== 선택한 코디 미리보기 =====
     function renderSelectedCoordi(coordi) {
         const items = getCoordiItems(coordi);
 
         selectedCoordiPreviewEl.className = "board-selected-coordi__preview";
         selectedCoordiPreviewEl.innerHTML = `
-            ${renderCoordiImageGrid(items, "board-selected-coordi")}
-
-            <div class="board-selected-coordi__preview-item">
-                <span>날씨</span>
-                <strong>${escapeHtml(formatWeather(coordi.weather ?? coordi.weatherStatus ?? "-"))}</strong>
+            <div class="board-selected-coordi__summary">
+                <span class="board-selected-coordi__chip">${escapeHtml(formatWeather(coordi.weather ?? coordi.weatherStatus ?? "-"))}</span>
+				<span class="board-selected-coordi__chip">${escapeHtml(formatStyle(coordi.style ?? coordi.styleType))}</span>
+				<span class="board-selected-coordi__chip">${escapeHtml(formatTpo(coordi.tpo ?? coordi.tpoType))}</span>
             </div>
 
-            <div class="board-selected-coordi__preview-item">
-                <span>스타일 / TPO</span>
-                <strong>${escapeHtml(coordi.style ?? coordi.styleType ?? "-")} / ${escapeHtml(coordi.tpo ?? coordi.tpoType ?? "-")}</strong>
-            </div>
+            <div class="board-selected-coordi__gallery">
+                ${items.map(item => `
+                    <div class="board-selected-coordi__photo-card">
+                        <span class="board-selected-coordi__slot">
+                            ${escapeHtml(formatSlotLabel(item.key))}
+                        </span>
 
-            ${items.map(item => `
-                <div class="board-selected-coordi__preview-item">
-                    <span>${escapeHtml(item.label)}</span>
-                    <strong>${escapeHtml(item.name ?? "-")}</strong>
-                </div>
-            `).join("")}
-
-            <div class="board-selected-coordi__preview-item board-selected-coordi__preview-item--full">
-                <span>AI 설명</span>
-                <strong>${escapeHtml(coordi.aiExplanation ?? "-")}</strong>
+                        ${item.imageUrl
+                            ? `<img class="board-selected-coordi__photo" src="${escapeAttr(item.imageUrl)}" alt="${escapeAttr(item.name ?? "코디 아이템")}" onerror="this.outerHTML='<div class=&quot;board-selected-coordi__photo-empty&quot;></div>'">`
+                            : `<div class="board-selected-coordi__photo-empty"></div>`
+                        }
+                    </div>
+                `).join("")}
             </div>
         `;
     }
 
+    // ===== 게시글 등록 =====
     async function createPost() {
         const recId = Number(recIdEl.value);
         const title = titleEl.value.trim();
@@ -152,7 +185,8 @@ document.addEventListener("DOMContentLoaded", () => {
             const body = {
                 recId,
                 title,
-                content
+                content,
+                isPublic: true
             };
 
             const response = await fetch("/api/board/posts", {
@@ -173,27 +207,30 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-	function getCoordiItems(coordi) {
-	    if (!Array.isArray(coordi.items)) {
-	        return [];
-	    }
+    // ===== 코디 아이템 정리 =====
+    function getCoordiItems(coordi) {
+        if (!Array.isArray(coordi.items)) {
+            return [];
+        }
 
-	    return coordi.items
-	        .filter(item =>
-	            item &&
-	            (
-	                (item.itemName && String(item.itemName).trim() !== "" && item.itemName !== "-")
-	                || (item.imageUrl && String(item.imageUrl).trim() !== "")
-	            )
-	        )
-	        .map(item => ({
-	            key: item.slotKey ?? "",
-	            label: item.label ?? "기타",
-	            name: item.itemName ?? "-",
-	            imageUrl: item.imageUrl ?? ""
-	        }));
-	}
+        return coordi.items
+            .filter(item =>
+                item &&
+                (
+                    (item.itemName && String(item.itemName).trim() !== "" && item.itemName !== "-") ||
+                    (item.imageUrl && String(item.imageUrl).trim() !== "")
+                )
+            )
+            .map(item => ({
+                key: normalizeSlotKey(item.slotKey ?? item.label ?? ""),
+                label: item.label ?? "기타",
+                name: item.itemName ?? "-",
+                imageUrl: item.imageUrl ?? ""
+            }))
+            .sort((a, b) => getSlotOrderIndex(a.key) - getSlotOrderIndex(b.key));
+    }
 
+    // ===== 코디 이미지 그리드 =====
     function renderCoordiImageGrid(items, prefixClass) {
         if (!items || items.length === 0) {
             return "";
@@ -220,6 +257,7 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
     }
 
+    // ===== 동적 썸네일 =====
     function renderDynamicThumb(imageUrl, altText, prefixClass, moreText = "") {
         const emptyClass = `${prefixClass}__thumb-empty`;
 
@@ -242,57 +280,5 @@ document.addEventListener("DOMContentLoaded", () => {
                 ${moreText ? `<div class="media-img__more">${escapeHtml(moreText)}</div>` : ""}
             </div>
         `;
-    }
-
-    function getCoordiImage(coordi, slot) {
-        if (slot === "top") {
-            return coordi.topItemImageUrl || coordi.topImageUrl || coordi.topImage || "";
-        }
-        if (slot === "bottom") {
-            return coordi.bottomItemImageUrl || coordi.bottomImageUrl || coordi.bottomImage || "";
-        }
-        if (slot === "outer") {
-            return coordi.outerItemImageUrl || coordi.outerImageUrl || coordi.outerImage || "";
-        }
-        if (slot === "shoes") {
-            return coordi.shoesItemImageUrl || coordi.shoesImageUrl || coordi.shoesImage || "";
-        }
-        return "";
-    }
-
-    function formatWeather(value) {
-        const map = {
-            clear: "맑음",
-            partly_cloudy: "구름 조금",
-            cloudy: "흐림",
-            windy: "바람 많음",
-            rain: "비",
-            cloudy_rain: "흐리고 비",
-            thunderstorm: "뇌우",
-            thunderstorm_rain: "뇌우와 비",
-            snow: "눈",
-            cloudy_snow: "흐리고 눈",
-            sleet: "진눈깨비",
-            hail: "우박"
-        };
-
-        return map[String(value).toLowerCase()] || value;
-    }
-
-    function escapeHtml(value) {
-        return String(value ?? "")
-            .replaceAll("&", "&amp;")
-            .replaceAll("<", "&lt;")
-            .replaceAll(">", "&gt;")
-            .replaceAll('"', "&quot;")
-            .replaceAll("'", "&#39;");
-    }
-
-    function escapeAttr(value) {
-        return String(value ?? "")
-            .replaceAll("&", "&amp;")
-            .replaceAll('"', "&quot;")
-            .replaceAll("<", "&lt;")
-            .replaceAll(">", "&gt;");
     }
 });
