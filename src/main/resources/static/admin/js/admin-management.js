@@ -100,7 +100,7 @@ function attachItemPanelEvents() {
       const name = nameInput.value.trim();
 
       if (!name) {
-        alert("태그 이름을 입력하세요.");
+        showGlobalModal("알림", "태그 이름을 입력하세요.", "alert");
         return;
       }
 
@@ -120,7 +120,7 @@ function attachItemPanelEvents() {
 
         await loadTagsForType(type, contentArea);
       } catch (error) {
-        alert(`오류: ${error.message}`);
+        showGlobalModal("오류", error.message, "danger");
       }
     }
   });
@@ -133,7 +133,7 @@ function attachItemPanelEvents() {
       const tagName = tagItem.dataset.tagName;
       const type = tagItem.dataset.tagType;
 
-      if (confirm(`'${tagName}' 태그를 정말 삭제하시겠습니까?`)) {
+      showGlobalModal("삭제 확인", `'${tagName}' 태그를 정말 삭제하시겠습니까?`, "danger", async () => {
         try {
           const response = await fetch(`/api/admin/tags/${tagId}`, {
             method: "DELETE",
@@ -141,9 +141,9 @@ function attachItemPanelEvents() {
           if (!response.ok) throw new Error("태그 삭제 실패.");
           await loadTagsForType(type, contentArea);
         } catch (error) {
-          alert(`오류: ${error.message}`);
+          showGlobalModal("오류", error.message, "danger");
         }
-      }
+      });
     }
 
     if (targetButton.classList.contains("btn-edit")) {
@@ -166,21 +166,23 @@ async function loadTagsForType(type, container) {
         : '<p class="empty-list-message">이 종류에는 등록된 태그가 없습니다.</p>';
 
     container.innerHTML = `
-            <div class="tag-list-container">
-                <div class="tag-list">
-                    ${tagListHtml}
+            <div class="item-management-layout">
+                <div class="tag-list-container">
+                    <div class="tag-list">
+                        ${tagListHtml}
+                    </div>
                 </div>
-            </div>
-            <div class="tag-form-container" style="margin-top: 1.5rem;">
-                <h2 class="item-management-title" style="font-size: 1.25rem;">'${type}' 태그 추가</h2>
-                <form class="add-tag-form" data-type="${type}">
-                    <div class="form-group">
-                         <input type="text" name="name" class="form-input" placeholder="새 태그 이름..." required>
-                    </div>
-                    <div class="form-actions">
-                        <button type="submit" class="btn btn-primary">추가</button>
-                    </div>
-                </form>
+                <div class="tag-form-container">
+                    <h2 class="item-management-title" style="font-size: 1.25rem;">'${type}' 태그 추가</h2>
+                    <form class="add-tag-form" data-type="${type}">
+                        <div class="form-group">
+                             <input type="text" name="name" class="form-input" placeholder="새 태그 이름..." required>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">추가</button>
+                        </div>
+                    </form>
+                </div>
             </div>
         `;
   } catch (error) {
@@ -239,7 +241,7 @@ function handleEditTag(tagItem, contentArea) {
         if (!response.ok) throw new Error("태그 업데이트 실패.");
         await loadTagsForType(type, contentArea);
       } catch (error) {
-        alert(`오류: ${error.message}`);
+        showGlobalModal("오류", error.message, "danger");
         await loadTagsForType(type, contentArea);
       }
     } else {
@@ -376,22 +378,69 @@ function renderUsers(users) {
   }
 }
 
-async function updateUser(userId, role, status) {
-  try {
-    const response = await fetch(`/api/admin/users/${userId}`, {
+async function updateUser(userId, newRole, newStatus) {
+  const userRow = document.querySelector(`tr[data-user-id="${userId}"]`);
+  if (!userRow) {
+    showGlobalModal("오류", "사용자 정보를 찾을 수 없습니다.", "danger");
+    return;
+  }
+
+  const originalRole = userRow.querySelector('.role-badge').textContent.trim();
+  const originalStatus = userRow.querySelector('.status-badge').textContent.trim();
+
+  const updatePromises = [];
+
+  // 역할이 변경되었을 경우 API 호출 준비
+  if (newRole !== originalRole) {
+    const roleUpdatePromise = fetch(`/api/admin/users/${userId}/role`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ role, status }),
+      body: JSON.stringify({ role: newRole }),
     });
-    if (!response.ok) {
-      const errorData = await response.json();
+    updatePromises.push(roleUpdatePromise);
+  }
+
+  // 상태가 변경되었을 경우 API 호출 준비
+  if (newStatus !== originalStatus) {
+    const statusUpdatePromise = fetch(`/api/admin/users/${userId}/status`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: newStatus }),
+    });
+    updatePromises.push(statusUpdatePromise);
+  }
+
+  // 변경된 내용이 없으면 함수 종료
+  if (updatePromises.length === 0) {
+    showGlobalModal("알림", "변경된 내용이 없습니다.", "alert");
+    return;
+  }
+
+  try {
+    const responses = await Promise.all(updatePromises);
+    
+    // 모든 응답이 성공적인지 확인
+    const allOk = responses.every(res => res.ok);
+    
+    if (!allOk) {
+      // 실패한 응답 중 첫 번째 응답에서 에러 메시지를 파싱 시도
+      const failedResponse = responses.find(res => !res.ok);
+      let errorData;
+      try {
+        errorData = await failedResponse.json();
+      } catch (e) {
+        // 응답이 JSON이 아닐 경우
+        errorData = { message: `서버 오류 (상태 코드: ${failedResponse.status})` };
+      }
       throw new Error(errorData.message || "정보 변경에 실패했습니다.");
     }
-    alert(`사용자 ID ${userId}의 정보가 변경되었습니다.`);
+
+    showGlobalModal("성공", `사용자 ID ${userId}의 정보가 성공적으로 변경되었습니다.`, "alert");
     await fetchAndRenderUsers();
+
   } catch (error) {
     console.error("Failed to update user:", error);
-    alert(`오류: ${error.message}`);
+    showGlobalModal("오류", error.message, "danger");
   }
 }
 
@@ -400,6 +449,12 @@ function getSocialIcon(provider) {
   const p = provider.toLowerCase();
   if (p === "google") {
     return `<img src="/admin/images/google-logo.svg" referrerPolicy="no-referer" alt="Google" class="social-icon">`;
+  }
+  if (p === "kakao") {
+    return `<img src="/admin/images/kakao-logo.svg" referrerPolicy="no-referer" alt="Kakao" class="social-icon">`;
+  }
+  if (p === "naver") {
+    return `<img src="/admin/images/naver-logo.svg" referrerPolicy="no-referer" alt="Naver" class="social-icon">`;
   }
   return `<span class="social-icon social-${p}">${p.charAt(0).toUpperCase()}</span>`;
 }
@@ -463,23 +518,28 @@ window.adminTogglePostVisibility = async (postId, currentStatus) => {
     if (response.ok) {
       window.loadCommunityManagementPanel(); // 전역 함수로 호출
     } else {
-      alert('상태 변경에 실패했습니다.');
+      showGlobalModal('오류', '상태 변경에 실패했습니다.', 'danger');
     }
   } catch (error) {
     console.error('Toggle failed:', error);
+    showGlobalModal('오류', '상태 변경 중 오류가 발생했습니다.', 'danger');
   }
 };
 
 window.adminDeletePost = async (postId) => {
-  if (!confirm('정말 이 게시글을 삭제하시겠습니까?')) return;
-  try {
-    const response = await fetch(`/api/admin/community/posts/${postId}`, { method: 'DELETE' });
-    if (response.ok) {
-      window.loadCommunityManagementPanel();
+  showGlobalModal('삭제 확인', '정말 이 게시글을 삭제하시겠습니까?', 'danger', async () => {
+    try {
+      const response = await fetch(`/api/admin/community/posts/${postId}`, { method: 'DELETE' });
+      if (response.ok) {
+        window.loadCommunityManagementPanel();
+      } else {
+        throw new Error('게시글 삭제에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('Delete failed:', error);
+      showGlobalModal('오류', error.message, 'danger');
     }
-  } catch (error) {
-    console.error('Delete failed:', error);
-  }
+  });
 };
 
 

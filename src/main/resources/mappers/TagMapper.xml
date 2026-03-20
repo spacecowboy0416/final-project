@@ -1,14 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-
+<!-- 관리자 페이지: 태그 관리용 데이터베이스 쿼리 -->
 <mapper namespace="com.finalproject.coordi.admin.tag.mapper.TagMapper">
 
+    <!-- 모든 태그 타입 조회 -->
     <select id="selectTagTypes" resultType="java.lang.String">
         SELECT DISTINCT type
         FROM tag
         ORDER BY FIELD(type, 'TPO', 'STYLE', 'SEASON', 'SLOT', 'FIT', 'MATERIAL', 'COLOR');
     </select>
 
+    <!-- 특정 타입에 속하는 태그 목록 조회 -->
     <select id="selectTagsByType" resultType="com.finalproject.coordi.admin.tag.dto.TagDto">
         SELECT
             tag_id as tagId,
@@ -22,17 +24,20 @@
             name;
     </select>
 
+    <!-- 새로운 태그 추가 -->
     <insert id="insertTag" parameterType="com.finalproject.coordi.admin.tag.dto.TagDto" useGeneratedKeys="true" keyProperty="tagId">
         INSERT INTO tag (type, name)
         VALUES (#{type}, #{name})
     </insert>
 
+    <!-- 태그 이름 수정 -->
     <update id="updateTag">
         UPDATE tag
         SET name = #{name}
         WHERE tag_id = #{tagId}
     </update>
 
+    <!-- 태그 삭제 -->
     <delete id="deleteTag" parameterType="long">
         DELETE FROM tag
         WHERE tag_id = #{tagId}

@@ -5,7 +5,6 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class UserUpdateRequest {
+public class UserRoleUpdateRequest {
     private String role;
-    private String status;
 }

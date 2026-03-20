@@ -35,10 +35,10 @@ public class WeatherContextDto {
     private LocalDateTime recordedAt;
 
     public String getWeatherStatusCode() {
-        return weatherStatus != null ? weatherStatus.code() : null;
+        return weatherStatus != null ? weatherStatus.getCode() : null;
     }
 
     public String getRainProbabilityCode() {
-        return rainProbability != null ? rainProbability.code() : null;
+        return rainProbability != null ? rainProbability.getCode() : null;
     }
 }
