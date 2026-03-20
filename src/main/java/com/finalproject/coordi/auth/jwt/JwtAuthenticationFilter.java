@@ -1,6 +1,7 @@
 package com.finalproject.coordi.auth.jwt;
 
 import com.finalproject.coordi.auth.service.RedisService;
+import com.finalproject.coordi.exception.ErrorCode;
 import com.finalproject.coordi.exception.auth.InvalidTokenException;
 import com.finalproject.coordi.exception.auth.TokenExpiredException;
 import io.jsonwebtoken.Claims;
@@ -52,15 +53,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 // Redis에 저장된 최신 토큰과 현재 브라우저의 토큰을 대조 (중복 로그인 방지 핵심)
                 String savedRefreshToken = redisService.getRefreshToken(userId);
                 if (savedRefreshToken == null || !savedRefreshToken.equals(refreshToken)) {
+                    log.warn(ErrorCode.DUPLICATE_LOGIN.getCode()); // 중복 로그인 로그
                     clearTokenCookies(response); // 잘못된 토큰 쿠키를 즉시 삭제
-                    response.sendRedirect("/?error=duplicate_login"); // 메인 페이지로 리다이렉트
+                    response.sendRedirect("/?error=" + ErrorCode.DUPLICATE_LOGIN.getCode()); // 메인 페이지로 리다이렉트
                     return;
                 }
                 // [정지 유저 체크] 실시간으로 정지된 계정인지 확인합니다.
                 if (redisService.isSuspendedUser(userId)) {
-                    log.warn("정지 유저 접속 감지: 접속을 강제 종료합니다.");
+                    log.warn(ErrorCode.USER_SUSPENDED.getCode()); // 정지 유저 로그
                     clearTokenCookies(response);
-                    response.sendRedirect("/?error=suspended_user");
+                    response.sendRedirect("/?error=" + ErrorCode.USER_SUSPENDED.getCode());
                     return;
                 }
 

@@ -5,6 +5,8 @@ import com.finalproject.coordi.auth.jwt.JwtAuthenticationFilter;
 import com.finalproject.coordi.auth.jwt.JwtProvider;
 import com.finalproject.coordi.auth.oauth.CustomOAuth2UserService;
 import com.finalproject.coordi.auth.service.RedisService;
+import com.finalproject.coordi.exception.ErrorCode;
+import com.finalproject.coordi.exception.auth.OAuth2SuspendedException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
@@ -12,7 +14,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -35,7 +36,7 @@ public class SecurityConfig {
         @Bean
         public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
                 http
-                
+
                                 // RESTful API와 무상태(Stateless) 기반의 통신을 수행하므로, CSRF 방어 및 기본 로그인 폼 기능을 비활성화합니다.
                                 .csrf(csrf -> csrf.disable()) 
                                 .formLogin(form -> form.disable()) 
@@ -75,21 +76,20 @@ public class SecurityConfig {
                                                                 .userService(customOAuth2UserService)) 
                                                 .successHandler(oAuth2SuccessHandler) 
                                                 .failureHandler((request, response, exception) -> {
-                                                        log.error("소셜 로그인 실패: {}", exception.getMessage());
-
-                                                        // 정지된 유저인 경우 (OAuth2AuthenticationException 에러코드 기반)
-                                                        if (exception instanceof OAuth2AuthenticationException oauth2Ex) {
-                                                                String errorCode = oauth2Ex.getError().getErrorCode();
-                                                                if ("suspended_user".equals(errorCode)) {
-                                                                        response.sendRedirect("/?error=suspended_user");
-                                                                        return;
-                                                                }
+                                                        // 정지 유저
+                                                        if (exception instanceof OAuth2SuspendedException) {
+                                                                log.warn(ErrorCode.USER_SUSPENDED.getCode());
+                                                                response.sendRedirect(request.getContextPath() + "/?error=" + ErrorCode.USER_SUSPENDED.getCode());
+                                                                return;
                                                         }
 
-                                                        // 그 외 소셜 인증 실패 처리
-                                                        String msg = exception.getMessage();
-                                                        String encodedMsg = URLEncoder.encode(msg != null ? msg : "인증 실패", StandardCharsets.UTF_8);
-                                                        response.sendRedirect("/?error=true&message=" + encodedMsg);
+                                                        // 그 외 소셜 인증 실패
+                                                        io.sentry.Sentry.captureException(exception);
+                                                        log.error("인증 처리 중 기술적 오류 발생: {}", exception.getMessage());
+
+                                                        String msg = (exception.getMessage() != null) ? exception.getMessage() : ErrorCode.AUTH_FAILED.getMessage();
+                                                        String encodedMsg = URLEncoder.encode(msg, StandardCharsets.UTF_8);
+                                                        response.sendRedirect(request.getContextPath() + "/?error=true&message=" + encodedMsg);
                                                 }))
 
                                 // 로그아웃을 수행할 시점에 기존에 발급된 JWT 인증 쿠키를 브라우저에서 파기하는 처리 로직을 연결합니다.
