@@ -28,6 +28,7 @@ public class JwtProvider {
 
     private Key key; // JWT 서명에 사용할 키 객체
     private final long ACCESS_TOKEN_EXP = 1000L * 60 * 30; // 30분
+    //private final long ACCESS_TOKEN_EXP = 1000L * 60 * 1; // 테스트용: 1분 (중복 로그인 방지 확인 위해 짧게 설정)
     private final long REFRESH_TOKEN_EXP = 1000L * 60 * 60 * 24 * 7; // 7일
 
     @PostConstruct
@@ -77,18 +78,10 @@ public class JwtProvider {
         return new UsernamePasswordAuthenticationToken(principal, token, authorities);
     }
 
-    // 토큰 유효성 검증
+    // 토큰 유효성 검증(위조 및 만료 여부 확인)
     public boolean validateToken(String token) {
-        try {
-            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
-            return true;
-        } catch (ExpiredJwtException e) {
-            log.warn("만료된 JWT 토큰입니다.");
-            return false; 
-        } catch (Exception e) {
-            log.error("JWT 검증 중 예외 발생: {}", e.getMessage());
-            throw new InvalidTokenException();
-        }
+        Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
+        return true;
     }
 
     // 만료 여부와 상관없이 토큰에서 Claims를 추출 (재발급 로직용)

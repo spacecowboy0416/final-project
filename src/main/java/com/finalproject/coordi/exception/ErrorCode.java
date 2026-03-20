@@ -19,6 +19,7 @@ public enum ErrorCode {
     // User
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "U100", "해당 사용자를 찾을 수 없습니다."),
     EMAIL_DUPLICATION(HttpStatus.CONFLICT, "U101", "이미 가입된 이메일입니다."),
+    USER_SUSPENDED(HttpStatus.FORBIDDEN, "U102", "이용 정지된 계정입니다."),
     
     // Item
     ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "I100", "해당 아이템을 찾을 수 없습니다."),
