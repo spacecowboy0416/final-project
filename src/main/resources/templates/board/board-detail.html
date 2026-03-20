@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:replace="~{layout/common :: configFragment}"></th:block>
+    <meta charset="UTF-8">
+    <title>게시글 상세</title>
+
+    <link rel="stylesheet" th:href="@{/board/css/board-common.css}">
+    <link rel="stylesheet" th:href="@{/board/css/board-detail.css}">
+</head>
+<body>
+<div th:replace="~{layout/common :: headerFragment}"></div>
+
+<main class="board-page board-detail-page">
+
+    <!-- 상단 바깥 액션 -->
+    <section class="board-detail-top-actions">
+        <a href="/board" class="board-detail-back-link">← 목록으로</a>
+        <div id="postTopButtons" class="board-detail-top-buttons"></div>
+    </section>
+
+    <!-- 제목 + 내용 카드 -->
+    <section id="postHeaderCard" class="board-detail-shell"></section>
+
+    <!-- 통합 카드 -->
+    <section id="postUnifiedCard" class="board-detail-shell"></section>
+
+    <!-- 댓글 카드 -->
+    <section class="board-detail-block board-detail-comment-card">
+        <div class="board-detail-block__header">
+            <div>
+                <p class="board-detail-block__eyebrow">Comments</p>
+                <h3>댓글</h3>
+            </div>
+            <span id="commentCountText" class="board-detail-inline-count">0개</span>
+        </div>
+
+        <div class="board-comment-compose">
+            <div class="board-comment-compose__top">
+                <label for="commentContent">댓글 작성</label>
+                <span id="commentLengthText" class="board-comment-compose__length">0 / 500</span>
+            </div>
+
+            <textarea
+                id="commentContent"
+                maxlength="500"
+                placeholder="코디에 대한 의견을 남겨보세요."
+            ></textarea>
+
+            <div class="board-comment-compose__footer">
+                <button type="button" class="board-dark-btn" id="commentSubmitBtn">댓글 등록</button>
+            </div>
+        </div>
+
+        <div id="commentList" class="board-comment-list"></div>
+    </section>
+
+</main>
+
+<footer th:replace="~{layout/common :: footerFragment}"></footer>
+
+<script th:src="@{/board/js/board-common.js}"></script>
+<script th:src="@{/board/js/board-detail.js}"></script>
+</body>
+</html>
