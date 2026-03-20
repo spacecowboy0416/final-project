@@ -7,7 +7,7 @@ public record UserRequest(
     String naturalText,
     GenderType gender,
     OffsetDateTime scheduleTime,
-    Location location,
+    Weather weather,
     ImageData imageData
 ) {
 }

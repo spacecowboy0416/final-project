@@ -49,13 +49,13 @@ public class WeatherService {
                 .weatherMainRaw(toRawMain(context))
                 .weatherStatus(
                         context.getWeatherStatus() != null
-                                ? context.getWeatherStatus().code()
+                                ? context.getWeatherStatus().getCode()
                                 : null
                 )
                 .conditionText(context.getConditionText())
                 .weatherStateKo(
                         context.getWeatherStatus() != null
-                                ? context.getWeatherStatus().displayNameKo()
+                                ? context.getWeatherStatus().getDisplayNameKo()
                                 : ""
                 )
                 .temperature(context.getTemperature())

@@ -1,6 +1,5 @@
-package com.finalproject.coordi.recommendation.domain;
+package com.finalproject.coordi.recommendation.infra.weather;
 
-import com.finalproject.coordi.recommendation.infra.weather.WeatherRedisProperties;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import org.springframework.stereotype.Component;

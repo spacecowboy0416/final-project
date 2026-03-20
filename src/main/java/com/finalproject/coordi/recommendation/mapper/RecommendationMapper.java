@@ -33,6 +33,12 @@ public interface RecommendationMapper {
 
     ProductDto findProductBySourceAndExternalId(@Param("source") String source, @Param("externalId") String externalId);
 
+    Long findClosetItemIdByUserIdAndProductId(@Param("userId") Long userId, @Param("productId") Long productId);
+
+    int insertClosetItem(@Param("userId") Long userId, @Param("productId") Long productId);
+
+    int updateRecommendationItemClosetItemId(@Param("recItemId") Long recItemId, @Param("closetItemId") Long closetItemId);
+
     List<ProductDto> findProductsBySourceAndExternalIds(
         @Param("source") String source,
         @Param("externalIds") List<String> externalIds

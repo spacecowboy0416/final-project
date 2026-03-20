@@ -473,3 +473,105 @@ CREATE INDEX idx_recommendation_style_type ON recommendation (style_type);
 CREATE INDEX idx_recommendation_tpo_type ON recommendation (tpo_type);
 CREATE INDEX idx_recommendation_item_rec_slot ON recommendation_item (rec_id, slot_key);
 CREATE INDEX idx_product_image_meta_product_created ON product_image_metadata (product_id, created_at); 
+
+-- =========================================================
+-- 2026-03-19, jin, recommendation enum 기준 스키마/시드 통합 보강
+-- =========================================================
+
+ALTER TABLE recommendation_item
+  MODIFY COLUMN priority VARCHAR(20) NULL,
+  MODIFY COLUMN match_score DECIMAL(6,4) NULL;
+
+ALTER TABLE product
+  MODIFY COLUMN gender VARCHAR(20) NULL,
+  MODIFY COLUMN color VARCHAR(30) NULL,
+  MODIFY COLUMN material VARCHAR(30) NULL,
+  MODIFY COLUMN fit VARCHAR(30) NULL,
+  MODIFY COLUMN style VARCHAR(30) NULL,
+  MODIFY COLUMN season VARCHAR(30) NULL,
+  MODIFY COLUMN temp_min INT NULL,
+  MODIFY COLUMN temp_max INT NULL;
+
+ALTER TABLE closet_item
+  ADD CONSTRAINT uk_closet_user_product UNIQUE (user_id, product_id);
+
+-- SeasonType enum 기준으로 legacy autumn 코드를 fall 로 정규화한다.
+UPDATE tag
+SET name = 'fall'
+WHERE type = 'SEASON'
+  AND name = 'autumn';
+
+INSERT INTO category (code, name, sort_order) VALUES
+  ('headwear', '헤드웨어', 5),
+  ('top', '상의', 10),
+  ('pants', '하의', 20),
+  ('outerwear', '아우터', 30),
+  ('shoes', '신발', 40),
+  ('accessory', '액세서리', 50)
+ON DUPLICATE KEY UPDATE
+  name = VALUES(name),
+  sort_order = VALUES(sort_order);
+
+INSERT INTO tag (type, name) VALUES
+  ('STYLE', 'minimal'),
+  ('STYLE', 'casual'),
+  ('STYLE', 'street'),
+  ('STYLE', 'classic'),
+  ('STYLE', 'lovely'),
+  ('STYLE', 'amikaji'),
+  ('STYLE', 'gorpcore'),
+  ('STYLE', 'chic'),
+  ('COLOR', 'black'),
+  ('COLOR', 'white'),
+  ('COLOR', 'gray'),
+  ('COLOR', 'navy'),
+  ('COLOR', 'blue'),
+  ('COLOR', 'beige'),
+  ('COLOR', 'brown'),
+  ('COLOR', 'khaki'),
+  ('COLOR', 'green'),
+  ('COLOR', 'red'),
+  ('COLOR', 'pink'),
+  ('COLOR', 'purple'),
+  ('COLOR', 'yellow'),
+  ('COLOR', 'orange'),
+  ('MATERIAL', 'cotton'),
+  ('MATERIAL', 'denim'),
+  ('MATERIAL', 'wool'),
+  ('MATERIAL', 'cashmere'),
+  ('MATERIAL', 'leather'),
+  ('MATERIAL', 'suede'),
+  ('MATERIAL', 'linen'),
+  ('MATERIAL', 'nylon'),
+  ('MATERIAL', 'fleece'),
+  ('MATERIAL', 'corduroy'),
+  ('MATERIAL', 'polyester'),
+  ('MATERIAL', 'silk'),
+  ('FIT', 'slim'),
+  ('FIT', 'standard'),
+  ('FIT', 'semi_over'),
+  ('FIT', 'oversized'),
+  ('FIT', 'wide'),
+  ('FIT', 'balloon'),
+  ('FIT', 'tapered'),
+  ('FIT', 'crop'),
+  ('SEASON', 'spring'),
+  ('SEASON', 'summer'),
+  ('SEASON', 'fall'),
+  ('SEASON', 'winter'),
+  ('TPO', 'daily'),
+  ('TPO', 'office'),
+  ('TPO', 'date'),
+  ('TPO', 'wedding'),
+  ('TPO', 'formal'),
+  ('TPO', 'exercise'),
+  ('TPO', 'travel'),
+  ('TPO', 'camping'),
+  ('SLOT', 'headwear'),
+  ('SLOT', 'tops'),
+  ('SLOT', 'bottoms'),
+  ('SLOT', 'outerwear'),
+  ('SLOT', 'shoes'),
+  ('SLOT', 'accessories')
+ON DUPLICATE KEY UPDATE
+  name = VALUES(name);
