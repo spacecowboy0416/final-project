@@ -100,7 +100,7 @@ function attachItemPanelEvents() {
       const name = nameInput.value.trim();
 
       if (!name) {
-        alert("태그 이름을 입력하세요.");
+        showGlobalModal("알림", "태그 이름을 입력하세요.", "alert");
         return;
       }
 
@@ -120,7 +120,7 @@ function attachItemPanelEvents() {
 
         await loadTagsForType(type, contentArea);
       } catch (error) {
-        alert(`오류: ${error.message}`);
+        showGlobalModal("오류", error.message, "danger");
       }
     }
   });
@@ -133,7 +133,7 @@ function attachItemPanelEvents() {
       const tagName = tagItem.dataset.tagName;
       const type = tagItem.dataset.tagType;
 
-      if (confirm(`'${tagName}' 태그를 정말 삭제하시겠습니까?`)) {
+      showGlobalModal("삭제 확인", `'${tagName}' 태그를 정말 삭제하시겠습니까?`, "danger", async () => {
         try {
           const response = await fetch(`/api/admin/tags/${tagId}`, {
             method: "DELETE",
@@ -141,9 +141,9 @@ function attachItemPanelEvents() {
           if (!response.ok) throw new Error("태그 삭제 실패.");
           await loadTagsForType(type, contentArea);
         } catch (error) {
-          alert(`오류: ${error.message}`);
+          showGlobalModal("오류", error.message, "danger");
         }
-      }
+      });
     }
 
     if (targetButton.classList.contains("btn-edit")) {
@@ -241,7 +241,7 @@ function handleEditTag(tagItem, contentArea) {
         if (!response.ok) throw new Error("태그 업데이트 실패.");
         await loadTagsForType(type, contentArea);
       } catch (error) {
-        alert(`오류: ${error.message}`);
+        showGlobalModal("오류", error.message, "danger");
         await loadTagsForType(type, contentArea);
       }
     } else {
@@ -381,7 +381,7 @@ function renderUsers(users) {
 async function updateUser(userId, newRole, newStatus) {
   const userRow = document.querySelector(`tr[data-user-id="${userId}"]`);
   if (!userRow) {
-    alert("오류: 사용자 정보를 찾을 수 없습니다.");
+    showGlobalModal("오류", "사용자 정보를 찾을 수 없습니다.", "danger");
     return;
   }
 
@@ -412,7 +412,7 @@ async function updateUser(userId, newRole, newStatus) {
 
   // 변경된 내용이 없으면 함수 종료
   if (updatePromises.length === 0) {
-    alert("변경된 내용이 없습니다.");
+    showGlobalModal("알림", "변경된 내용이 없습니다.", "alert");
     return;
   }
 
@@ -435,12 +435,12 @@ async function updateUser(userId, newRole, newStatus) {
       throw new Error(errorData.message || "정보 변경에 실패했습니다.");
     }
 
-    alert(`사용자 ID ${userId}의 정보가 성공적으로 변경되었습니다.`);
+    showGlobalModal("성공", `사용자 ID ${userId}의 정보가 성공적으로 변경되었습니다.`, "alert");
     await fetchAndRenderUsers();
 
   } catch (error) {
     console.error("Failed to update user:", error);
-    alert(`오류: ${error.message}`);
+    showGlobalModal("오류", error.message, "danger");
   }
 }
 
@@ -518,23 +518,28 @@ window.adminTogglePostVisibility = async (postId, currentStatus) => {
     if (response.ok) {
       window.loadCommunityManagementPanel(); // 전역 함수로 호출
     } else {
-      alert('상태 변경에 실패했습니다.');
+      showGlobalModal('오류', '상태 변경에 실패했습니다.', 'danger');
     }
   } catch (error) {
     console.error('Toggle failed:', error);
+    showGlobalModal('오류', '상태 변경 중 오류가 발생했습니다.', 'danger');
   }
 };
 
 window.adminDeletePost = async (postId) => {
-  if (!confirm('정말 이 게시글을 삭제하시겠습니까?')) return;
-  try {
-    const response = await fetch(`/api/admin/community/posts/${postId}`, { method: 'DELETE' });
-    if (response.ok) {
-      window.loadCommunityManagementPanel();
+  showGlobalModal('삭제 확인', '정말 이 게시글을 삭제하시겠습니까?', 'danger', async () => {
+    try {
+      const response = await fetch(`/api/admin/community/posts/${postId}`, { method: 'DELETE' });
+      if (response.ok) {
+        window.loadCommunityManagementPanel();
+      } else {
+        throw new Error('게시글 삭제에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('Delete failed:', error);
+      showGlobalModal('오류', error.message, 'danger');
     }
-  } catch (error) {
-    console.error('Delete failed:', error);
-  }
+  });
 };
 
 
