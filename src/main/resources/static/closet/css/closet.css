@@ -8,6 +8,26 @@
 .btn-black-pill { background: #111; color: #fff; padding: 12px 24px; border-radius: 30px; font-size: 0.9rem; font-weight: bold; border: none; cursor: pointer; text-decoration: none; transition: 0.2s; display: inline-block; }
 .btn-black-pill:hover { background: #333; }
 
+/* 프로필 섹션 스타일 */
+.profile-section { display: flex; justify-content: space-between; align-items: center; background: #f8f9fa; padding: 24px 30px; border-radius: 20px; margin-bottom: 20px; border: 1px solid #eee; }
+.profile-info-wrap { display: flex; align-items: center; gap: 20px; }
+.profile-avatar { width: 60px; height: 60px; background: #111; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 1.5rem; font-weight: bold; }
+.profile-text { display: flex; flex-direction: column; gap: 4px; }
+.profile-name { margin: 0; font-size: 1.25rem; font-weight: 800; color: #111; }
+.profile-id { margin: 0; font-size: 0.85rem; color: #777; font-weight: 500; }
+.profile-actions { display: flex; gap: 10px; }
+.btn-profile-edit { background: #fff; border: 1px solid #ccc; padding: 8px 16px; border-radius: 8px; font-size: 0.85rem; font-weight: bold; cursor: pointer; transition: 0.2s; color: #333; }
+.btn-profile-edit:hover { background: #f0f0f0; border-color: #bbb; }
+.btn-profile-withdraw { background: transparent; border: none; color: #aaa; font-size: 0.85rem; cursor: pointer; text-decoration: underline; padding: 8px 10px; font-weight: 500; }
+.btn-profile-withdraw:hover { color: #dc3545; }
+
+/* 프로필 모달 내 이미지 업로드 동그라미 스타일 */
+.profile-upload-avatar { position: relative; transition: 0.2s; }
+.profile-upload-avatar:hover { border-color: #111; background: #eee; }
+.profile-upload-avatar::after { content: '변경'; position: absolute; bottom: 0; left: 0; width: 100%; background: rgba(0,0,0,0.5); color: #fff; font-size: 0.75rem; font-weight: bold; padding: 4px 0; opacity: 0; transition: 0.2s; text-align: center; }
+.profile-upload-avatar:hover::after { opacity: 1; }
+
+/* 슬라이더 및 리스트 컨테이너 */
 .slider-container { display: flex; overflow-x: auto; gap: 20px; padding: 10px 5px 20px 5px; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; }
 .slider-container::-webkit-scrollbar { height: 6px; }
 .slider-container::-webkit-scrollbar-track { background: #f9f9f9; border-radius: 10px; }
@@ -23,14 +43,14 @@
 .empty-msg-box { background: #fff; padding: 60px 20px; border-radius: 20px; text-align: center; margin-bottom: 40px; border: 1px dashed #ddd; }
 .empty-msg-box p { color: #aaa; margin: 0; font-size: 1rem; font-weight: 500; }
 
-/* 옷장 그리드 및 카드 디자인 추가 설정 */
+/* 옷장 그리드 및 카드 디자인 */
 .closet-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 24px; margin-top: 20px; }
 .item-card { border: 1px solid #eee; border-radius: 16px; padding: 12px; text-align: center; background: #fff; transition: 0.2s; display: flex; flex-direction: column; }
 .item-card:hover { box-shadow: 0 8px 16px rgba(0,0,0,0.05); transform: translateY(-3px); }
 .item-image { width: 100%; height: 240px; object-fit: cover; border-radius: 12px; background: #f8f9fa; }
 .item-image-empty { display: flex; align-items: center; justify-content: center; color: #aaa; font-size: 0.9rem; height: 240px; }
 
-/* 개별 옷 카드 상세 정보 UI 설정 */
+/* 개별 옷 카드 상세 정보 UI */
 .item-info { display: flex; flex-direction: column; margin-top: 15px; text-align: left; padding: 0 5px; flex-grow: 1; }
 .item-meta-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
 .item-category { color: #888; font-size: 0.8rem; font-weight: 600; }
@@ -58,19 +78,11 @@
 .btn-delete-item { background: #fff; color: #aaa; border: 1px solid #eee; width: 100%; padding: 8px; border-radius: 8px; font-size: 0.85rem; font-weight: bold; cursor: pointer; transition: 0.2s; margin-top: auto; }
 .btn-delete-item:hover { color: #dc3545; border-color: #dc3545; background: #fff5f5; }
 
-/* 모달 전체 레이아웃 (반응형 대응) */
-.modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); z-index: 2000; align-items: flex-end; justify-content: center; }
-@media (min-width: 768px) {
-    .modal-overlay { align-items: center; }
-}
-
+/* Closet 관련 모달 디자인 (공용 애니메이션 활용) */
 .closet-modal-content { background-color: #fff; width: 100%; max-width: 500px; border-radius: 24px 24px 0 0; position: relative; display: flex; flex-direction: column; max-height: 90vh; box-shadow: 0 -10px 40px rgba(0,0,0,0.1); animation: slideUp 0.3s ease-out; }
 @media (min-width: 768px) {
     .closet-modal-content { border-radius: 24px; animation: popIn 0.2s ease-out; }
 }
-
-@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-@keyframes popIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
 /* 모달 내부 스크롤 및 구역 설정 */
 .closet-modal-header { display: flex; justify-content: space-between; align-items: center; padding: 24px 24px 16px 24px; border-bottom: 1px solid #f0f0f0; flex-shrink: 0; }

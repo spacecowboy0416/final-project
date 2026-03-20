@@ -57,9 +57,20 @@
     </header>
 
     <footer th:fragment="footerFragment" class="site-footer">
-        <div class="footer-container">
-            <p>&copy; 2026 COORDI - All Rights Reserved. | AI 기반 맞춤형 코디 추천 서비스</p>
+    <p>&copy; 2026 Coordi Project. All rights reserved.</p>
+
+    <div id="globalModal" class="modal-overlay" style="z-index: 9999;">
+        <div class="global-modal-box">
+            <h3 id="globalModalTitle" class="global-modal-title">알림</h3>
+            <p id="globalModalMessage" class="global-modal-msg">메시지 내용</p>
+            <div class="global-modal-actions">
+                <button type="button" id="globalModalCancelBtn" class="btn-global cancel" onclick="closeGlobalModal()">취소</button>
+                <button type="button" id="globalModalConfirmBtn" class="btn-global confirm">확인</button>
+            </div>
         </div>
-    </footer>
+    </div>
+
+    <script th:src="@{/common/js/common.js}"></script>
+</footer>
 
 </html>

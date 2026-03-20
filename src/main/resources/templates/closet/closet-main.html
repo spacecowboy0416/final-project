@@ -10,13 +10,31 @@
 
     <main class="main-content">
         
+        <div class="profile-section">
+            <div class="profile-info-wrap">
+                <div class="profile-avatar">
+                    <img th:if="${profileImageUrl != null}" th:src="${profileImageUrl}" alt="프로필" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                    <span th:unless="${profileImageUrl != null}" th:text="${#strings.substring(nickname, 0, 1)}">U</span>
+                </div>
+                <div class="profile-text">
+                    <h3 class="profile-name" th:text="${nickname} + '님의 옷장'">사용자님의 옷장</h3>
+                    <p class="profile-id">ID: [[${userId}]]</p>
+                </div>
+            </div>
+            <div class="profile-actions">
+                <button type="button" class="btn-profile-edit" onclick="openProfileEditModal()">정보 수정</button>
+            </div>
+        </div>
+
+        <hr class="section-divider">
+
         <div class="section-header">
             <h2 class="section-title">AI 코디 룩북</h2>
             <a th:href="@{/recommend}" class="btn-black-pill">새 코디 추천받기</a>
         </div>
         
         <div th:if="${#lists.isEmpty(savedCoordis)}" class="empty-msg-box">
-            <p>저장된 AI 추천 코디가 없습니다.</p>
+            <p>저장된 AI 추천 코디가 없음.</p>
         </div>
 
         <div th:unless="${#lists.isEmpty(savedCoordis)}" class="slider-container" style="margin-bottom: 50px;">
@@ -40,7 +58,7 @@
         </div>
 
         <div th:if="${#lists.isEmpty(manualSets)}" class="empty-msg-box">
-            <p>직접 등록한 코디 세트가 없습니다.</p>
+            <p>직접 등록한 코디 세트가 없음.</p>
         </div>
 
         <div th:unless="${#lists.isEmpty(manualSets)}" class="closet-grid" style="margin-bottom: 50px;">
@@ -52,7 +70,7 @@
                         <span class="set-item-name" th:text="${cItem.name}">상품명</span>
                     </div>
                 </div>
-                <form th:action="@{/closet/delete-set/{recId}(recId=${set.recId})}" method="post" onsubmit="return confirm('이 세트를 삭제하시겠습니까?');" style="margin-top: 15px;">
+                <form th:action="@{/closet/delete-set/{recId}(recId=${set.recId})}" method="post" onsubmit="return confirmAction(event, '이 세트를 정말 삭제하시겠음?');" style="margin-top: 15px;">
                     <button type="submit" class="btn-delete-item">세트 삭제</button>
                 </form>
             </div>
@@ -66,7 +84,7 @@
         </div>
         
         <div th:if="${#lists.isEmpty(items)}" class="empty-msg-box">
-            <p>옷장에 등록된 개별 아이템이 없습니다.</p>
+            <p>옷장에 등록된 개별 아이템이 없음.</p>
         </div>
 
         <div th:unless="${#lists.isEmpty(items)}" class="closet-grid">
@@ -90,7 +108,7 @@
                         <span th:if="${item.style != null and item.style != ''}" class="info-tag" th:text="${item.style}">스타일</span>
                     </div>
                     
-                    <form th:action="@{/closet/delete/{itemId}(itemId=${item.itemId})}" method="post" onsubmit="return confirm('이 옷을 정말 삭제하시겠습니까?');" style="margin-top: auto;">
+                    <form th:action="@{/closet/delete/{itemId}(itemId=${item.itemId})}" method="post" onsubmit="return confirmAction(event, '이 옷을 정말 삭제하시겠습니까?');" style="margin-top: auto;">
                         <button type="submit" class="btn-delete-item">삭제</button>
                     </form>
                 </div>
@@ -112,8 +130,8 @@
             <div class="closet-modal-footer">
                 <button type="button" class="btn-closet outline" onclick="editCoordi()">변경하기</button>
                 <button type="button" class="btn-closet primary" onclick="shareCoordi()">자랑하기</button>
-                <form id="deleteCoordiForm" method="post" style="flex: 1; display: flex;">
-                    <button type="submit" class="btn-closet danger" onclick="return confirm('이 코디를 삭제하시겠습니까?');">삭제</button>
+                <form id="deleteCoordiForm" method="post" style="flex: 1; display: flex;" onsubmit="return confirmAction(event, '이 코디를 삭제하시겠음?');">
+                    <button type="submit" class="btn-closet danger">삭제</button>
                 </form>
             </div>
         </div>
@@ -127,7 +145,6 @@
             </div>
             <form th:action="@{/closet/add}" method="post" enctype="multipart/form-data" id="addItemForm" style="display: contents;">
                 <div class="closet-modal-body">
-                    
                     <div class="form-group" style="margin-bottom: 20px;">
                         <label class="closet-label">사진 등록 (필수)</label>
                         <div class="closet-upload-box" onclick="document.getElementById('imageInput').click()">
@@ -189,7 +206,6 @@
                             <input type="text" name="style" class="closet-input" placeholder="스타일 (예: 캐주얼)">
                         </div>
                     </div>
-
                 </div>
                 <div class="closet-modal-footer">
                     <button type="submit" class="btn-closet primary full-width">옷장에 추가하기</button>
@@ -239,7 +255,39 @@
         </div>
     </div>
 
+    <div id="profileEditModal" class="modal-overlay">
+        <div class="closet-modal-content">
+            <div class="closet-modal-header">
+                <h3 style="margin: 0; font-size: 1.2rem;">개인정보 수정</h3>
+                <span class="closet-modal-close" onclick="closeProfileEditModal()">&times;</span>
+            </div>
+            <form th:action="@{/closet/profile/edit}" method="post" enctype="multipart/form-data" style="display: contents;">
+                <div class="closet-modal-body">
+                    <div class="form-group" style="text-align: center; margin-bottom: 30px;">
+                        <label class="closet-label">프로필 사진</label>
+                        <div class="profile-upload-avatar" onclick="document.getElementById('profileImageInput').click()" style="cursor: pointer; width: 100px; height: 100px; margin: 0 auto; border-radius: 50%; border: 2px dashed #ddd; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #f8f9fa;">
+                            <img id="profilePreview" th:src="${profileImageUrl != null ? profileImageUrl : ''}" style="width: 100%; height: 100%; object-fit: cover;" th:styleappend="${profileImageUrl == null ? 'display:none;' : ''}" alt="프로필">
+                            <span id="profilePlaceholder" style="font-size: 1.5rem; color: #aaa;" th:styleappend="${profileImageUrl != null ? 'display:none;' : ''}">+</span>
+                        </div>
+                        <input type="file" name="profileImage" id="profileImageInput" accept="image/*" style="display: none;" onchange="previewProfileImage(this)">
+                    </div>
+                    <div class="form-group">
+                        <label class="closet-label">변경할 닉네임</label>
+                        <input type="text" name="nickname" class="closet-input" th:value="${nickname}" required>
+                    </div>
+                </div>
+                <div class="closet-modal-footer" style="flex-direction: column; gap: 15px;">
+                    <button type="submit" class="btn-closet primary full-width">수정 완료</button>
+                    <button type="button" class="btn-profile-withdraw" style="align-self: flex-end;" onclick="confirmWithdraw()">회원 탈퇴</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <form id="withdrawForm" th:action="@{/closet/profile/withdraw}" method="post" style="display:none;"></form>
+
     <footer th:replace="~{layout/common :: footerFragment}"></footer>
+    
     <script th:src="@{/closet/js/closet.js}"></script>
 </body>
 </html>
