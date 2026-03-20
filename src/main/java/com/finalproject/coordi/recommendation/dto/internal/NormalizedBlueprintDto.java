@@ -13,6 +13,10 @@ public record NormalizedBlueprintDto(
         return rawBlueprint == null ? null : rawBlueprint.aiBlueprint();
     }
 
+    public CategoryType anchorSlot() {
+        return aiBlueprint() == null ? null : aiBlueprint().anchorSlot();
+    }
+
     public RawBlueprintDto.ItemInfo itemBySlot(CategoryType slotKey) {
         return slotKey == null || itemsBySlot == null ? null : itemsBySlot.get(slotKey);
     }

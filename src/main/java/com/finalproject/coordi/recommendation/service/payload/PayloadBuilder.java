@@ -4,12 +4,17 @@ import com.finalproject.coordi.recommendation.dto.api.PayloadDto;
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.GenderType;
 import com.finalproject.coordi.recommendation.dto.internal.ImageData;
 import com.finalproject.coordi.recommendation.dto.internal.Weather;
+import com.finalproject.coordi.exception.ErrorCode;
+import com.finalproject.coordi.exception.recommendation.RecommendationException;
 import java.time.OffsetDateTime;
 import java.util.Locale;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 @Component
 public class PayloadBuilder {
+    public static final String DEFAULT_IMAGE_MIME_TYPE = "image/jpeg";
+
     public PayloadDto build(
         String systemPrompt,
         String userPromptTemplate,
@@ -20,23 +25,24 @@ public class PayloadBuilder {
         ImageData imageData
     ) {
         Weather safeWeather = safeWeather(weather);
-        ImageData safeImageData = safeImageData(imageData);
+        ImageData safeImageData = requireImageData(imageData);
 
         String userPrompt = String.format(
             userPromptTemplate,
             naturalText,
             safeGender(gender),
             scheduleTime,
-            safeDouble(safeWeather.temperature()),
             safeDouble(safeWeather.feelsLike()),
             safeText(safeWeather.weatherStatus()),
-            safeText(safeWeather.rainProbability()),
-            safeText(safeWeather.weatherSource())
+            safeText(safeWeather.rainProbability())
         );
         return new PayloadDto(
             systemPrompt,
             userPrompt,
-            new PayloadDto.PayloadImageData(safeImageBytes(safeImageData.imageBytes()), safeText(safeImageData.mimeType()))
+            new PayloadDto.PayloadImageData(
+                safeImageData.imageBytes(),
+                safeImageData.mimeType()
+            )
         );
     }
 
@@ -59,17 +65,17 @@ public class PayloadBuilder {
         return weather;
     }
 
-    private ImageData safeImageData(ImageData imageData) {
-        if (imageData == null) {
-            return new ImageData(new byte[0], "");
+    private ImageData requireImageData(ImageData imageData) {
+        if (imageData == null
+            || imageData.imageBytes() == null
+            || imageData.imageBytes().length == 0) {
+            throw new RecommendationException.ValidationException(ErrorCode.RECOMMENDATION_GEMINI_INVALID_ARGUMENT);
         }
-        return imageData;
-    }
 
-    private byte[] safeImageBytes(byte[] imageBytes) {
-        if (imageBytes == null) {
-            return new byte[0];
-        }
-        return imageBytes;
+        String mimeType = StringUtils.hasText(imageData.mimeType())
+            ? imageData.mimeType()
+            : DEFAULT_IMAGE_MIME_TYPE;
+
+        return new ImageData(imageData.imageBytes(), mimeType);
     }
 }

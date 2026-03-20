@@ -1,15 +1,19 @@
 package com.finalproject.coordi.recommendation.service;
 
 import com.finalproject.coordi.recommendation.config.annotation.StageExecutionTimes;
+import com.finalproject.coordi.recommendation.config.RecommendationProperties;
+import com.finalproject.coordi.recommendation.dto.api.PayloadDto;
 import com.finalproject.coordi.recommendation.dto.api.CoordinationOutputDto;
 import com.finalproject.coordi.recommendation.dto.api.RawBlueprintDto;
 import com.finalproject.coordi.recommendation.dto.api.RecommendationDebugResponseDto;
 import com.finalproject.coordi.recommendation.dto.api.UserRequestDto;
+import com.finalproject.coordi.recommendation.dto.internal.NormalizedBlueprintDto;
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.CategoryType;
 import com.finalproject.coordi.recommendation.service.blueprint.BlueprintStage;
 import com.finalproject.coordi.recommendation.service.blueprint.BlueprintStage.BlueprintStageResult;
 import com.finalproject.coordi.recommendation.service.coordination.CoordinationStage;
 import com.finalproject.coordi.recommendation.service.finaloutput.FinalOutputBuilder;
+import com.finalproject.coordi.recommendation.service.finaloutput.FinalOutputPersistenceService;
 import com.finalproject.coordi.recommendation.service.imagefilter.ImageFilterStage;
 import com.finalproject.coordi.recommendation.service.payload.PayloadStage;
 import com.finalproject.coordi.recommendation.service.productSearch.ProductSearchStage;
@@ -38,65 +42,114 @@ public class Orchestrator {
     private final ImageFilterStage imageFilterStage;
     private final CoordinationStage coordinationStage;
     private final FinalOutputBuilder finalOutputBuilder;
+    private final FinalOutputPersistenceService finalOutputPersistenceService;
     private final StageExecutionTimes stageExecutionTimes;
+    private final RecommendationProperties recommendationProperties;
 
     /**
      * recommendation 표준 응답만 필요한 일반 API 진입점이다.
      */
-    public CoordinationOutputDto coordinate(@Valid UserRequestDto request) {
-        return runPipeline(request).coordinationOutput();
+    public CoordinationOutputDto coordinate(@Valid UserRequestDto request, Long userId) {
+        PipelineArtifacts pipelineArtifacts = runPipelineStages(request);
+        return finalOutputBuilder.buildAndPersist(
+            request,
+            userId,
+            pipelineArtifacts.payload(),
+            pipelineArtifacts.normalizedBlueprint(),
+            pipelineArtifacts.effectiveProducts(),
+            pipelineArtifacts.slotSearchQueries()
+        );
     }
 
     /**
      * 디버그 화면용으로 중간 산출물과 stage timing까지 함께 반환하는 진입점이다.
      */
     public RecommendationDebugResponseDto coordinateDebug(@Valid UserRequestDto request) {
-        PipelineResult pipelineResult = runPipeline(request);
-        return RecommendationDebugResponseDto.from(
-            pipelineResult.rawBlueprint(),
-            pipelineResult.coordinationOutput(),
-            pipelineResult.slotSearchQueries(),
-            pipelineResult.searchedProductsBySlot(),
-            pipelineResult.filteredProductsBySlot(),
-            stageExecutionTimes.snapshot()
-        );
+        return coordinateDebug(request, null, false);
     }
 
-    private PipelineResult runPipeline(@Valid UserRequestDto request) {
-        // 사용자 입력, 날씨, 프롬프트 조합하여 payload 생성
-        var payload = payloadStage.build(request).payload();
+    /**
+     * 디버그 화면 요청에서 필요 시 저장까지 함께 수행한다.
+     */
+    public RecommendationDebugResponseDto coordinateDebug(@Valid UserRequestDto request, Long userId, boolean persist) {
+        PipelineArtifacts pipelineArtifacts = runPipelineStages(request);
+        CoordinationOutputDto coordinationOutput = persist
+            ? finalOutputBuilder.buildAndPersist(
+                request,
+                userId,
+                pipelineArtifacts.payload(),
+                pipelineArtifacts.normalizedBlueprint(),
+                pipelineArtifacts.effectiveProducts(),
+                pipelineArtifacts.slotSearchQueries()
+            )
+            : finalOutputBuilder.build(
+                pipelineArtifacts.normalizedBlueprint(),
+                pipelineArtifacts.effectiveProducts()
+            );
+        PipelineResult pipelineResult = new PipelineResult(
+            pipelineArtifacts.rawBlueprint(),
+            coordinationOutput,
+            pipelineArtifacts.slotSearchQueries()
+        );
+        return RecommendationDebugResponseDto.from(pipelineResult, stageExecutionTimes.snapshot());
+    }
 
-        // ai 호출하여 blueprint 생성, 검증, 정규화(BlueprintStage 내에서 모두 수행)
+    /**
+     * 이미 생성된 디버그 결과를 재추천 없이 저장한다.
+     */
+    public void saveDebugResult(
+        @Valid UserRequestDto request,
+        @Valid RecommendationDebugResponseDto debugResult,
+        Long userId
+    ) {
+        finalOutputPersistenceService.saveDebugResult(userId, request, debugResult);
+    }
+
+    private PipelineArtifacts runPipelineStages(@Valid UserRequestDto request) {
+        // 사용자 입력, 날씨, 프롬프트 조합하여 payload 생성
+        PayloadDto payload = payloadStage.build(request).payload();
+
+        // AI 호출하여 blueprint 생성, 검증, 정규화
         BlueprintStageResult blueprintResult = blueprintStage.generate(payload);
 
-        // product search 단계에서 슬롯별 검색 쿼리 생성 및 검색을 수행한다.
-        ProductSearchStageResult productSearchResult = productSearchStage.search(blueprintResult.normalizedBlueprint());
-
-        // image filter 단계에서 검색 후보를 1차 이미지 품질 기준으로 필터링한다.
-        var imageFilterResult = imageFilterStage.filter(productSearchResult.searchedProductsBySlot());
-
-        // 이후 observation/scoring/final-output 고도화 이전 단계에서는 빈 매칭 결과를 사용한다.
-        var coordinationResult = coordinationStage.match(blueprintResult.normalizedBlueprint(), productSearchResult);
-        CoordinationOutputDto coordinationOutput = finalOutputBuilder.build(
+        // 슬롯별 검색 쿼리 생성 및 상품 검색
+        ProductSearchStageResult productSearchResult = productSearchStage.search(
             blueprintResult.normalizedBlueprint(),
-            coordinationResult
+            request.brandEnabled()
         );
 
-        return new PipelineResult(
+        // FAST_TOP1: 검색 결과를 바로 최종 출력에 사용한다.
+        // LEGACY_FULL: 기존 filter/coordination 경로를 유지한다.
+        Map<CategoryType, List<SearchedProduct>> effectiveProducts;
+        if (recommendationProperties.isFastTop1Enabled()) {
+            effectiveProducts = productSearchResult.searchedProductsBySlot();
+        } else {
+            effectiveProducts = imageFilterStage.filter(productSearchResult.searchedProductsBySlot()).filteredProductsBySlot();
+            coordinationStage.match(blueprintResult.normalizedBlueprint(), productSearchResult);
+        }
+
+        return new PipelineArtifacts(
+            payload,
             blueprintResult.rawBlueprint(),
-            coordinationOutput,
+            blueprintResult.normalizedBlueprint(),
             productSearchResult.slotSearchQueries(),
-            productSearchResult.searchedProductsBySlot(),
-            imageFilterResult.filteredProductsBySlot()
+            effectiveProducts
         );
     }
 
-    private record PipelineResult(
+    private record PipelineArtifacts(
+        PayloadDto payload,
+        RawBlueprintDto rawBlueprint,
+        NormalizedBlueprintDto normalizedBlueprint,
+        Map<CategoryType, ShoppingSearchQuery> slotSearchQueries,
+        Map<CategoryType, List<SearchedProduct>> effectiveProducts
+    ) {
+    }
+
+    public static record PipelineResult(
         RawBlueprintDto rawBlueprint,
         CoordinationOutputDto coordinationOutput,
-        Map<CategoryType, ShoppingSearchQuery> slotSearchQueries,
-        Map<CategoryType, List<SearchedProduct>> searchedProductsBySlot,
-        Map<CategoryType, List<SearchedProduct>> filteredProductsBySlot
+        Map<CategoryType, ShoppingSearchQuery> slotSearchQueries
     ) {
     }
 }
