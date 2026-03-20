@@ -21,8 +21,14 @@ public class ProductSearchStage {
     private final ShoppingSearcher shoppingSearcher;
 
     @LogStage("product.search")
-    public ProductSearchStageResult search(NormalizedBlueprintDto normalizedBlueprint) {
-        Map<CategoryType, ShoppingSearchQuery> slotSearchQueries = searchQueryExtractor.extract(normalizedBlueprint);
+    public ProductSearchStageResult search(
+        NormalizedBlueprintDto normalizedBlueprint,
+        Boolean brandEnabled
+    ) {
+        Map<CategoryType, ShoppingSearchQuery> slotSearchQueries = searchQueryExtractor.extract(
+            normalizedBlueprint,
+            brandEnabled
+        );
         Map<CategoryType, List<SearchedProduct>> searchedProductsBySlot = shoppingSearcher.searchBySlot(slotSearchQueries);
         return new ProductSearchStageResult(slotSearchQueries, searchedProductsBySlot);
     }

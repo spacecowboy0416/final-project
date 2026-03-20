@@ -1,12 +1,12 @@
 package com.finalproject.coordi.recommendation.infra.navershopping;
 
 import com.finalproject.coordi.exception.recommendation.RecommendationException;
-import com.finalproject.coordi.recommendation.infra.navershopping.NaverShoppingSchemaProvider.NaverShoppingItemResponse;
-import com.finalproject.coordi.recommendation.infra.navershopping.NaverShoppingSchemaProvider.NaverShoppingSearchResponse;
+import com.finalproject.coordi.recommendation.infra.navershopping.policy.NaverShoppingQueryPolicy;
 import com.finalproject.coordi.recommendation.service.productSearch.ShoppingPort;
 import com.finalproject.coordi.recommendation.service.productSearch.ShoppingPort.SearchedProduct;
 import com.finalproject.coordi.recommendation.service.productSearch.ShoppingPort.ShoppingSearchQuery;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -32,10 +32,12 @@ import org.springframework.web.util.UriComponentsBuilder;
 @Component
 @RequiredArgsConstructor
 public class NaverShoppingAdapter implements ShoppingPort {
-
+    private static final String HTTP_PREFIX = "http://";
+    private static final String HTTPS_PREFIX = "https://";
+    private static final String PROTOCOL_RELATIVE_PREFIX = "//";
 
     private final NaverShoppingProperties shoppingProperties;
-    private final NaverShoppingSchemaProvider schemaProvider;
+    private final NaverShoppingQueryPolicy queryPolicy;
     @Qualifier("naverShoppingRestClient")
     private final RestClient naverShoppingRestClient;
 
@@ -47,8 +49,8 @@ public class NaverShoppingAdapter implements ShoppingPort {
         URI requestUri = UriComponentsBuilder.fromUriString(shoppingProperties.getEndpoint())
             .queryParam("query", query.searchKeyword())
             .queryParam("display", query.resultLimit())
-            .queryParam("start", schemaProvider.start())
-            .queryParam("sort", schemaProvider.sort().apiValue())
+            .queryParam("start", queryPolicy.start())
+            .queryParam("sort", queryPolicy.sort().getApiValue())
             .encode()
             .build()
             .toUri();
@@ -118,7 +120,7 @@ public class NaverShoppingAdapter implements ShoppingPort {
             stripHtml(item.title()),
             item.brand(),
             parsePrice(item.lprice()),
-            item.image(),
+            normalizeImageUrl(item.image()),
             item.link()
         );
     }
@@ -136,6 +138,21 @@ public class NaverShoppingAdapter implements ShoppingPort {
 
     private String stripHtml(String value) {
         return value == null ? null : Jsoup.parse(value).text();
+    }
+
+    private String normalizeImageUrl(String imageUrl) {
+        if (!StringUtils.hasText(imageUrl)) {
+            return imageUrl;
+        }
+
+        // HTTPS 화면에서 혼합 콘텐츠로 차단되지 않도록 네이버 이미지 URL 스킴을 정규화한다.
+        if (imageUrl.startsWith(PROTOCOL_RELATIVE_PREFIX)) {
+            return HTTPS_PREFIX + imageUrl.substring(PROTOCOL_RELATIVE_PREFIX.length());
+        }
+        if (imageUrl.startsWith(HTTP_PREFIX)) {
+            return HTTPS_PREFIX + imageUrl.substring(HTTP_PREFIX.length());
+        }
+        return imageUrl;
     }
 
     private String readResponseBody(ClientHttpResponse response) {
@@ -163,6 +180,22 @@ public class NaverShoppingAdapter implements ShoppingPort {
             return "unknown";
         }
     }
-}
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    private record NaverShoppingSearchResponse(
+        List<NaverShoppingItemResponse> items
+    ) {
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    private record NaverShoppingItemResponse(
+        String productId,
+        String title,
+        String brand,
+        String lprice,
+        String image,
+        String link
+    ) {
+    }
+}
 

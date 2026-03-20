@@ -1,18 +1,24 @@
 package com.finalproject.coordi.recommendation.controller;
 
+import com.finalproject.coordi.exception.BusinessException;
+import com.finalproject.coordi.exception.ErrorCode;
 import com.finalproject.coordi.recommendation.dto.api.CoordinationOutputDto;
 import com.finalproject.coordi.recommendation.dto.api.RecommendationDebugResponseDto;
+import com.finalproject.coordi.recommendation.dto.api.RecommendationSaveRequestDto;
 import com.finalproject.coordi.recommendation.dto.api.UserRequestDto;
-import com.finalproject.coordi.recommendation.config.RecommendationImageProperties;
+import com.finalproject.coordi.recommendation.config.RecommendationProperties;
 import com.finalproject.coordi.recommendation.service.Orchestrator;
 import com.finalproject.coordi.recommendation.service.productSearch.ShoppingSearcher;
 import com.finalproject.coordi.recommendation.service.productSearch.ShoppingPort.SearchedProduct;
 import com.finalproject.coordi.recommendation.infra.gemini.GeminiProperties;
 import com.finalproject.coordi.recommendation.infra.map.KakaoMapProperties;
+import com.finalproject.coordi.users.annotation.LoginUser;
+import com.finalproject.coordi.users.dto.UsersDto;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -35,14 +41,26 @@ public class RecommendationController {
     private final ShoppingSearcher shoppingSearcher;
     private final KakaoMapProperties kakaoMapProperties;
     private final GeminiProperties geminiProperties;
-    private final RecommendationImageProperties recommendationImageProperties;
+    private final RecommendationProperties recommendationProperties;
 
-    // 추천 테스트 페이지를 반환한다.
+    // 추천 입력/출력 페이지를 반환한다.
     @GetMapping("/recommend")
+    public String recommendPage(
+        @RequestParam(value = "q", required = false) String naturalText,
+        Model model
+    ) {
+        model.addAttribute("initialNaturalText", naturalText == null ? "" : naturalText);
+        model.addAttribute("kakaoMapApiKey", kakaoMapProperties.getJsKey());
+        model.addAttribute("recommendationImageMaxBytes", recommendationProperties.getMaxSize().toBytes());
+        return "recommendation/recommend";
+    }
+
+    // 디버그 테스트 페이지 진입점 (/recommend-test, /recommend/test 모두 허용)
+    @GetMapping({"/recommend-test", "/recommend/test"})
     public String recommendTestPage(Model model) {
         model.addAttribute("kakaoMapApiKey", kakaoMapProperties.getJsKey());
         model.addAttribute("geminiModel", geminiProperties.getModel());
-        model.addAttribute("recommendationImageMaxBytes", recommendationImageProperties.getMaxSize().toBytes());
+        model.addAttribute("recommendationImageMaxBytes", recommendationProperties.getMaxSize().toBytes());
         return "recommendation/recommend-test";
     }
 
@@ -50,17 +68,42 @@ public class RecommendationController {
     @PostMapping("/api/recommendations")
     @ResponseBody
     public ResponseEntity<CoordinationOutputDto> recommend(
+        @LoginUser UsersDto loginUser,
         @Valid @RequestBody UserRequestDto request
     ) {
-        return ResponseEntity.ok(orchestratorService.coordinate(request));
+        Long userId = loginUser == null ? null : loginUser.getUserId();
+        return ResponseEntity.ok(orchestratorService.coordinate(request, userId));
     }
 
     @PostMapping("/api/recommendations/debug")
     @ResponseBody
     public ResponseEntity<RecommendationDebugResponseDto> recommendDebug(
+        @LoginUser UsersDto loginUser,
+        @RequestParam(value = "persist", defaultValue = "false") boolean persist,
         @Valid @RequestBody UserRequestDto request
     ) {
-        return ResponseEntity.ok(orchestratorService.coordinateDebug(request));
+        Long userId = loginUser == null ? null : loginUser.getUserId();
+        if (persist && userId == null) {
+            // 저장 요청은 로그인 사용자만 허용한다.
+            throw new BusinessException(ErrorCode.AUTH_FAILED);
+        }
+        return ResponseEntity.ok(orchestratorService.coordinateDebug(request, userId, persist));
+    }
+
+    @PostMapping("/api/recommendations/debug/save")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> saveRecommendationDebugResult(
+        @LoginUser UsersDto loginUser,
+        @Valid @RequestBody RecommendationSaveRequestDto request
+    ) {
+        Long userId = loginUser == null ? null : loginUser.getUserId();
+        if (userId == null) {
+            // 저장 요청은 로그인 사용자만 허용한다.
+            throw new BusinessException(ErrorCode.AUTH_FAILED);
+        }
+
+        orchestratorService.saveDebugResult(request.request(), request.debugResult(), userId);
+        return ResponseEntity.ok(Map.of("saved", true));
     }
 
     @GetMapping("/api/recommendations/debug/shopping")
@@ -71,5 +114,3 @@ public class RecommendationController {
         return ResponseEntity.ok(shoppingSearcher.search(query));
     }
 }
-
-
