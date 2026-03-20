@@ -35,7 +35,16 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         // 1. 유저 정보 추출 (이메일이 없어도 유저를 식별할 수 있도록 서비스명과 고유 ID를 사용)
         String provider = ((org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken) authentication).getAuthorizedClientRegistrationId();
-        String providerUserId = oAuth2User.getName();
+        
+        String providerUserId;
+        if ("naver".equals(provider)) {
+            // 네이버
+            Map<String, Object> responseMap = (Map<String, Object>) attributes.get("response");
+            providerUserId = (String) responseMap.get("id");
+        } else {
+            // 구글, 카카오
+            providerUserId = oAuth2User.getName();
+        }
 
         UsersDto user = usersService.findByProviderAndProviderUserId(provider, providerUserId);
 
