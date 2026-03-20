@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-
+<!-- 관리자 페이지: 커뮤니티 게시글 관리용 데이터베이스 쿼리 -->
 <mapper namespace="com.finalproject.coordi.admin.community.mapper.CommunityMapper">
 
+    <!-- 커뮤니티 게시글 목록 조회 -->
     <select id="selectBoardPostList" resultType="com.finalproject.coordi.admin.community.dto.AdminCommunityDto">
         SELECT
             p.post_id as postId,
@@ -18,12 +19,14 @@
         ORDER BY p.created_at DESC
     </select>
 
+    <!-- 게시글 공개 여부 수정 -->
     <update id="updatePostVisibility">
         UPDATE board_post
         SET is_public = #{isPublic}
         WHERE post_id = #{postId}
     </update>
 
+    <!-- 게시글 삭제 -->
     <delete id="deletePost">
         DELETE FROM board_post WHERE post_id = #{postId}
     </delete>
