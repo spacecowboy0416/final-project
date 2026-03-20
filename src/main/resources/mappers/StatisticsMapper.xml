@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-
+<!-- 관리자 페이지: 통계 데이터용 데이터베이스 쿼리 -->
 <mapper namespace="com.finalproject.coordi.admin.statistics.mapper.StatisticsMapper">
 
-    <!-- 시스템 통계 -->
+    <!-- 시스템 요약 통계 조회 -->
     <select id="selectSystemSummary" resultType="com.finalproject.coordi.admin.statistics.dto.AdminStatisticsDto">
         SELECT
             (SELECT COUNT(*) FROM users) as totalUsers,
@@ -14,6 +14,7 @@
             (SELECT COUNT(*) FROM system_error_log WHERE last_occurred_at > DATE_SUB(NOW(), INTERVAL 24 HOUR)) as activeErrors
     </select>
 
+    <!-- 일별 가입 및 추천 수 트렌드 조회 -->
     <select id="selectDailyTrends" resultType="map">
         SELECT 
             d.date,
@@ -38,6 +39,7 @@
         ORDER BY d.date ASC
     </select>
 
+    <!-- 인기 태그 조회 (최근 7일 사용 빈도순) -->
     <select id="selectPopularTags" resultType="com.finalproject.coordi.admin.statistics.dto.AdminStatisticsDto$PopularTagDto">
         SELECT 
             t.name as tagName,
