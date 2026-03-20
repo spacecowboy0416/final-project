@@ -166,21 +166,23 @@ async function loadTagsForType(type, container) {
         : '<p class="empty-list-message">이 종류에는 등록된 태그가 없습니다.</p>';
 
     container.innerHTML = `
-            <div class="tag-list-container">
-                <div class="tag-list">
-                    ${tagListHtml}
+            <div class="item-management-layout">
+                <div class="tag-list-container">
+                    <div class="tag-list">
+                        ${tagListHtml}
+                    </div>
                 </div>
-            </div>
-            <div class="tag-form-container" style="margin-top: 1.5rem;">
-                <h2 class="item-management-title" style="font-size: 1.25rem;">'${type}' 태그 추가</h2>
-                <form class="add-tag-form" data-type="${type}">
-                    <div class="form-group">
-                         <input type="text" name="name" class="form-input" placeholder="새 태그 이름..." required>
-                    </div>
-                    <div class="form-actions">
-                        <button type="submit" class="btn btn-primary">추가</button>
-                    </div>
-                </form>
+                <div class="tag-form-container">
+                    <h2 class="item-management-title" style="font-size: 1.25rem;">'${type}' 태그 추가</h2>
+                    <form class="add-tag-form" data-type="${type}">
+                        <div class="form-group">
+                             <input type="text" name="name" class="form-input" placeholder="새 태그 이름..." required>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">추가</button>
+                        </div>
+                    </form>
+                </div>
             </div>
         `;
   } catch (error) {
