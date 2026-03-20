@@ -13,6 +13,8 @@
   const DEFAULT_LOCATION_TEXT = "서울";
   const MAP_SCRIPT_ID = "kakao-map-script";
   const MAP_LEVEL = 4;
+  const SAMPLE_IMAGE_URL = "/recommendation/image/KRK-LSX-JK251189-01.webp";
+  const SAMPLE_IMAGE_FILE_NAME = "KRK-LSX-JK251189-01.webp";
   const WEATHER_FALLBACK = {
     weatherStatus: "CLOUDY",
     weatherStateKo: "흐림",
@@ -118,6 +120,7 @@
     elements.scheduleTime.value = toDateTimeLocalString(new Date());
     bindEvents();
     renderEmptyItems();
+    preloadSampleImageOnInit();
 
     try {
       await initializeLocationAndMap();
@@ -125,6 +128,47 @@
       console.error("추천 페이지 초기화 실패", error);
       applyWeatherSummary(WEATHER_FALLBACK, true);
       setFeedback("위치 또는 날씨 정보를 기본값으로 표시합니다.", "error");
+    }
+  }
+
+  async function preloadSampleImageOnInit() {
+    try {
+      const response = await fetch(SAMPLE_IMAGE_URL);
+      if (!response.ok) {
+        throw new Error("샘플 이미지를 불러오지 못했습니다.");
+      }
+
+      const sampleBlob = await response.blob();
+      if (
+        RECOMMENDATION_IMAGE_MAX_BYTES > 0 &&
+        sampleBlob.size > RECOMMENDATION_IMAGE_MAX_BYTES
+      ) {
+        throw new Error("샘플 이미지 크기가 업로드 제한을 초과했습니다.");
+      }
+
+      const sampleFile = new File([sampleBlob], SAMPLE_IMAGE_FILE_NAME, {
+        type: sampleBlob.type || "image/webp",
+      });
+      const imageBase64 = await fileToBase64(sampleFile);
+
+      if (elements.imagePreview.dataset.objectUrl) {
+        URL.revokeObjectURL(elements.imagePreview.dataset.objectUrl);
+      }
+
+      state.imageBase64 = imageBase64;
+      state.imageMimeType = sampleFile.type || "image/webp";
+
+      // 초기 로딩 시 샘플 이미지를 업로드된 이미지처럼 동일한 상태로 맞춘다.
+      const objectUrl = URL.createObjectURL(sampleFile);
+      state.uploadedImageUrl = objectUrl;
+      elements.imagePreview.src = objectUrl;
+      elements.imagePreview.dataset.objectUrl = objectUrl;
+      elements.imagePreviewCard.classList.add("recommend-image-card--filled");
+      elements.imageMetaText.textContent = `${SAMPLE_IMAGE_FILE_NAME} · ${formatBytes(
+        sampleFile.size
+      )}`;
+    } catch (error) {
+      console.warn("초기 샘플 이미지 적용 실패", error);
     }
   }
 
@@ -194,17 +238,24 @@
       setFeedback("먼저 추천 결과를 생성해주세요.", "error");
       return;
     }
+    if (!state.currentDebugResult) {
+      setFeedback("저장할 추천 결과가 없습니다. 다시 추천을 생성해주세요.", "error");
+      return;
+    }
 
     try {
       setSaving(true);
       setFeedback("", "");
 
-      const response = await fetch("/api/recommendations/debug?persist=true", {
+      const response = await fetch("/api/recommendations/debug/save", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(state.currentRequestPayload),
+        body: JSON.stringify({
+          request: state.currentRequestPayload,
+          debugResult: state.currentDebugResult,
+        }),
       });
 
       const body = await response.json().catch(() => ({}));
@@ -212,10 +263,7 @@
         throw new Error(resolveErrorMessage(body));
       }
 
-      state.currentResult = body;
-      state.currentDebugResult = body;
       state.hasSavedCurrentResult = true;
-      renderResult(body, state.currentRequestPayload.naturalText);
       setFeedback("추천 결과를 저장했습니다.", "success");
     } catch (error) {
       console.error("추천 저장 실패", error);
@@ -644,6 +692,8 @@
       "recommend-loading-overlay--hidden",
       !isSubmitting
     );
+    // 제출 상태가 바뀌면 저장 버튼 비활성 조건도 즉시 다시 계산한다.
+    updateSaveButtonState();
   }
 
   function setSaving(isSaving) {

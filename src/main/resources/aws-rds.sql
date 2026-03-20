@@ -475,7 +475,7 @@ CREATE INDEX idx_recommendation_item_rec_slot ON recommendation_item (rec_id, sl
 CREATE INDEX idx_product_image_meta_product_created ON product_image_metadata (product_id, created_at); 
 
 -- =========================================================
--- 2026-03-19, codex, recommendation enum 기준 스키마/시드 통합 보강
+-- 2026-03-19, jin, recommendation enum 기준 스키마/시드 통합 보강
 -- =========================================================
 
 ALTER TABLE recommendation_item

@@ -4,6 +4,7 @@ import com.finalproject.coordi.exception.BusinessException;
 import com.finalproject.coordi.exception.ErrorCode;
 import com.finalproject.coordi.recommendation.dto.api.CoordinationOutputDto;
 import com.finalproject.coordi.recommendation.dto.api.RecommendationDebugResponseDto;
+import com.finalproject.coordi.recommendation.dto.api.RecommendationSaveRequestDto;
 import com.finalproject.coordi.recommendation.dto.api.UserRequestDto;
 import com.finalproject.coordi.recommendation.config.RecommendationProperties;
 import com.finalproject.coordi.recommendation.service.Orchestrator;
@@ -17,6 +18,7 @@ import com.finalproject.coordi.users.dto.UsersDto;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -86,6 +88,22 @@ public class RecommendationController {
             throw new BusinessException(ErrorCode.AUTH_FAILED);
         }
         return ResponseEntity.ok(orchestratorService.coordinateDebug(request, userId, persist));
+    }
+
+    @PostMapping("/api/recommendations/debug/save")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> saveRecommendationDebugResult(
+        @LoginUser UsersDto loginUser,
+        @Valid @RequestBody RecommendationSaveRequestDto request
+    ) {
+        Long userId = loginUser == null ? null : loginUser.getUserId();
+        if (userId == null) {
+            // 저장 요청은 로그인 사용자만 허용한다.
+            throw new BusinessException(ErrorCode.AUTH_FAILED);
+        }
+
+        orchestratorService.saveDebugResult(request.request(), request.debugResult(), userId);
+        return ResponseEntity.ok(Map.of("saved", true));
     }
 
     @GetMapping("/api/recommendations/debug/shopping")

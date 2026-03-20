@@ -97,6 +97,8 @@ public class FinalOutputBuilder {
                 top1Product == null ? (itemInfo == null ? "" : itemInfo.itemName()) : top1Product.productName(),
                 top1Product == null ? null : top1Product.productImageUrl(),
                 isAnchorSlot,
+                top1Product == null ? null : top1Product.marketplaceProvider(),
+                top1Product == null ? null : top1Product.marketplaceProductId(),
                 top1Product == null || isAnchorSlot ? null : top1Product.brandName(),
                 top1Product == null ? null : top1Product.salePrice(),
                 top1Product == null ? null : top1Product.productDetailUrl(),

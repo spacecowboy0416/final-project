@@ -13,6 +13,7 @@ import com.finalproject.coordi.recommendation.service.blueprint.BlueprintStage;
 import com.finalproject.coordi.recommendation.service.blueprint.BlueprintStage.BlueprintStageResult;
 import com.finalproject.coordi.recommendation.service.coordination.CoordinationStage;
 import com.finalproject.coordi.recommendation.service.finaloutput.FinalOutputBuilder;
+import com.finalproject.coordi.recommendation.service.finaloutput.FinalOutputPersistenceService;
 import com.finalproject.coordi.recommendation.service.imagefilter.ImageFilterStage;
 import com.finalproject.coordi.recommendation.service.payload.PayloadStage;
 import com.finalproject.coordi.recommendation.service.productSearch.ProductSearchStage;
@@ -41,6 +42,7 @@ public class Orchestrator {
     private final ImageFilterStage imageFilterStage;
     private final CoordinationStage coordinationStage;
     private final FinalOutputBuilder finalOutputBuilder;
+    private final FinalOutputPersistenceService finalOutputPersistenceService;
     private final StageExecutionTimes stageExecutionTimes;
     private final RecommendationProperties recommendationProperties;
 
@@ -90,6 +92,17 @@ public class Orchestrator {
             pipelineArtifacts.slotSearchQueries()
         );
         return RecommendationDebugResponseDto.from(pipelineResult, stageExecutionTimes.snapshot());
+    }
+
+    /**
+     * 이미 생성된 디버그 결과를 재추천 없이 저장한다.
+     */
+    public void saveDebugResult(
+        @Valid UserRequestDto request,
+        @Valid RecommendationDebugResponseDto debugResult,
+        Long userId
+    ) {
+        finalOutputPersistenceService.saveDebugResult(userId, request, debugResult);
     }
 
     private PipelineArtifacts runPipelineStages(@Valid UserRequestDto request) {

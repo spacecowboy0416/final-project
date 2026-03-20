@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.CategoryType;
 import com.finalproject.coordi.recommendation.domain.enums.ProductEnums.ProductCategoryCode;
 import com.finalproject.coordi.recommendation.dto.api.PayloadDto;
+import com.finalproject.coordi.recommendation.dto.api.CoordinationItemOutputDto;
+import com.finalproject.coordi.recommendation.dto.api.RecommendationDebugResponseDto;
 import com.finalproject.coordi.recommendation.dto.api.UserRequestDto;
 import com.finalproject.coordi.recommendation.dto.internal.NormalizedBlueprintDto;
 import com.finalproject.coordi.recommendation.dto.persistent.ProductDto;
@@ -15,6 +17,7 @@ import com.finalproject.coordi.recommendation.service.productSearch.ShoppingPort
 import com.finalproject.coordi.recommendation.service.productSearch.ShoppingPort.ShoppingSearchQuery;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -87,6 +90,52 @@ public class FinalOutputPersistenceService {
         }
     }
 
+    @Transactional
+    public void saveDebugResult(
+        Long userId,
+        UserRequestDto request,
+        RecommendationDebugResponseDto debugResult
+    ) {
+        if (userId == null || request == null || debugResult == null) {
+            return;
+        }
+
+        RecommendationDto recommendationDto = RecommendationDto.builder()
+            .userId(userId)
+            .inputMode(INPUT_MODE_TEXT)
+            .inputText(request.naturalText())
+            .productOption(PRODUCT_OPTION_SEARCH_TOP1)
+            .tpoType(debugResult.tpoType() == null ? null : debugResult.tpoType().getCode())
+            .styleType(debugResult.styleType() == null ? null : debugResult.styleType().getCode())
+            .isSaved(true)
+            .aiBlueprint(toJson(debugResult.rawBlueprint()))
+            .aiExplanation(debugResult.aiExplanation() == null ? "" : debugResult.aiExplanation())
+            .build();
+
+        recommendationMapper.insertRecommendation(recommendationDto);
+        Long recId = recommendationDto.getRecId();
+        if (recId == null) {
+            return;
+        }
+
+        for (CategoryType categoryType : CategoryType.values()) {
+            CoordinationItemOutputDto item = findCoordinationItem(debugResult, categoryType);
+            Long productId = upsertProductFromCoordinationItem(categoryType, item);
+            RecommendationItemDto recommendationItemDto = RecommendationItemDto.builder()
+                .recId(recId)
+                .slotKey(categoryType.getCode())
+                .sourceType(SOURCE_TYPE_PRODUCT)
+                .productId(productId)
+                .searchQuery(extractSearchQuery(categoryType, debugResult))
+                .priority(item == null || item.priority() == null ? null : item.priority().getCode())
+                .matchScore(productId == null ? 0.0d : item.matchScore())
+                .reason(item == null || item.reasoning() == null ? "" : item.reasoning())
+                .build();
+            recommendationMapper.insertRecommendationItem(recommendationItemDto);
+            linkRecommendationItemToCloset(userId, productId, recommendationItemDto.getRecItemId());
+        }
+    }
+
     private Long upsertTop1Product(
         CategoryType categoryType,
         NormalizedBlueprintDto normalizedBlueprint,
@@ -147,6 +196,51 @@ public class FinalOutputPersistenceService {
         return recommendationMapper.findProductIdBySourceAndExternalId(source, top1Product.marketplaceProductId());
     }
 
+    private Long upsertProductFromCoordinationItem(
+        CategoryType categoryType,
+        CoordinationItemOutputDto item
+    ) {
+        if (
+            item == null ||
+            item.isMyItem() ||
+            item.marketplaceProductId() == null ||
+            item.marketplaceProductId().isBlank()
+        ) {
+            return null;
+        }
+
+        ProductCategoryCode productCategoryCode = ProductCategoryCode.fromSlotType(categoryType);
+        Long categoryId = recommendationMapper.findCategoryIdByCode(productCategoryCode.getCode());
+        if (categoryId == null) {
+            return null;
+        }
+
+        String source = item.marketplaceProvider() == null || item.marketplaceProvider().isBlank()
+            ? DEFAULT_PRODUCT_SOURCE
+            : item.marketplaceProvider();
+
+        ProductDto productDto = ProductDto.builder()
+            .source(source)
+            .externalId(item.marketplaceProductId())
+            .categoryId(categoryId)
+            .gender(null)
+            .name(item.itemName())
+            .brand(item.brandName())
+            .price(item.salePrice())
+            .imageUrl(item.imageUrl())
+            .link(item.productDetailUrl())
+            .color(item.color() == null ? null : item.color().getCode())
+            .material(item.material() == null ? null : item.material().getCode())
+            .fit(item.fit() == null ? null : item.fit().getCode())
+            .style(item.style() == null ? null : item.style().getCode())
+            .tempMin(item.tempMin())
+            .tempMax(item.tempMax())
+            .build();
+
+        recommendationMapper.upsertProduct(productDto);
+        return recommendationMapper.findProductIdBySourceAndExternalId(source, item.marketplaceProductId());
+    }
+
     // effectiveProducts 에서 슬롯별 TOP1 상품을 추출한다.
     private SearchedProduct extractTop1Product(
         CategoryType categoryType,
@@ -193,6 +287,27 @@ public class FinalOutputPersistenceService {
         }
         String aiExplanation = normalizedBlueprint.aiBlueprint().aiExplanation();
         return aiExplanation == null ? "" : aiExplanation;
+    }
+
+    private CoordinationItemOutputDto findCoordinationItem(
+        RecommendationDebugResponseDto debugResult,
+        CategoryType categoryType
+    ) {
+        if (debugResult.coordination() == null || debugResult.coordination().isEmpty()) {
+            return null;
+        }
+        Optional<CoordinationItemOutputDto> matchedItem = debugResult.coordination().stream()
+            .filter(item -> item != null && item.slotKey() == categoryType)
+            .findFirst();
+        return matchedItem.orElse(null);
+    }
+
+    private String extractSearchQuery(CategoryType categoryType, RecommendationDebugResponseDto debugResult) {
+        if (debugResult.slotSearchQueries() == null || debugResult.slotSearchQueries().isEmpty()) {
+            return "";
+        }
+        String query = debugResult.slotSearchQueries().get(categoryType.getCode());
+        return query == null ? "" : query;
     }
 
     // 추천 상품이 실제 product 로 확정된 경우에만 사용자 closet ownership 을 연결한다.

@@ -16,6 +16,8 @@ public record CoordinationItemOutputDto(
     String itemName,
     String imageUrl,
     boolean isMyItem,
+    String marketplaceProvider,
+    String marketplaceProductId,
     String brandName,
     Integer salePrice,
     String productDetailUrl,
