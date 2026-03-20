@@ -166,6 +166,12 @@ public final class RecommendationException {
         );
     }
 
+    public static ValidationException blueprintAiExplanationInvalid() {
+        return new ValidationException(
+            ErrorCode.RECOMMENDATION_BLUEPRINT_AI_EXPLANATION_INVALID
+        );
+    }
+
     public static ComponentException promptTemplateReadFailed(IOException exception) {
         return new ComponentException(ErrorCode.RECOMMENDATION_PROMPT_TEMPLATE_READ_FAILED, exception);
     }

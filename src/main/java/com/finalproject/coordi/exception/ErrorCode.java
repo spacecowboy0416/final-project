@@ -33,6 +33,7 @@ public enum ErrorCode {
     RECOMMENDATION_BLUEPRINT_TYPE_MISMATCH(HttpStatus.BAD_GATEWAY, "R123", "검증된 blueprint 타입이 JsonNode가 아닙니다."),
     RECOMMENDATION_BLUEPRINT_ENUM_INVALID(HttpStatus.BAD_GATEWAY, "R124", "AI blueprint enum 코드가 유효하지 않습니다."),
     RECOMMENDATION_BLUEPRINT_REQUIRED_SLOTS_MISSING(HttpStatus.BAD_REQUEST, "R125", "blueprint 필수 슬롯이 누락되었습니다."),
+    RECOMMENDATION_BLUEPRINT_AI_EXPLANATION_INVALID(HttpStatus.BAD_GATEWAY, "R126", "AI blueprint ai_explanation은 한글 문장이어야 합니다."),
     RECOMMENDATION_VALIDATION_NATURAL_TEXT_REQUIRED(HttpStatus.BAD_REQUEST, "R130", "요청 사항을 입력해주세요."),
     RECOMMENDATION_VALIDATION_LOCATION_REQUIRED(HttpStatus.BAD_REQUEST, "R131", "위치 정보(위도/경도)가 필요합니다."),
     RECOMMENDATION_PROMPT_TEMPLATE_READ_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "R140", "프롬프트 템플릿을 읽지 못했습니다."),

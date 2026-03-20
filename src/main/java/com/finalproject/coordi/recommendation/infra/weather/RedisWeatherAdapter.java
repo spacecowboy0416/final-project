@@ -2,8 +2,9 @@ package com.finalproject.coordi.recommendation.infra.weather;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.finalproject.coordi.exception.recommendation.RecommendationException;
-import com.finalproject.coordi.recommendation.domain.WeatherMappingKeyPolicy;
+import com.finalproject.coordi.recommendation.domain.enums.WeatherEnums.RainProbabilityType;
 import com.finalproject.coordi.recommendation.domain.enums.WeatherEnums.WeatherSourceType;
+import com.finalproject.coordi.recommendation.domain.enums.WeatherEnums.WeatherStatusType;
 import com.finalproject.coordi.recommendation.service.payload.WeatherPort;
 import java.time.OffsetDateTime;
 import lombok.RequiredArgsConstructor;
@@ -35,16 +36,21 @@ public class RedisWeatherAdapter implements WeatherPort {
         try {
             RedisWeatherDto cacheData = objectMapper.readValue(cachedBody, RedisWeatherDto.class);
             return new WeatherData(
-                cacheData.temperature(),
-                cacheData.feelsLike(),
-                cacheData.weatherStatus(),
-                cacheData.rainProbability(),
-                WeatherSourceType.REDIS_CACHE
-            );
+                    cacheData.temperature(),
+                    cacheData.feelsLike(),
+                    cacheData.weatherStatus(),
+                    cacheData.rainProbability(),
+                    WeatherSourceType.REDIS_CACHE);
         } catch (Exception exception) {
             throw RecommendationException.weatherCacheParseFailed(exception);
         }
     }
+
+    public record RedisWeatherDto(
+            Double temperature,
+            Double feelsLike,
+            WeatherStatusType weatherStatus,
+            RainProbabilityType rainProbability) {
+    }
+
 }
-
-

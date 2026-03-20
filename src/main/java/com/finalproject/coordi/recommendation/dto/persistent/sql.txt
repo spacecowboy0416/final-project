@@ -1,0 +1,94 @@
+-- recommendation enum 기준 정합성 후속 정리용 SQL
+-- 주의: 운영 DB에 바로 실행하지 말고, 대상 데이터 백업 및 영향 범위 확인 후 수동 검토한다.
+-- 목적: enum에는 없지만 tag 테이블에 남아 있는 legacy 코드 정리
+
+-- =========================================================
+-- 1) 실행 전 점검 쿼리
+-- =========================================================
+
+SELECT type, name
+FROM tag
+WHERE (type = 'STYLE' AND name IN ('comfortable', 'sporty', 'glam', 'feminine', 'modern', 'vintage'))
+   OR (type = 'TPO' AND name IN ('work', 'casual', 'funeral'))
+   OR (type = 'FIT' AND name IN ('regular', 'relaxed'))
+   OR (type = 'MATERIAL' AND name = 'knit')
+   OR (type = 'SEASON' AND name = 'autumn')
+ORDER BY type, name;
+
+-- closet_item 유니크 제약 추가 전 중복 여부 점검
+SELECT user_id, product_id, COUNT(*) AS duplicate_count
+FROM closet_item
+WHERE product_id IS NOT NULL
+GROUP BY user_id, product_id
+HAVING COUNT(*) > 1
+ORDER BY duplicate_count DESC, user_id, product_id;
+
+-- =========================================================
+-- 2) enum 기준으로 치환 가능한 legacy 코드 정리
+-- =========================================================
+
+-- SeasonType enum 은 fall 이므로 기존 autumn 을 fall 로 치환
+UPDATE tag
+SET name = 'fall'
+WHERE type = 'SEASON'
+  AND name = 'autumn';
+
+-- TPO legacy 코드 매핑
+UPDATE tag
+SET name = 'office'
+WHERE type = 'TPO'
+  AND name = 'work';
+
+UPDATE tag
+SET name = 'daily'
+WHERE type = 'TPO'
+  AND name = 'casual';
+
+-- FIT legacy 코드 매핑
+UPDATE tag
+SET name = 'standard'
+WHERE type = 'FIT'
+  AND name = 'regular';
+
+UPDATE tag
+SET name = 'semi_over'
+WHERE type = 'FIT'
+  AND name = 'relaxed';
+
+-- MATERIAL legacy 코드 매핑
+UPDATE tag
+SET name = 'cotton'
+WHERE type = 'MATERIAL'
+  AND name = 'knit';
+
+-- =========================================================
+-- 3) enum 에 없는 legacy 코드 삭제
+-- =========================================================
+
+-- 먼저 recommendation_item_tag / product_tag 가 legacy tag 를 참조 중인지 점검한다.
+SELECT t.type, t.name, COUNT(DISTINCT pt.product_id) AS product_ref_count, COUNT(DISTINCT rit.rec_item_id) AS rec_item_ref_count
+FROM tag t
+LEFT JOIN product_tag pt ON pt.tag_id = t.tag_id
+LEFT JOIN recommendation_item_tag rit ON rit.tag_id = t.tag_id
+WHERE (t.type = 'STYLE' AND t.name IN ('comfortable', 'sporty', 'glam', 'feminine', 'modern', 'vintage'))
+   OR (t.type = 'TPO' AND t.name = 'funeral')
+GROUP BY t.tag_id, t.type, t.name
+ORDER BY t.type, t.name;
+
+-- 참조가 없을 때만 삭제한다.
+DELETE FROM tag
+WHERE type = 'STYLE'
+  AND name IN ('comfortable', 'sporty', 'glam', 'feminine', 'modern', 'vintage');
+
+DELETE FROM tag
+WHERE type = 'TPO'
+  AND name IN ('funeral');
+
+-- =========================================================
+-- 4) 실행 후 검증
+-- =========================================================
+
+SELECT type, name
+FROM tag
+WHERE type IN ('STYLE', 'TPO', 'FIT', 'MATERIAL', 'SEASON', 'SLOT')
+ORDER BY type, name;

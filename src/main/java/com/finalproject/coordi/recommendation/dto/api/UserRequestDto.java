@@ -1,8 +1,6 @@
 package com.finalproject.coordi.recommendation.dto.api;
 
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.DecimalMax;
-import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -19,9 +17,10 @@ public record UserRequestDto(
     @NotNull
     OffsetDateTime scheduleTime,
     @Valid @NotNull
-    LocationInfo location,
-    @Valid @NotNull
-    ImageData imageData
+    WeatherInput weather,
+    String imageBase64,
+    String imageMimeType,
+    Boolean brandEnabled
 ) {
     public enum GenderType {
         MALE,
@@ -29,26 +28,10 @@ public record UserRequestDto(
         UNISEX
     }
 
-    public record LocationInfo(
-        @NotBlank String districtName,
-        String placeName,
-        String addressName,
-        @NotNull
-        @DecimalMin(value = "-90.0")
-        @DecimalMax(value = "90.0")
-        Double latitude,
-        @NotNull
-        @DecimalMin(value = "-180.0")
-        @DecimalMax(value = "180.0")
-        Double longitude
-    ) {
-    }
-
-    public record ImageData(
-        @NotNull
-        @Size(min = 1)
-        byte[] imageBytes,
-        @NotBlank String mimeType
+    public record WeatherInput(
+        @NotNull com.finalproject.coordi.recommendation.domain.enums.WeatherEnums.WeatherStatusType status,
+        @NotNull Double temperature,
+        @NotNull Double feelsLike
     ) {
     }
 }

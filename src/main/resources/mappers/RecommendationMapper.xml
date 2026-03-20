@@ -43,9 +43,7 @@
             product_id,
             search_query,
             priority,
-            selection_stage,
             match_score,
-            scoring_details_json,
             reason
         )
         VALUES
@@ -56,9 +54,7 @@
             #{productId},
             #{searchQuery},
             #{priority},
-            #{selectionStage},
             #{matchScore},
-            CAST(#{scoringDetailsJson} AS JSON),
             #{reason}
         )
     </insert>
@@ -172,6 +168,27 @@
         )
     </insert>
 
+    <insert id="insertClosetItem">
+        INSERT INTO closet_item
+        (
+            user_id,
+            product_id,
+            is_active
+        )
+        VALUES
+        (
+            #{userId},
+            #{productId},
+            TRUE
+        )
+    </insert>
+
+    <update id="updateRecommendationItemClosetItemId">
+        UPDATE recommendation_item
+        SET closet_item_id = #{closetItemId}
+        WHERE rec_item_id = #{recItemId}
+    </update>
+
     <select id="findCategoryIdByCode" resultType="long">
         SELECT category_id
         FROM category
@@ -209,6 +226,14 @@
         FROM product
         WHERE source = #{source}
           AND external_id = #{externalId}
+        LIMIT 1
+    </select>
+
+    <select id="findClosetItemIdByUserIdAndProductId" resultType="long">
+        SELECT item_id
+        FROM closet_item
+        WHERE user_id = #{userId}
+          AND product_id = #{productId}
         LIMIT 1
     </select>
 

@@ -33,7 +33,7 @@ public class GeminiAdapter implements AiPort {
     private final ObjectMapper objectMapper;
     private final Client geminiClient;
     private final GeminiProperties geminiProperties;
-    private final GeminiSchemaProvider schemaProvider;
+    private final GeminiBlueprintContract blueprintContract;
 
     /**
      * 입력 DTO와 출력 스키마를 사용해 Gemini blueprint 출력 DTO를 반환한다.
@@ -45,9 +45,9 @@ public class GeminiAdapter implements AiPort {
         stopWatch.start();
 
         GenerateContentConfig generationConfig = GenerateContentConfig.builder()
-            .responseMimeType(schemaProvider.responseMimeType())
+            .responseMimeType(blueprintContract.responseMimeType())
             .systemInstruction(Content.fromParts(Part.fromText(payload.systemPrompt())))
-            .responseSchema(schemaProvider.getOutputSchema())
+            .responseSchema(blueprintContract.getOutputSchema())
             .build();
 
         Content requestContent = Content.fromParts(
@@ -75,6 +75,7 @@ public class GeminiAdapter implements AiPort {
             if (stopWatch.isRunning()) {
                 stopWatch.stop();
             }
+            logGeminiException(exception);
             throw mapToCustomException(exception);
         }
     }
@@ -162,5 +163,39 @@ public class GeminiAdapter implements AiPort {
             return findMappableException(cause);
         }
         return exception;
+    }
+
+    /**
+     * Gemini 원본 예외를 변환 전에 로깅해 실제 응답 형태를 추적한다.
+     */
+    private void logGeminiException(Exception exception) {
+        if (exception == null) {
+            return;
+        }
+
+        Exception mappableException = findMappableException(exception);
+        switch (mappableException) {
+            case ClientException clientException -> log.error(
+                "gemini client exception code={} status={} message={}",
+                clientException.code(),
+                clientException.status(),
+                clientException.message(),
+                clientException
+            );
+            case RestClientResponseException restClientResponseException -> log.error(
+                "gemini rest exception status={} body={}",
+                restClientResponseException.getStatusCode(),
+                restClientResponseException.getResponseBodyAsString(),
+                restClientResponseException
+            );
+            default -> log.error(
+                "gemini unexpected exception type={} message={} causeType={} causeMessage={}",
+                exception.getClass().getName(),
+                exception.getMessage(),
+                exception.getCause() == null ? null : exception.getCause().getClass().getName(),
+                exception.getCause() == null ? null : exception.getCause().getMessage(),
+                exception
+            );
+        }
     }
 }
