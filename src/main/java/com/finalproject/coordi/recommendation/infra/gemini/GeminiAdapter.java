@@ -2,7 +2,7 @@ package com.finalproject.coordi.recommendation.infra.gemini;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.finalproject.coordi.exception.recommendation.RecommendationException;
-import com.finalproject.coordi.recommendation.dto.api.PayloadDto;
+import com.finalproject.coordi.recommendation.dto.api.UserRequestDto.PayloadDto;
 import com.finalproject.coordi.recommendation.dto.api.RawBlueprintDto;
 import com.finalproject.coordi.recommendation.service.blueprint.AiPort;
 import com.google.genai.errors.ApiException;
@@ -199,3 +199,4 @@ public class GeminiAdapter implements AiPort {
         }
     }
 }
+

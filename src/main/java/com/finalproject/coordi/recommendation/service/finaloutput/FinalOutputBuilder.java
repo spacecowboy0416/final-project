@@ -3,7 +3,7 @@ package com.finalproject.coordi.recommendation.service.finaloutput;
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.CategoryType;
 import com.finalproject.coordi.recommendation.dto.api.CoordinationItemOutputDto;
 import com.finalproject.coordi.recommendation.dto.api.CoordinationOutputDto;
-import com.finalproject.coordi.recommendation.dto.api.PayloadDto;
+import com.finalproject.coordi.recommendation.dto.api.UserRequestDto.PayloadDto;
 import com.finalproject.coordi.recommendation.dto.api.UserRequestDto;
 import com.finalproject.coordi.recommendation.dto.api.RawBlueprintDto;
 import com.finalproject.coordi.recommendation.dto.internal.NormalizedBlueprintDto;
@@ -83,7 +83,9 @@ public class FinalOutputBuilder {
         for (CategoryType categoryType : CategoryType.values()) {
             var itemInfo = normalizedBlueprint == null ? null : normalizedBlueprint.itemBySlot(categoryType);
             boolean isAnchorSlot = categoryType == anchorSlot;
-            SearchedProduct top1Product = isAnchorSlot ? null : extractTop1Product(categoryType, effectiveProducts);
+            SearchedProduct top1Product = isAnchorSlot
+                ? null
+                : EffectiveProductSelector.extractTop1Product(categoryType, effectiveProducts);
 
             Integer tempMin = null;
             Integer tempMax = null;
@@ -126,7 +128,7 @@ public class FinalOutputBuilder {
     /**
      * 선택 슬롯은 실제 출력 근거가 없는 경우 응답에서 제거한다.
      */
-    private boolean shouldSkipOptionalSlot(CoordinationItemOutputDto coordinationItem) {
+    public static boolean shouldSkipOptionalSlot(CoordinationItemOutputDto coordinationItem) {
         if (coordinationItem == null || !OPTIONAL_OUTPUT_SLOTS.contains(coordinationItem.slotKey())) {
             return false;
         }
@@ -141,22 +143,9 @@ public class FinalOutputBuilder {
     /**
      * 문자열 출력 근거 존재 여부를 공통 판정한다.
      */
-    private boolean hasText(String value) {
+    private static boolean hasText(String value) {
         return value != null && !value.isBlank();
     }
 
-    // 슬롯별 effectiveProducts 에서 TOP1 상품을 추출한다.
-    private SearchedProduct extractTop1Product(
-        CategoryType categoryType,
-        Map<CategoryType, List<SearchedProduct>> effectiveProducts
-    ) {
-        if (effectiveProducts == null) {
-            return null;
-        }
-        List<SearchedProduct> products = effectiveProducts.get(categoryType);
-        if (products == null || products.isEmpty()) {
-            return null;
-        }
-        return products.getFirst();
-    }
 }
+

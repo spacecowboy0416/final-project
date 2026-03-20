@@ -1,6 +1,6 @@
 package com.finalproject.coordi.recommendation.service.blueprint;
 
-import com.finalproject.coordi.recommendation.dto.api.PayloadDto;
+import com.finalproject.coordi.recommendation.dto.api.UserRequestDto.PayloadDto;
 import com.finalproject.coordi.recommendation.dto.api.RawBlueprintDto;
 
 /**
@@ -12,5 +12,6 @@ public interface AiPort {
      */
     RawBlueprintDto generateBlueprint(PayloadDto payload);
 }
+
 
 
