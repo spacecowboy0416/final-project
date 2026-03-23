@@ -4,11 +4,11 @@
 .section-title { margin: 0; font-size: 1.5rem; font-weight: 800; color: #111; }
 .section-divider { border: 0; border-top: 1px solid #eee; margin: 50px 0; }
 
-/* 검은색 버튼 */
+/* 검은색 버튼 설정 */
 .btn-black-pill { background: #111; color: #fff; padding: 12px 24px; border-radius: 30px; font-size: 0.9rem; font-weight: bold; border: none; cursor: pointer; text-decoration: none; transition: 0.2s; display: inline-block; }
 .btn-black-pill:hover { background: #333; }
 
-/* 프로필 섹션 스타일 */
+/* 프로필 섹션 디자인 */
 .profile-section { display: flex; justify-content: space-between; align-items: center; background: #f8f9fa; padding: 24px 30px; border-radius: 20px; margin-bottom: 20px; border: 1px solid #eee; }
 .profile-info-wrap { display: flex; align-items: center; gap: 20px; }
 .profile-avatar { width: 60px; height: 60px; background: #111; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 1.5rem; font-weight: bold; }
@@ -21,19 +21,19 @@
 .btn-profile-withdraw { background: transparent; border: none; color: #aaa; font-size: 0.85rem; cursor: pointer; text-decoration: underline; padding: 8px 10px; font-weight: 500; }
 .btn-profile-withdraw:hover { color: #dc3545; }
 
-/* 프로필 모달 내 이미지 업로드 동그라미 스타일 */
+/* 프로필 이미지 업로드 디자인 */
 .profile-upload-avatar { position: relative; transition: 0.2s; }
 .profile-upload-avatar:hover { border-color: #111; background: #eee; }
 .profile-upload-avatar::after { content: '변경'; position: absolute; bottom: 0; left: 0; width: 100%; background: rgba(0,0,0,0.5); color: #fff; font-size: 0.75rem; font-weight: bold; padding: 4px 0; opacity: 0; transition: 0.2s; text-align: center; }
 .profile-upload-avatar:hover::after { opacity: 1; }
 
-/* 슬라이더 및 리스트 컨테이너 */
+/* 슬라이더 컨테이너 설정 */
 .slider-container { display: flex; overflow-x: auto; gap: 20px; padding: 10px 5px 20px 5px; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; }
 .slider-container::-webkit-scrollbar { height: 6px; }
 .slider-container::-webkit-scrollbar-track { background: #f9f9f9; border-radius: 10px; }
 .slider-container::-webkit-scrollbar-thumb { background: #ddd; border-radius: 10px; }
 
-/* 공통 카드 아이템 스타일 */
+/* 코디 카드 디자인 */
 .coordi-card { min-width: 280px; max-width: 280px; background: #fff; border: 1px solid #f0f0f0; border-radius: 20px; padding: 24px; box-shadow: 0 10px 20px rgba(0,0,0,0.03); scroll-snap-align: start; flex-shrink: 0; display: flex; flex-direction: column; cursor: pointer; transition: transform 0.2s; }
 .coordi-card:hover { transform: translateY(-3px); box-shadow: 0 12px 24px rgba(0,0,0,0.06); }
 .coordi-card h5 { margin-bottom: 10px; color: #111; font-size: 1.15rem; font-weight: 800; }
@@ -50,7 +50,7 @@
 .item-image { width: 100%; height: 240px; object-fit: cover; border-radius: 12px; background: #f8f9fa; }
 .item-image-empty { display: flex; align-items: center; justify-content: center; color: #aaa; font-size: 0.9rem; height: 240px; }
 
-/* 개별 옷 카드 상세 정보 UI */
+/* 개별 옷 카드 상세 정보 UI 설정 */
 .item-info { display: flex; flex-direction: column; margin-top: 15px; text-align: left; padding: 0 5px; flex-grow: 1; }
 .item-meta-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
 .item-category { color: #888; font-size: 0.8rem; font-weight: 600; }
@@ -58,39 +58,44 @@
 .item-name { margin: 0 0 12px 0; font-size: 1.05rem; font-weight: 700; color: #111; word-break: keep-all; }
 .badge { display: inline-block; padding: 4px 10px; background: #f0f0f0; color: #555; font-size: 0.75rem; font-weight: bold; border-radius: 6px; }
 
-/* 상세정보 태그 칩스 디자인 */
+/* 태그 칩스 디자인 */
 .item-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 15px; }
 .info-tag { background: #f4f5f7; color: #666; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; }
 
-/* 모달 내 상세 정보 2단 그리드 입력 폼 */
+/* 모달 내 그리드 및 폼 디자인 */
 .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
 .form-row-2 .form-group { margin-bottom: 10px; }
 .form-row-2 .closet-input { padding: 12px; font-size: 0.9rem; }
 
-/* 코디 세트 내부 아이템 리스트 레이아웃 */
+/* 세트 내부 아이템 리스트 레이아웃 */
 .set-items-list { display: flex; flex-direction: column; gap: 10px; flex-grow: 1; text-align: left; }
 .set-item-row { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 8px; background: #f8f9fa; }
 .set-item-img { width: 40px; height: 40px; border-radius: 6px; object-fit: cover; background: #eee; }
 .set-item-name { font-size: 0.9rem; color: #444; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .set-title { margin: 0 0 15px 0; font-size: 1.1rem; color: #111; font-weight: 800; }
 
-/* 공통 버튼 디자인 */
+/* 모달 및 공통 버튼 디자인 */
 .btn-delete-item { background: #fff; color: #aaa; border: 1px solid #eee; width: 100%; padding: 8px; border-radius: 8px; font-size: 0.85rem; font-weight: bold; cursor: pointer; transition: 0.2s; margin-top: auto; }
 .btn-delete-item:hover { color: #dc3545; border-color: #dc3545; background: #fff5f5; }
 
-/* Closet 관련 모달 디자인 (공용 애니메이션 활용) */
-.closet-modal-content { background-color: #fff; width: 100%; max-width: 500px; border-radius: 24px 24px 0 0; position: relative; display: flex; flex-direction: column; max-height: 90vh; box-shadow: 0 -10px 40px rgba(0,0,0,0.1); animation: slideUp 0.3s ease-out; }
+/* 모달 기본 레이아웃 디자인 */
+.modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); z-index: 2000; align-items: flex-end; justify-content: center; }
+@media (min-width: 768px) {
+    .modal-overlay { align-items: center; }
+}
+
+.closet-modal-content { background-color: #fff; width: 100%; max-width: 500px; border-radius: 24px 24px 0 0; position: relative; display: flex; flex-direction: column; max-height: 90vh; box-shadow: 0 -10px 40px rgba(0,0,0,0.1); animation: slideUp 0.3s ease-out; margin: 0; padding: 0; }
 @media (min-width: 768px) {
     .closet-modal-content { border-radius: 24px; animation: popIn 0.2s ease-out; }
 }
 
-/* 모달 내부 스크롤 및 구역 설정 */
+/* 모달 스크롤 및 구역 설정 */
 .closet-modal-header { display: flex; justify-content: space-between; align-items: center; padding: 24px 24px 16px 24px; border-bottom: 1px solid #f0f0f0; flex-shrink: 0; }
 .closet-modal-close { font-size: 1.8rem; cursor: pointer; color: #111; line-height: 1; padding: 0 5px; }
 .closet-modal-body { padding: 24px; overflow-y: auto; flex: 1; min-height: 0; }
 .closet-modal-footer { padding: 16px 24px 24px 24px; display: flex; gap: 10px; background: #fff; border-top: 1px solid #f0f0f0; flex-shrink: 0; }
 
-/* 모달 내 입력 폼 스타일 */
+/* 입력 폼 필드 설정 */
 .form-group { margin-bottom: 24px; }
 .closet-label { display: block; margin-bottom: 10px; font-weight: 700; color: #111; font-size: 0.95rem; }
 .closet-input { width: 100%; padding: 16px; background: #f5f6f8; border: none; border-radius: 12px; font-size: 1rem; color: #111; font-weight: 500; outline: none; transition: background 0.2s; box-sizing: border-box; }
@@ -98,32 +103,32 @@
 .closet-input::placeholder { color: #aaa; font-weight: 400; }
 .closet-desc-box { background: #f8f9fa; padding: 20px; border-radius: 16px; color: #444; line-height: 1.6; font-size: 0.95rem; }
 
-/* 타원형 선택 버튼 그룹 */
+/* 타원형 버튼 그룹 디자인 */
 .closet-pill-container { display: flex; flex-wrap: wrap; gap: 10px; }
 .closet-pill { padding: 10px 18px; background: #fff; border: 1px solid #e5e5e5; border-radius: 20px; color: #666; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
 .closet-pill:hover { border-color: #111; color: #111; }
 .closet-pill.active { background: #111; border-color: #111; color: #fff; }
 
-/* 첨부 파일 업로드 영역 */
+/* 파일 첨부 영역 디자인 */
 .closet-upload-box { background: #f8f9fa; border: 2px dashed #ddd; border-radius: 16px; padding: 30px 20px; text-align: center; cursor: pointer; transition: 0.2s; }
 .closet-upload-box:hover { background: #f0f1f4; border-color: #bbb; }
 .upload-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; color: #888; font-weight: 600; font-size: 0.95rem; }
 
-/* 첨부 이미지 썸네일 미리보기 */
+/* 첨부 이미지 썸네일 스타일 */
 .image-preview-container { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 15px; }
 .image-preview-item { position: relative; width: 80px; height: 80px; border-radius: 12px; overflow: hidden; border: 1px solid #eee; }
 .image-preview-img { width: 100%; height: 100%; object-fit: cover; }
 .image-remove-btn { position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.6); color: white; border: none; border-radius: 50%; width: 22px; height: 22px; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; padding-bottom: 2px; transition: 0.2s; z-index: 10; }
 .image-remove-btn:hover { background: rgba(0,0,0,0.9); }
 
-/* 세트 등록 동적 리스트 영역 */
+/* 세트 등록 아이템 폼 리스트 영역 */
 .set-dynamic-item { display: flex; gap: 15px; align-items: center; padding: 15px; background: #f8f9fa; border-radius: 12px; position: relative; border: 1px solid #eee; }
 .set-dynamic-preview { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; flex-shrink: 0; background: #fff; border: 1px solid #ddd; }
 .set-dynamic-inputs { display: flex; flex-direction: column; gap: 8px; flex-grow: 1; }
 .set-dynamic-input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.9rem; outline: none; box-sizing: border-box; }
 .set-dynamic-select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.9rem; outline: none; background: #fff; box-sizing: border-box; }
 
-/* 모달 하단 액션 버튼 */
+/* 모달 하단 주요 액션 버튼 디자인 */
 .btn-closet { flex: 1; padding: 16px; border-radius: 12px; font-size: 1rem; font-weight: 800; cursor: pointer; text-align: center; border: none; transition: 0.2s; }
 .btn-closet.primary { background: #111; color: #fff; }
 .btn-closet.primary:hover { background: #333; }
