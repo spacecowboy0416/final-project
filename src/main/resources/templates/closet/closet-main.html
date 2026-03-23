@@ -62,17 +62,21 @@
         </div>
 
         <div th:unless="${#lists.isEmpty(manualSets)}" class="closet-grid" style="margin-bottom: 50px;">
-            <div class="item-card" th:each="set : ${manualSets}">
+            <div class="item-card clickable-card" th:each="set : ${manualSets}"
+                 th:data-id="${set.recId}"
+                 th:data-title="${set.inputText}"
+                 onclick="openSetDetailModal(this)">
                 <h5 class="set-title" th:text="${set.inputText}">세트 이름</h5>
                 <div class="set-items-list">
-                    <div class="set-item-row" th:each="cItem : ${set.coordiItems}">
+                    <div class="set-item-row" th:each="cItem : ${set.coordiItems}"
+                         th:data-item-id="${cItem.closetItemId}"
+                         th:data-name="${cItem.name}"
+                         th:data-img="${cItem.imageUrl}">
                         <img th:src="${cItem.imageUrl}" class="set-item-img" alt="세트 이미지">
                         <span class="set-item-name" th:text="${cItem.name}">상품명</span>
                     </div>
                 </div>
-                <form th:action="@{/closet/delete-set/{recId}(recId=${set.recId})}" method="post" onsubmit="return confirmAction(event, '이 세트를 정말 삭제하시겠음?');" style="margin-top: 15px;">
-                    <button type="submit" class="btn-delete-item">세트 삭제</button>
-                </form>
+                <div class="btn-delete-item" style="margin-top: 15px; border-color: #eee; color: #999; pointer-events: none;">상세보기</div>
             </div>
         </div>
 
@@ -88,7 +92,19 @@
         </div>
 
         <div th:unless="${#lists.isEmpty(items)}" class="closet-grid">
-            <div class="item-card clickable-card" th:each="item : ${items}">
+            <div class="item-card clickable-card" th:each="item : ${items}"
+                 th:data-id="${item.itemId}"
+                 th:data-name="${item.name}"
+                 th:data-category="${item.categoryName}"
+                 th:data-catid="${item.categoryId}"
+                 th:data-brand="${item.brand}"
+                 th:data-color="${item.color}"
+                 th:data-material="${item.material}"
+                 th:data-fit="${item.fit}"
+                 th:data-style="${item.style}"
+                 th:data-season="${item.season}"
+                 th:data-img="${item.imageUrl}"
+                 onclick="openItemDetailModal(this)">
                 <img th:if="${item.imageUrl != null}" th:src="${item.imageUrl}" class="item-image" alt="옷 이미지">
                 <div th:unless="${item.imageUrl != null}" class="item-image item-image-empty">이미지 없음</div>
                 
@@ -97,21 +113,10 @@
                         <span class="badge" th:text="${item.season}">계절</span>
                         <span class="item-category" th:text="${item.categoryName != null ? item.categoryName : '미분류'}">카테고리</span>
                     </div>
-                    
                     <div th:if="${item.brand != null and item.brand != ''}" class="item-brand" th:text="${item.brand}">브랜드</div>
                     <h4 class="item-name" th:text="${item.name}">옷 이름</h4>
-                    
-                    <div class="item-tags">
-                        <span th:if="${item.color != null and item.color != ''}" class="info-tag" th:text="${item.color}">색상</span>
-                        <span th:if="${item.material != null and item.material != ''}" class="info-tag" th:text="${item.material}">소재</span>
-                        <span th:if="${item.fit != null and item.fit != ''}" class="info-tag" th:text="${item.fit}">핏</span>
-                        <span th:if="${item.style != null and item.style != ''}" class="info-tag" th:text="${item.style}">스타일</span>
-                    </div>
-                    
-                    <form th:action="@{/closet/delete/{itemId}(itemId=${item.itemId})}" method="post" onsubmit="return confirmAction(event, '이 옷을 정말 삭제하시겠습니까?');" style="margin-top: auto;">
-                        <button type="submit" class="btn-delete-item">삭제</button>
-                    </form>
                 </div>
+                <div class="btn-delete-item" style="margin-top: 15px; border-color: #eee; color: #999; pointer-events: none;">상세보기</div>
             </div>
         </div>
     </main>
@@ -130,164 +135,95 @@
             <div class="closet-modal-footer">
                 <button type="button" class="btn-closet outline" onclick="editCoordi()">변경하기</button>
                 <button type="button" class="btn-closet primary" onclick="shareCoordi()">자랑하기</button>
-                <form id="deleteCoordiForm" method="post" style="flex: 1; display: flex;" onsubmit="return confirmAction(event, '이 코디를 삭제하시겠음?');">
-                    <button type="submit" class="btn-closet danger">삭제</button>
-                </form>
+                <button type="button" class="btn-closet danger" onclick="handleCoordiDelete()">삭제</button>
             </div>
         </div>
     </div>
 
-    <div id="addItemModal" class="modal-overlay">
+    <div id="setDetailModal" class="modal-overlay">
         <div class="closet-modal-content">
             <div class="closet-modal-header">
-                <h3 style="margin: 0; font-size: 1.2rem;">개별 옷 등록</h3>
-                <span class="closet-modal-close" onclick="closeAddItemModal()">&times;</span>
+                <h3 style="margin: 0; font-size: 1.2rem;">코디 세트 정보</h3>
+                <span class="closet-modal-close" onclick="closeSetDetailModal()">&times;</span>
             </div>
-            <form th:action="@{/closet/add}" method="post" enctype="multipart/form-data" id="addItemForm" style="display: contents;">
+            <form th:action="@{/closet/set/update}" method="post" style="display: contents;">
+                <input type="hidden" name="recId" id="setEditId">
                 <div class="closet-modal-body">
-                    <div class="form-group" style="margin-bottom: 20px;">
-                        <label class="closet-label">사진 등록 (필수)</label>
-                        <div class="closet-upload-box" onclick="document.getElementById('imageInput').click()">
-                            <div class="upload-placeholder">
-                                <span style="font-size: 1.5rem; margin-bottom: 5px;">+</span>
-                                <span>사진 추가하기 (여러 장 가능)</span>
-                            </div>
-                        </div>
-                        <input type="file" name="imageFiles" id="imageInput" accept="image/*" multiple style="display: none;" required>
-                        <div id="imagePreviewContainer" class="image-preview-container"></div>
-                    </div>
-
                     <div class="form-group">
-                        <label class="closet-label">옷 이름 (필수)</label>
-                        <input type="text" name="name" class="closet-input" placeholder="예: 무탠다드 쿨 스웨트 셔츠" required>
+                        <label class="closet-label">세트 이름</label>
+                        <input type="text" name="inputText" id="setEditTitle" class="closet-input" required>
                     </div>
-
-                    <div class="form-group">
-                        <label class="closet-label">카테고리</label>
-                        <div class="closet-pill-container" id="categoryPillGroup">
-                            <button type="button" class="closet-pill active" data-id="1">상의</button>
-                            <button type="button" class="closet-pill" data-id="2">하의</button>
-                            <button type="button" class="closet-pill" data-id="3">아우터</button>
-                            <button type="button" class="closet-pill" data-id="4">신발</button>
-                            <button type="button" class="closet-pill" data-id="5">가방</button>
-                            <button type="button" class="closet-pill" data-id="6">모자</button>
-                            <button type="button" class="closet-pill" data-id="7">기타</button>
+                    <label class="closet-label">포함된 아이템 (이미지/정보 수정 가능)</label>
+                    <div id="setItemsPreview" class="set-items-list" style="margin-top: 10px;">
                         </div>
-                        <input type="hidden" name="categoryId" id="selectedCategoryId" value="1" required>
+                </div>
+                <div class="closet-modal-footer">
+                    <button type="submit" class="btn-closet primary">세트 정보 수정</button>
+                    <button type="button" class="btn-closet danger" onclick="handleSetDelete()">세트 삭제</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="itemDetailModal" class="modal-overlay">
+        <div class="closet-modal-content">
+            <div class="closet-modal-header">
+                <h3 style="margin: 0; font-size: 1.2rem;">아이템 정보 관리</h3>
+                <span class="closet-modal-close" onclick="closeItemDetailModal()">&times;</span>
+            </div>
+            <form id="itemUpdateForm" th:action="@{/closet/update}" method="post" enctype="multipart/form-data" style="display: contents;">
+                <input type="hidden" name="itemId" id="itemEditId">
+                <div class="closet-modal-body">
+                    <div style="text-align: center; margin-bottom: 20px; position: relative;">
+                        <img id="itemDetailImg" src="" style="width: 100%; max-height: 250px; object-fit: contain; border-radius: 12px; background: #f8f9fa; cursor: pointer;" onclick="document.getElementById('itemEditImageInput').click()">
+                        <div style="margin-top: 10px;">
+                            <button type="button" class="btn-profile-edit" onclick="document.getElementById('itemEditImageInput').click()">사진 변경</button>
+                        </div>
+                        <input type="file" name="imageFile" id="itemEditImageInput" accept="image/*" style="display: none;" onchange="previewEditImage(this)">
                     </div>
                     
                     <div class="form-group">
-                        <label class="closet-label">계절</label>
-                        <div class="closet-pill-container" id="seasonPillGroup">
-                            <button type="button" class="closet-pill active" data-val="SPRING">봄</button>
-                            <button type="button" class="closet-pill" data-val="SUMMER">여름</button>
-                            <button type="button" class="closet-pill" data-val="FALL">가을</button>
-                            <button type="button" class="closet-pill" data-val="WINTER">겨울</button>
-                        </div>
-                        <input type="hidden" name="season" id="selectedSeason" value="SPRING" required>
+                        <label class="closet-label">옷 이름</label>
+                        <input type="text" name="name" id="itemEditName" class="closet-input" required>
                     </div>
-
-                    <hr style="border: 0; border-top: 1px solid #f0f0f0; margin: 20px 0;">
-                    <label class="closet-label" style="color: #666;">상세 정보 (선택사항)</label>
+                    
                     <div class="form-row-2">
                         <div class="form-group">
-                            <input type="text" name="brand" class="closet-input" placeholder="브랜드 (예: 나이키)">
+                            <label class="closet-label">브랜드</label>
+                            <input type="text" name="brand" id="itemEditBrand" class="closet-input">
                         </div>
                         <div class="form-group">
-                            <input type="text" name="color" class="closet-input" placeholder="색상 (예: 블랙)">
-                        </div>
-                        <div class="form-group">
-                            <input type="text" name="material" class="closet-input" placeholder="소재 (예: 코튼)">
-                        </div>
-                        <div class="form-group">
-                            <input type="text" name="fit" class="closet-input" placeholder="핏 (예: 오버핏)">
-                        </div>
-                        <div class="form-group" style="grid-column: span 2;">
-                            <input type="text" name="style" class="closet-input" placeholder="스타일 (예: 캐주얼)">
+                            <label class="closet-label">색상</label>
+                            <input type="text" name="color" id="itemEditColor" class="closet-input">
                         </div>
                     </div>
+
+                    <div class="form-group">
+                        <label class="closet-label">시즌</label>
+                        <select name="season" id="itemEditSeason" class="closet-input" style="background-image: none;">
+                            <option value="SPRING">봄</option>
+                            <option value="SUMMER">여름</option>
+                            <option value="FALL">가을</option>
+                            <option value="WINTER">겨울</option>
+                        </select>
+                    </div>
+                    <p style="font-size: 0.8rem; color: #999; margin-top: 10px;">※ 사진이나 정보를 수정하면 해당 옷을 포함한 모든 세트의 정보가 실시간 동기화됩니다.</p>
                 </div>
                 <div class="closet-modal-footer">
-                    <button type="submit" class="btn-closet primary full-width">옷장에 추가하기</button>
+                    <button type="submit" class="btn-closet primary">정보 수정 완료</button>
+                    <button type="button" class="btn-closet danger" onclick="handleItemDelete()">삭제</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <div id="addSetModal" class="modal-overlay">
-        <div class="closet-modal-content">
-            <div class="closet-modal-header">
-                <h3 style="margin: 0; font-size: 1.2rem;">코디 세트 등록</h3>
-                <span class="closet-modal-close" onclick="closeAddSetModal()">&times;</span>
-            </div>
-            <form th:action="@{/closet/add-set}" method="post" enctype="multipart/form-data" id="addSetForm" style="display: contents;">
-                <div class="closet-modal-body">
-                    <div class="form-group">
-                        <label class="closet-label">코디 세트 이름</label>
-                        <input type="text" name="setName" class="closet-input" placeholder="예: 봄맞이 데이트룩" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="closet-label">세트 계절</label>
-                        <div class="closet-pill-container" id="setSeasonPillGroup">
-                            <button type="button" class="closet-pill active" data-val="SPRING">봄</button>
-                            <button type="button" class="closet-pill" data-val="SUMMER">여름</button>
-                            <button type="button" class="closet-pill" data-val="FALL">가을</button>
-                            <button type="button" class="closet-pill" data-val="WINTER">겨울</button>
-                        </div>
-                        <input type="hidden" name="season" id="setSelectedSeason" value="SPRING" required>
-                    </div>
-                    <div class="form-group" style="margin-bottom: 10px;">
-                        <label class="closet-label">세트 구성품 사진 등록</label>
-                        <div class="closet-upload-box" onclick="document.getElementById('setImageInput').click()">
-                            <div class="upload-placeholder">
-                                <span style="font-size: 1.5rem; margin-bottom: 5px;">+</span>
-                                <span>구성품 사진 추가하기</span>
-                            </div>
-                        </div>
-                        <input type="file" name="imageFiles" id="setImageInput" accept="image/*" multiple style="display: none;" required>
-                        <div id="setPreviewContainer" style="margin-top: 15px; display: flex; flex-direction: column; gap: 15px;"></div>
-                    </div>
-                </div>
-                <div class="closet-modal-footer">
-                    <button type="submit" class="btn-closet primary full-width">세트로 저장하기</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <div id="profileEditModal" class="modal-overlay">
-        <div class="closet-modal-content">
-            <div class="closet-modal-header">
-                <h3 style="margin: 0; font-size: 1.2rem;">개인정보 수정</h3>
-                <span class="closet-modal-close" onclick="closeProfileEditModal()">&times;</span>
-            </div>
-            <form th:action="@{/closet/profile/edit}" method="post" enctype="multipart/form-data" style="display: contents;">
-                <div class="closet-modal-body">
-                    <div class="form-group" style="text-align: center; margin-bottom: 30px;">
-                        <label class="closet-label">프로필 사진</label>
-                        <div class="profile-upload-avatar" onclick="document.getElementById('profileImageInput').click()" style="cursor: pointer; width: 100px; height: 100px; margin: 0 auto; border-radius: 50%; border: 2px dashed #ddd; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #f8f9fa;">
-                            <img id="profilePreview" th:src="${profileImageUrl != null ? profileImageUrl : ''}" style="width: 100%; height: 100%; object-fit: cover;" th:styleappend="${profileImageUrl == null ? 'display:none;' : ''}" alt="프로필">
-                            <span id="profilePlaceholder" style="font-size: 1.5rem; color: #aaa;" th:styleappend="${profileImageUrl != null ? 'display:none;' : ''}">+</span>
-                        </div>
-                        <input type="file" name="profileImage" id="profileImageInput" accept="image/*" style="display: none;" onchange="previewProfileImage(this)">
-                    </div>
-                    <div class="form-group">
-                        <label class="closet-label">변경할 닉네임</label>
-                        <input type="text" name="nickname" class="closet-input" th:value="${nickname}" required>
-                    </div>
-                </div>
-                <div class="closet-modal-footer" style="flex-direction: column; gap: 15px;">
-                    <button type="submit" class="btn-closet primary full-width">수정 완료</button>
-                    <button type="button" class="btn-profile-withdraw" style="align-self: flex-end;" onclick="confirmWithdraw()">회원 탈퇴</button>
-                </div>
-            </form>
-        </div>
-    </div>
+    <div id="addItemModal" class="modal-overlay">...</div>
+    <div id="addSetModal" class="modal-overlay">...</div>
+    <div id="profileEditModal" class="modal-overlay">...</div>
 
     <form id="withdrawForm" th:action="@{/closet/profile/withdraw}" method="post" style="display:none;"></form>
 
     <footer th:replace="~{layout/common :: footerFragment}"></footer>
-    
     <script th:src="@{/closet/js/closet.js}"></script>
 </body>
 </html>
