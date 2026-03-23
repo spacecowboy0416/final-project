@@ -110,7 +110,8 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                     .build();
         } else if ("naver".equals(registrationId)) {
             Map<String, Object> response = (Map<String, Object>) attributes.get("response");
-            String profileImage = (String) response.get("profile_image");
+            String profileImage = (response != null) ? (String) response.get("profile_image") : null;
+
             return UsersDto.builder()
                     .provider("naver")
                     .providerUserId((String) response.get("id"))
