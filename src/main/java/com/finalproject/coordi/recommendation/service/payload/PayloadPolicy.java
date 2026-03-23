@@ -1,4 +1,4 @@
-package com.finalproject.coordi.recommendation.domain.policy;
+package com.finalproject.coordi.recommendation.service.payload;
 
 /**
  * payload 단계에서 공통으로 쓰는 정책 상수다.

@@ -18,7 +18,7 @@
         <div class="mainCard recommend-card">
             <div id="recommendRoot"
                  class="recommend-root"
-                 th:attr="data-initial-natural-text=${initialNaturalText},data-kakao-map-api-key=${kakaoMapApiKey},data-recommendation-image-max-bytes=${recommendationImageMaxBytes}">
+                 th:attr="data-initial-natural-text=${initialNaturalText},data-kakao-map-api-key=${kakaoMapApiKey},data-recommendation-image-max-bytes=${recommendationImageMaxBytes},data-recommendation-save-enabled=${recommendationSaveEnabled}">
 
                 <section id="composeView" class="recommend-screen recommend-screen--active" aria-label="추천 입력 화면">
                     <div class="recommend-search-bar">
@@ -153,6 +153,9 @@
                                     <p id="resultMetaText" class="recommend-result-meta"></p>
                                 </div>
                                 <div class="recommend-result-actions">
+                                    <button id="saveRecommendationButton" class="recommend-save-button" type="button">
+                                        저장하기
+                                    </button>
                                     <button id="backToComposeButton" class="recommend-ghost-button" type="button">
                                         다시 추천하기
                                     </button>

@@ -60,6 +60,12 @@
     stateSuffix: "날씨예요.",
   };
 
+  const SAVE_BUTTON_POLICY = {
+    idleLabel: "저장하기",
+    savingLabel: "저장 중...",
+    savedLabel: "저장됨",
+  };
+
   const state = {
     imageBase64: "",
     imageMimeType: "",
@@ -68,10 +74,14 @@
     selectedPosition: { ...DEFAULT_POSITION },
     selectedLocationLabel: DEFAULT_LOCATION_TEXT,
     currentResult: null,
+    persistRequest: null,
+    recommendationSaveEnabled: root.dataset.recommendationSaveEnabled === "true",
     map: null,
     marker: null,
     geocoder: null,
     isSubmitting: false,
+    isSaveSubmitting: false,
+    isSaved: false,
   };
 
   const elements = {
@@ -103,6 +113,7 @@
     resultExplanation: document.getElementById("resultExplanation"),
     resultItems: document.getElementById("resultItems"),
     resultItemCount: document.getElementById("resultItemCount"),
+    saveRecommendationButton: document.getElementById("saveRecommendationButton"),
     backToComposeButton: document.getElementById("backToComposeButton"),
     map: document.getElementById("map"),
   };
@@ -161,6 +172,10 @@
 
   function initResultModule() {
     renderEmptyItems();
+    if (elements.saveRecommendationButton) {
+      elements.saveRecommendationButton.addEventListener("click", handleSaveRecommendation);
+      updateSaveButtonState();
+    }
     elements.backToComposeButton.addEventListener("click", handleBackToCompose);
   }
 
@@ -212,6 +227,7 @@
       });
 
       state.currentResult = body;
+      resetSaveStateForNewResult(body, payload);
       renderResult(body, payload.naturalText);
       toggleScreen("result");
       setFeedback("추천 결과를 불러왔습니다.", "success");
@@ -226,6 +242,43 @@
   function handleBackToCompose() {
     toggleScreen("compose");
     setFeedback("", "");
+  }
+
+  async function handleSaveRecommendation() {
+    if (state.isSaveSubmitting || state.isSaved) {
+      return;
+    }
+    if (!state.persistRequest) {
+      setFeedback("저장할 추천 결과가 없습니다. 먼저 추천을 생성해주세요.", "error");
+      return;
+    }
+    if (!state.recommendationSaveEnabled) {
+      requestLoginForSave();
+      return;
+    }
+
+    try {
+      state.isSaveSubmitting = true;
+      updateSaveButtonState();
+      setFeedback("", "");
+
+      const body = await requestJson("/api/recommendations/save", {
+        method: "POST",
+        body: state.persistRequest,
+      });
+
+      state.isSaved = true;
+      setFeedback(`코디가 저장되었습니다. (recId: ${body.recId})`, "success");
+    } catch (error) {
+      if (isAuthError(error)) {
+        requestLoginForSave();
+        return;
+      }
+      setFeedback(error.message || "추천 저장에 실패했습니다.", "error");
+    } finally {
+      state.isSaveSubmitting = false;
+      updateSaveButtonState();
+    }
   }
 
   async function handleUseCurrentLocation() {
@@ -491,6 +544,54 @@
       .join("");
   }
 
+  function resetSaveStateForNewResult(result, requestPayload) {
+    state.persistRequest = buildPersistRequest(result, requestPayload);
+    state.isSaved = false;
+    state.isSaveSubmitting = false;
+    updateSaveButtonState();
+  }
+
+  function buildPersistRequest(result, requestPayload) {
+    if (!result || !requestPayload) {
+      return null;
+    }
+    if (!Array.isArray(result.coordination) || !result.tpoType || !result.styleType) {
+      return null;
+    }
+    if (!result.queryMap || typeof result.queryMap !== "object") {
+      return null;
+    }
+    return {
+      naturalText: requestPayload.naturalText,
+      weather: requestPayload.weather,
+      tpoType: result.tpoType,
+      styleType: result.styleType,
+      aiExplanation: result.aiExplanation || "",
+      coordination: result.coordination,
+      queryMap: result.queryMap,
+    };
+  }
+
+  function updateSaveButtonState() {
+    if (!elements.saveRecommendationButton) {
+      return;
+    }
+
+    const canSave = !!state.persistRequest;
+    elements.saveRecommendationButton.disabled =
+      !canSave || state.isSaveSubmitting || state.isSaved;
+
+    if (state.isSaveSubmitting) {
+      elements.saveRecommendationButton.textContent = SAVE_BUTTON_POLICY.savingLabel;
+      return;
+    }
+    if (state.isSaved) {
+      elements.saveRecommendationButton.textContent = SAVE_BUTTON_POLICY.savedLabel;
+      return;
+    }
+    elements.saveRecommendationButton.textContent = SAVE_BUTTON_POLICY.idleLabel;
+  }
+
   function buildResultMetaText(result) {
     const metaParts = [];
     if (result.tpoType) {
@@ -729,6 +830,24 @@
     );
   }
 
+  function requestLoginForSave() {
+    const loginGuideMessage = "저장 기능은 로그인 후 사용할 수 있습니다. 로그인 페이지로 이동하시겠습니까?";
+    if (typeof window.showGlobalModal === "function") {
+      window.showGlobalModal("로그인 필요", loginGuideMessage, "confirm", () => {
+        window.location.href = "/login";
+      });
+      return;
+    }
+
+    if (window.confirm(loginGuideMessage)) {
+      window.location.href = "/login";
+    }
+  }
+
+  function isAuthError(error) {
+    return error && (error.status === 401 || error.code === "T100");
+  }
+
   async function requestJson(url, options = {}) {
     const {
       method = "GET",
@@ -751,7 +870,10 @@
     const response = await fetch(url, fetchOptions);
     const parsedBody = await response.json().catch(() => ({}));
     if (!response.ok) {
-      throw new Error(resolveErrorMessage(parsedBody) || defaultErrorMessage);
+      const error = new Error(resolveErrorMessage(parsedBody) || defaultErrorMessage);
+      error.status = response.status;
+      error.code = parsedBody?.code || parsedBody?.error?.code;
+      throw error;
     }
     return parsedBody;
   }

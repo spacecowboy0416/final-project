@@ -32,9 +32,9 @@ recommendation
 ├─ infra ------------ 외부 연동 구현체(adapter/properties)
 │  ├─ gemini
 │  ├─ imageAnalysis - YOLO/ONNX 기반 이미지 분석 어댑터
-│  ├─ finaloutput
-│  └─ Orchestrator.java
+│  └─ navershopping/s3 등 adapter 구현
 └─service
-    ├─ components - stage에 명시적 선언
+    ├─ productSearch - 검색 + 사용자 출력 조립
+    ├─ persistent - 저장 전용 계층
     └─ Orchestrator.java 각 stage 선언
 

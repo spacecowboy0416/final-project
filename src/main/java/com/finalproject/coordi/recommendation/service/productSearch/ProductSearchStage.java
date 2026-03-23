@@ -1,6 +1,7 @@
 package com.finalproject.coordi.recommendation.service.productSearch;
 
 import com.finalproject.coordi.recommendation.config.annotation.LogStage;
+import com.finalproject.coordi.recommendation.dto.api.CoordinationOutputDto;
 import com.finalproject.coordi.recommendation.dto.internal.NormalizedBlueprintDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Component;
 public class ProductSearchStage {
     private final SearchQueryExtractor searchQueryExtractor;
     private final ShoppingSearcher shoppingSearcher;
+    private final ProductOutputAssembler productOutputAssembler;
 
     @LogStage("product.search")
     public ProductSearchStageResult search(
@@ -24,12 +26,18 @@ public class ProductSearchStage {
             brandEnabled
         );
         SearchedProductsBySlot searchedProductsBySlot = shoppingSearcher.searchBySlot(slotSearchQueries);
-        return new ProductSearchStageResult(slotSearchQueries, searchedProductsBySlot);
+        CoordinationOutputDto coordinationOutput = productOutputAssembler.assemble(
+            normalizedBlueprint,
+            searchedProductsBySlot,
+            slotSearchQueries
+        );
+        return new ProductSearchStageResult(slotSearchQueries, searchedProductsBySlot, coordinationOutput);
     }
 
     public record ProductSearchStageResult(
         SlotSearchQueries slotSearchQueries,
-        SearchedProductsBySlot searchedProductsBySlot
+        SearchedProductsBySlot searchedProductsBySlot,
+        CoordinationOutputDto coordinationOutput
     ) {
     }
 }

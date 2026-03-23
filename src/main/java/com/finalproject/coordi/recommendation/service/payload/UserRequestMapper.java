@@ -1,6 +1,5 @@
 package com.finalproject.coordi.recommendation.service.payload;
 
-import com.finalproject.coordi.recommendation.domain.policy.PayloadPolicy;
 import com.finalproject.coordi.recommendation.dto.api.UserRequestDto;
 import com.finalproject.coordi.recommendation.dto.internal.PayloadDto;
 import com.finalproject.coordi.recommendation.dto.internal.PayloadDto.ImageContext;

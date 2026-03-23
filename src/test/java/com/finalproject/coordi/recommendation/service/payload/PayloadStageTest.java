@@ -10,7 +10,6 @@ import com.finalproject.coordi.exception.ErrorCode;
 import com.finalproject.coordi.exception.recommendation.RecommendationException;
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.GenderType;
 import com.finalproject.coordi.recommendation.domain.enums.WeatherEnums.WeatherStatusType;
-import com.finalproject.coordi.recommendation.domain.policy.PayloadPolicy;
 import com.finalproject.coordi.recommendation.dto.api.UserRequestDto;
 import com.finalproject.coordi.recommendation.dto.api.UserRequestDto.WeatherInput;
 import java.nio.charset.StandardCharsets;

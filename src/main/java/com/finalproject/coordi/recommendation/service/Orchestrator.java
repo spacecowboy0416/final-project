@@ -7,9 +7,6 @@ import com.finalproject.coordi.recommendation.dto.api.RecommendationDebugRespons
 import com.finalproject.coordi.recommendation.dto.api.UserRequestDto;
 import com.finalproject.coordi.recommendation.service.blueprint.BlueprintStage;
 import com.finalproject.coordi.recommendation.service.blueprint.BlueprintStage.BlueprintStageResult;
-import com.finalproject.coordi.recommendation.service.finaloutput.FinalOutputStage;
-import com.finalproject.coordi.recommendation.service.finaloutput.FinalOutputStage.DebugInput;
-import com.finalproject.coordi.recommendation.service.finaloutput.FinalOutputStage.PersistInput;
 import com.finalproject.coordi.recommendation.service.payload.PayloadStage;
 import com.finalproject.coordi.recommendation.service.productSearch.ProductSearchStage;
 import com.finalproject.coordi.recommendation.service.productSearch.ProductSearchStage.ProductSearchStageResult;
@@ -30,14 +27,13 @@ public class Orchestrator {
     private final PayloadStage payloadStage;
     private final BlueprintStage blueprintStage;
     private final ProductSearchStage productSearchStage;
-    private final FinalOutputStage finalOutputStage;
     private final StageExecutionTimes stageExecutionTimes;
 
     /**
      * recommendation 표준 응답만 필요한 일반 API 진입점이다.
      */
-    public CoordinationOutputDto coordinate(@Valid UserRequestDto request, Long userId) {
-        PipelineResult pipelineResult = runPipeline(request, userId, OutputMode.PERSIST);
+    public CoordinationOutputDto coordinate(@Valid UserRequestDto request) {
+        PipelineResult pipelineResult = runPipeline(request);
         return pipelineResult.coordinationOutput();
     }
 
@@ -45,15 +41,11 @@ public class Orchestrator {
      * 디버그 화면용으로 중간 산출물과 stage timing까지 함께 반환하는 진입점이다.
      */
     public RecommendationDebugResponseDto coordinateDebug(@Valid UserRequestDto request) {
-        PipelineResult pipelineResult = runPipeline(request, null, OutputMode.DEBUG);
+        PipelineResult pipelineResult = runPipeline(request);
         return RecommendationDebugResponseDto.from(pipelineResult, stageExecutionTimes.snapshot());
     }
 
-    private PipelineResult runPipeline(
-        UserRequestDto request,
-        Long userId,
-        OutputMode outputMode
-    ) {
+    private PipelineResult runPipeline(UserRequestDto request) {
         // 사용자 입력, 날씨, 프롬프트 조합하여 payload 생성
         var payload = payloadStage.build(request);
 
@@ -66,24 +58,10 @@ public class Orchestrator {
             request.brandEnabled()
         );
 
-        // 최종 출력 생성(일반 API는 저장, 디버그 API는 조회 전용)
-        CoordinationOutputDto coordinationOutput = switch (outputMode) {
-            case PERSIST -> finalOutputStage.buildPersist(new PersistInput(
-                request,
-                userId,
-                blueprintResult.normalizedBlueprint(),
-                productSearchResult
-            ));
-            case DEBUG -> finalOutputStage.buildDebug(new DebugInput(
-                blueprintResult.normalizedBlueprint(),
-                productSearchResult
-            ));
-        };
-
         return new PipelineResult(
             blueprintResult.rawBlueprint(),
             productSearchResult.slotSearchQueries(),
-            coordinationOutput
+            productSearchResult.coordinationOutput()
         );
     }
 
@@ -92,10 +70,5 @@ public class Orchestrator {
         SlotSearchQueries slotSearchQueries,
         CoordinationOutputDto coordinationOutput
     ) {
-    }
-
-    private enum OutputMode {
-        PERSIST,
-        DEBUG
     }
 }

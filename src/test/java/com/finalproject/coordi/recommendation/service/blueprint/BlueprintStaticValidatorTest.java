@@ -18,12 +18,15 @@ import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.Sty
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.TpoType;
 import com.finalproject.coordi.recommendation.domain.enums.WeatherEnums.SeasonType;
 import com.finalproject.coordi.recommendation.dto.api.RawBlueprintDto;
+import jakarta.validation.Validation;
 import java.util.Arrays;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class BlueprintStaticValidatorTest {
-    private final BlueprintStaticValidator validator = new BlueprintStaticValidator();
+    private final BlueprintStaticValidator validator = new BlueprintStaticValidator(
+        Validation.buildDefaultValidatorFactory().getValidator()
+    );
 
     @Test
     void 정상Blueprint면_검증을통과한다() {

@@ -2,9 +2,12 @@ package com.finalproject.coordi.recommendation.controller;
 
 import com.finalproject.coordi.recommendation.dto.api.CoordinationOutputDto;
 import com.finalproject.coordi.recommendation.dto.api.RecommendationDebugResponseDto;
+import com.finalproject.coordi.recommendation.dto.api.RecommendationSaveRequestDto;
 import com.finalproject.coordi.recommendation.dto.api.UserRequestDto;
 import com.finalproject.coordi.recommendation.config.RecommendationImageProperties;
+import com.finalproject.coordi.exception.auth.AuthFailedException;
 import com.finalproject.coordi.recommendation.service.Orchestrator;
+import com.finalproject.coordi.recommendation.service.persistent.RecommendationSavePersistence;
 import com.finalproject.coordi.recommendation.service.productSearch.ShoppingSearcher;
 import com.finalproject.coordi.recommendation.service.productSearch.ShoppingPort.SearchedProduct;
 import com.finalproject.coordi.recommendation.infra.gemini.GeminiProperties;
@@ -17,6 +20,7 @@ import jakarta.validation.constraints.NotBlank;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -34,6 +38,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
  */
 public class RecommendationController {
     private final Orchestrator orchestratorService;
+    private final RecommendationSavePersistence recommendationSavePersistence;
     private final ShoppingSearcher shoppingSearcher;
     private final KakaoMapProperties kakaoMapProperties;
     private final GeminiProperties geminiProperties;
@@ -43,11 +48,13 @@ public class RecommendationController {
     @GetMapping("/recommend")
     public String recommendPage(
         @RequestParam(value = "q", required = false) String naturalText,
+        Authentication authentication,
         Model model
     ) {
         model.addAttribute("initialNaturalText", naturalText == null ? "" : naturalText);
         model.addAttribute("kakaoMapApiKey", kakaoMapProperties.getJsKey());
         model.addAttribute("recommendationImageMaxBytes", recommendationImageProperties.getMaxSize().toBytes());
+        model.addAttribute("recommendationSaveEnabled", isAuthenticated(authentication));
         return "recommendation/recommend";
     }
 
@@ -64,11 +71,22 @@ public class RecommendationController {
     @PostMapping("/api/recommendations")
     @ResponseBody
     public ResponseEntity<CoordinationOutputDto> recommend(
-        @LoginUser UsersDto loginUser,
         @Valid @RequestBody UserRequestDto request
     ) {
-        Long userId = loginUser == null ? null : loginUser.getUserId();
-        return ResponseEntity.ok(orchestratorService.coordinate(request, userId));
+        return ResponseEntity.ok(orchestratorService.coordinate(request));
+    }
+
+    @PostMapping("/api/recommendations/save")
+    @ResponseBody
+    public ResponseEntity<PersistResponse> saveRecommendation(
+        @LoginUser UsersDto loginUser,
+        @Valid @RequestBody RecommendationSaveRequestDto request
+    ) {
+        if (loginUser == null) {
+            throw new AuthFailedException();
+        }
+        Long recId = recommendationSavePersistence.save(loginUser.getUserId(), request);
+        return ResponseEntity.ok(new PersistResponse(recId));
     }
 
     @PostMapping("/api/recommendations/debug")
@@ -85,5 +103,15 @@ public class RecommendationController {
         @RequestParam("query") @NotBlank String query
     ) {
         return ResponseEntity.ok(shoppingSearcher.search(query));
+    }
+
+    private boolean isAuthenticated(Authentication authentication) {
+        return authentication != null
+            && authentication.isAuthenticated()
+            && !"anonymousUser".equals(authentication.getPrincipal());
+    }
+
+    // 얇은 저장 응답 DTO는 컨트롤러 내부 record로 유지한다.
+    public static record PersistResponse(Long recId) {
     }
 }
