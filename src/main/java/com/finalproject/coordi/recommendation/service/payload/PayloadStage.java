@@ -7,7 +7,6 @@ import com.finalproject.coordi.recommendation.config.annotation.LogStage;
 import com.finalproject.coordi.recommendation.dto.api.UserRequestDto;
 import com.finalproject.coordi.recommendation.dto.internal.PayloadDto;
 import com.finalproject.coordi.recommendation.service.payload.UserRequestNormalizer.NormalizedUserRequest;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -23,8 +22,8 @@ public class PayloadStage {
 
     @LogStage("payload.build")
     public UserRequestDto.PayloadDto build(UserRequestDto userRequest) {
-        PayloadDto payloadRequestDto = userRequestMapper.map(userRequest);
-        NormalizedUserRequest normalizedBuildInput = userRequestNormalizer.normalize(payloadRequestDto);
+        PayloadDto mappedRequest = userRequestMapper.map(userRequest);
+        NormalizedUserRequest normalizedBuildInput = userRequestNormalizer.normalize(mappedRequest);
         UserRequestDto.PayloadDto payload = payloadBuilder.build(
             SYSTEM_PROMPT_EN,
             USER_PROMPT_EN,
@@ -33,5 +32,4 @@ public class PayloadStage {
         return payload;
     }
 }
-
 

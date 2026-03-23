@@ -72,11 +72,6 @@
     marker: null,
     geocoder: null,
     isSubmitting: false,
-    isSaving: false,
-    currentRequestPayload: null,
-    hasSavedCurrentResult: false,
-    developerPanelOpen: false,
-    currentDebugResult: null,
   };
 
   const elements = {
@@ -108,14 +103,8 @@
     resultExplanation: document.getElementById("resultExplanation"),
     resultItems: document.getElementById("resultItems"),
     resultItemCount: document.getElementById("resultItemCount"),
-    saveRecommendationButton: document.getElementById("saveRecommendationButton"),
     backToComposeButton: document.getElementById("backToComposeButton"),
     map: document.getElementById("map"),
-    resultLayout: document.getElementById("resultLayout"),
-    developerToggleButton: document.getElementById("developerToggleButton"),
-    developerPanel: document.getElementById("developerPanel"),
-    developerSearchQueries: document.getElementById("developerSearchQueries"),
-    developerBlueprint: document.getElementById("developerBlueprint"),
   };
 
   document.addEventListener("DOMContentLoaded", initRecommendPage);
@@ -168,13 +157,11 @@
 
   function initSubmissionModule() {
     elements.recommendForm.addEventListener("submit", handleRecommendSubmit);
-    elements.saveRecommendationButton.addEventListener("click", handleSaveRecommendation);
   }
 
   function initResultModule() {
     renderEmptyItems();
     elements.backToComposeButton.addEventListener("click", handleBackToCompose);
-    elements.developerToggleButton.addEventListener("click", toggleDeveloperPanel);
   }
 
   async function preloadSampleImageOnInit() {
@@ -219,17 +206,13 @@
       setFeedback("", "");
 
       const payload = buildRequestPayload();
-      const body = await requestJson("/api/recommendations/debug", {
+      const body = await requestJson("/api/recommendations", {
         method: "POST",
         body: payload,
       });
 
       state.currentResult = body;
-      state.currentRequestPayload = payload;
-      state.hasSavedCurrentResult = false;
-      state.currentDebugResult = body;
       renderResult(body, payload.naturalText);
-      updateSaveButtonState();
       toggleScreen("result");
       setFeedback("추천 결과를 불러왔습니다.", "success");
     } catch (error) {
@@ -242,45 +225,7 @@
 
   function handleBackToCompose() {
     toggleScreen("compose");
-    setDeveloperPanelOpen(false);
     setFeedback("", "");
-  }
-
-  async function handleSaveRecommendation() {
-    if (state.isSaving || state.hasSavedCurrentResult) {
-      return;
-    }
-
-    if (!state.currentRequestPayload) {
-      setFeedback("먼저 추천 결과를 생성해주세요.", "error");
-      return;
-    }
-    if (!state.currentDebugResult) {
-      setFeedback("저장할 추천 결과가 없습니다. 다시 추천을 생성해주세요.", "error");
-      return;
-    }
-
-    try {
-      setSaving(true);
-      setFeedback("", "");
-
-      await requestJson("/api/recommendations/debug/save", {
-        method: "POST",
-        body: {
-          request: state.currentRequestPayload,
-          debugResult: state.currentDebugResult,
-        },
-      });
-
-      state.hasSavedCurrentResult = true;
-      setFeedback("추천 결과를 저장했습니다.", "success");
-    } catch (error) {
-      console.error("추천 저장 실패", error);
-      setFeedback(error.message || "추천 저장에 실패했습니다.", "error");
-    } finally {
-      setSaving(false);
-      updateSaveButtonState();
-    }
   }
 
   async function handleUseCurrentLocation() {
@@ -544,7 +489,6 @@
     elements.resultItems.innerHTML = visibleCoordination
       .map((item) => createItemMarkup(item))
       .join("");
-    renderDeveloperPanel(result);
   }
 
   function buildResultMetaText(result) {
@@ -669,35 +613,12 @@
     elements.resultItemCount.textContent = "";
   }
 
-  function renderDeveloperPanel(result) {
-    const safeResult = result || {};
-    const slotSearchQueries = safeResult.slotSearchQueries || {};
-    const rawBlueprint = safeResult.rawBlueprint || {};
-
-    elements.developerSearchQueries.textContent = toPrettyJson(slotSearchQueries);
-    elements.developerBlueprint.textContent = toPrettyJson(rawBlueprint);
-  }
-
   function toggleScreen(screen) {
     const isResult = screen === "result";
     elements.composeView.classList.toggle("recommend-screen--hidden", isResult);
     elements.composeView.classList.toggle("recommend-screen--active", !isResult);
     elements.resultView.classList.toggle("recommend-screen--hidden", !isResult);
     elements.resultView.classList.toggle("recommend-screen--active", isResult);
-  }
-
-  function toggleDeveloperPanel() {
-    setDeveloperPanelOpen(!state.developerPanelOpen);
-  }
-
-  function setDeveloperPanelOpen(isOpen) {
-    state.developerPanelOpen = isOpen;
-    elements.developerPanel.classList.toggle("recommend-dev-panel--hidden", !isOpen);
-    elements.resultLayout.classList.toggle("recommend-result-layout--with-dev", isOpen);
-    elements.developerToggleButton.setAttribute("aria-expanded", String(isOpen));
-    elements.developerToggleButton.textContent = isOpen
-      ? "개발자 영역 닫기"
-      : "개발자 영역 보기";
   }
 
   function setSubmitting(isSubmitting) {
@@ -708,31 +629,6 @@
       "recommend-loading-overlay--hidden",
       !isSubmitting
     );
-    // 제출 상태가 바뀌면 저장 버튼 비활성 조건도 즉시 다시 계산한다.
-    updateSaveButtonState();
-  }
-
-  function setSaving(isSaving) {
-    state.isSaving = isSaving;
-    updateSaveButtonState();
-  }
-
-  function updateSaveButtonState() {
-    const isDisabled =
-      state.isSaving || state.isSubmitting || !state.currentResult || state.hasSavedCurrentResult;
-    elements.saveRecommendationButton.disabled = isDisabled;
-
-    if (state.isSaving) {
-      elements.saveRecommendationButton.textContent = "저장 중...";
-      return;
-    }
-
-    if (state.hasSavedCurrentResult) {
-      elements.saveRecommendationButton.textContent = "저장 완료";
-      return;
-    }
-
-    elements.saveRecommendationButton.textContent = "저장";
   }
 
   function setFeedback(message, tone) {
@@ -873,12 +769,4 @@
     return typeof value === "string" && value.trim().length > 0;
   }
 
-  function toPrettyJson(value) {
-    try {
-      return JSON.stringify(value ?? {}, null, 2);
-    } catch (error) {
-      console.error("디버그 데이터 직렬화 실패", error);
-      return "{}";
-    }
-  }
 })();

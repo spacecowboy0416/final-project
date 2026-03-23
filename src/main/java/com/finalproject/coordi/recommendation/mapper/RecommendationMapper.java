@@ -1,5 +1,6 @@
 package com.finalproject.coordi.recommendation.mapper;
 
+import com.finalproject.coordi.recommendation.domain.enums.ProductEnums.ProductCategoryCode;
 import com.finalproject.coordi.recommendation.dto.persistent.ProductDto;
 import com.finalproject.coordi.recommendation.dto.persistent.ProductImageMetadataDto;
 import com.finalproject.coordi.recommendation.dto.persistent.ProductTagDto;
@@ -8,6 +9,7 @@ import com.finalproject.coordi.recommendation.dto.persistent.RecommendationItemD
 import com.finalproject.coordi.recommendation.dto.persistent.RecommendationItemTagDto;
 import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Options;
 import org.apache.ibatis.annotations.Param;
 
 /**
@@ -21,13 +23,14 @@ public interface RecommendationMapper {
 
     int insertRecommendationItemTag(RecommendationItemTagDto recommendationItemTag);
 
+    @Options(useGeneratedKeys = true, keyProperty = "productId")
     int upsertProduct(ProductDto product);
 
     int insertProductImageMetadata(ProductImageMetadataDto productImageMetadata);
 
     int insertProductTag(ProductTagDto productTag);
 
-    Long findCategoryIdByCode(@Param("code") String code);
+    Long findCategoryIdByCode(@Param("code") ProductCategoryCode code);
 
     Long findProductIdBySourceAndExternalId(@Param("source") String source, @Param("externalId") String externalId);
 

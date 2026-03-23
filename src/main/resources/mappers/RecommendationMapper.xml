@@ -72,7 +72,10 @@
         )
     </insert>
 
-    <insert id="upsertProduct" parameterType="com.finalproject.coordi.recommendation.dto.persistent.ProductDto">
+    <insert id="upsertProduct"
+            parameterType="com.finalproject.coordi.recommendation.dto.persistent.ProductDto"
+            useGeneratedKeys="true"
+            keyProperty="productId">
         INSERT INTO product
         (
             source,
@@ -112,6 +115,7 @@
             #{tempMax}
         )
         ON DUPLICATE KEY UPDATE
+            product_id = LAST_INSERT_ID(product_id),
             gender = VALUES(gender),
             name = VALUES(name),
             brand = VALUES(brand),
@@ -171,7 +175,7 @@
     <select id="findCategoryIdByCode" resultType="long">
         SELECT category_id
         FROM category
-        WHERE code = #{code}
+        WHERE code = #{code, typeHandler=com.finalproject.coordi.recommendation.mapper.typehandler.ProductCategoryCodeTypeHandler}
         LIMIT 1
     </select>
 

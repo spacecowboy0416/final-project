@@ -3,15 +3,14 @@ package com.finalproject.coordi.recommendation.service.finaloutput;
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.CategoryType;
 import com.finalproject.coordi.recommendation.dto.api.CoordinationItemOutputDto;
 import com.finalproject.coordi.recommendation.dto.api.CoordinationOutputDto;
-import com.finalproject.coordi.recommendation.dto.api.UserRequestDto.PayloadDto;
 import com.finalproject.coordi.recommendation.dto.api.UserRequestDto;
 import com.finalproject.coordi.recommendation.dto.api.RawBlueprintDto;
 import com.finalproject.coordi.recommendation.dto.internal.NormalizedBlueprintDto;
+import com.finalproject.coordi.recommendation.service.productSearch.SearchedProductsBySlot;
+import com.finalproject.coordi.recommendation.service.productSearch.SlotSearchQueries;
 import com.finalproject.coordi.recommendation.service.productSearch.ShoppingPort.SearchedProduct;
-import com.finalproject.coordi.recommendation.service.productSearch.ShoppingPort.ShoppingSearchQuery;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -24,13 +23,12 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class FinalOutputBuilder {
-    private static final String AI_EXPLANATION = "";
     private static final List<CategoryType> OPTIONAL_OUTPUT_SLOTS = List.of(
         CategoryType.HEADWEAR,
         CategoryType.ACCESSORIES
     );
 
-    private final FinalOutputPersistenceService finalOutputPersistenceService;
+    private final FinalOutputPersistence finalOutputPersistence;
 
     /**
      * @param effectiveProducts 실제 최종 출력에 사용할 슬롯별 상품 맵
@@ -39,16 +37,16 @@ public class FinalOutputBuilder {
      */
     public CoordinationOutputDto build(
         NormalizedBlueprintDto normalizedBlueprint,
-        Map<CategoryType, List<SearchedProduct>> effectiveProducts
+        SearchedProductsBySlot effectiveProducts
     ) {
-        RawBlueprintDto.AiBlueprint aiBlueprint = normalizedBlueprint == null ? null : normalizedBlueprint.aiBlueprint();
+        RawBlueprintDto.AiBlueprint aiBlueprint = normalizedBlueprint.aiBlueprint();
         String blueprintId = UUID.randomUUID().toString();
         List<CoordinationItemOutputDto> coordinationItems = buildCoordinationItems(normalizedBlueprint, effectiveProducts);
         return new CoordinationOutputDto(
             blueprintId,
-            aiBlueprint == null ? null : aiBlueprint.tpoType(),
-            aiBlueprint == null ? null : aiBlueprint.styleType(),
-            aiBlueprint == null ? AI_EXPLANATION : aiBlueprint.aiExplanation(),
+            aiBlueprint.tpoType(),
+            aiBlueprint.styleType(),
+            aiBlueprint.aiExplanation(),
             coordinationItems
         );
     }
@@ -56,17 +54,15 @@ public class FinalOutputBuilder {
     public CoordinationOutputDto buildAndPersist(
         UserRequestDto request,
         Long userId,
-        PayloadDto payload,
         NormalizedBlueprintDto normalizedBlueprint,
-        Map<CategoryType, List<SearchedProduct>> effectiveProducts,
-        Map<CategoryType, ShoppingSearchQuery> slotSearchQueries
+        SearchedProductsBySlot effectiveProducts,
+        SlotSearchQueries slotSearchQueries
     ) {
         CoordinationOutputDto outputDto = build(normalizedBlueprint, effectiveProducts);
         // 일반 추천 API는 최종 응답 기준으로 recommendation 결과를 저장한다.
-        finalOutputPersistenceService.save(
+        finalOutputPersistence.save(
             userId,
             request,
-            payload,
             normalizedBlueprint,
             effectiveProducts,
             slotSearchQueries
@@ -76,12 +72,12 @@ public class FinalOutputBuilder {
 
     private List<CoordinationItemOutputDto> buildCoordinationItems(
         NormalizedBlueprintDto normalizedBlueprint,
-        Map<CategoryType, List<SearchedProduct>> effectiveProducts
+        SearchedProductsBySlot effectiveProducts
     ) {
         List<CoordinationItemOutputDto> coordinationItems = new ArrayList<>();
-        CategoryType anchorSlot = normalizedBlueprint == null ? null : normalizedBlueprint.anchorSlot();
+        CategoryType anchorSlot = normalizedBlueprint.anchorSlot();
         for (CategoryType categoryType : CategoryType.values()) {
-            var itemInfo = normalizedBlueprint == null ? null : normalizedBlueprint.itemBySlot(categoryType);
+            var itemInfo = normalizedBlueprint.itemBySlot(categoryType);
             boolean isAnchorSlot = categoryType == anchorSlot;
             SearchedProduct top1Product = isAnchorSlot
                 ? null

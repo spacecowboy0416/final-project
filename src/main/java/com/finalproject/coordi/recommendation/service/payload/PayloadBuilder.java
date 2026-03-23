@@ -8,7 +8,6 @@ import org.springframework.stereotype.Component;
 public class PayloadBuilder {
 
     public PayloadDto build(String systemPrompt, String userPromptTemplate, NormalizedUserRequest req) {
-        // template.formatted(...)를 사용하여 String.format 정적 메서드 호출을 제거
         String userPrompt = userPromptTemplate.formatted(
             req.naturalText(),
             req.gender(),

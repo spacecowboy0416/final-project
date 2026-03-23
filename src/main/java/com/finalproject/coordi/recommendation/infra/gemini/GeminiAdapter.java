@@ -75,6 +75,12 @@ public class GeminiAdapter implements AiPort {
             if (stopWatch.isRunning()) {
                 stopWatch.stop();
             }
+            if (exception instanceof RecommendationException.AdapterException adapterException) {
+                throw adapterException;
+            }
+            if (exception instanceof RecommendationException.ValidationException validationException) {
+                throw validationException;
+            }
             logGeminiException(exception);
             throw mapToCustomException(exception);
         }
@@ -116,6 +122,9 @@ public class GeminiAdapter implements AiPort {
         try {
             return objectMapper.readValue(responseJson, RawBlueprintDto.class);
         } catch (Exception exception) {
+            if (isEnumCodeMismatch(exception)) {
+                throw RecommendationException.blueprintEnumInvalid(exception);
+            }
             log.error(RecommendationException.geminiBlueprintParseFailedLogMessage(), responseJson, exception);
             throw RecommendationException.llmBlueprintParseFailed(exception);
         }
@@ -163,6 +172,29 @@ public class GeminiAdapter implements AiPort {
             return findMappableException(cause);
         }
         return exception;
+    }
+
+    private boolean isEnumCodeMismatch(Throwable throwable) {
+        Throwable current = throwable;
+        while (current != null) {
+            if (current instanceof IllegalArgumentException && containsText(current.getMessage(), "Unknown ", " code: ")) {
+                return true;
+            }
+            current = current.getCause();
+        }
+        return false;
+    }
+
+    private boolean containsText(String source, String... tokens) {
+        if (!StringUtils.hasText(source)) {
+            return false;
+        }
+        for (String token : tokens) {
+            if (!StringUtils.hasText(token) || !source.contains(token)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
