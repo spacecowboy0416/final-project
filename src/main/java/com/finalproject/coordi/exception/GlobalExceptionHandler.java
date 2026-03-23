@@ -51,8 +51,7 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * 정적 자원 누락(404) 예외를 처리
-     * 단순 정적 파일 누락은 서버 내 경고 로그만 남기며, API 또는 페이지 경로의 누락은 사용자 정보를 포함하여 Sentry에 전송
+     * 단순 정적 자원 누락 에러는 무시 및 Sentry 처리
      */
     @ExceptionHandler(NoResourceFoundException.class)
     public ResponseEntity<Void> handleNoResourceFound(NoResourceFoundException e, HttpServletRequest request) {
@@ -66,6 +65,7 @@ public class GlobalExceptionHandler {
             
             Long userId = getCurrentUserIdSafe();
             
+            // 일반 페이지나 API 경로의 404는 Sentry로 전송하여 추적
             Sentry.withScope(scope -> {
                 scope.setLevel(SentryLevel.WARNING);
                 scope.setTag("api_path", request.getRequestURI());
@@ -80,8 +80,7 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * 사전에 정의된 비즈니스 로직 예외(BusinessException)를 처리
-     * 정해진 에러 규격에 맞추어 클라이언트에게 응답하며, 관련 내역을 사용자 ID와 함께 Sentry에 경고 레벨로 기록
+     * 직접 정의한 비즈니스 예외 처리
      */
     @ExceptionHandler(BusinessException.class)
     protected ResponseEntity<ErrorResponse> handleBusinessException(final BusinessException e, final HttpServletRequest request) {
@@ -107,19 +106,22 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * 명시적으로 처리되지 않은 모든 시스템 내부 예외(500)를 가로채어 처리
-     * 예외의 근본 원인을 파악하여 데이터베이스 오류 여부를 판별하고, 추출된 사용자 식별자(user_id)를 포함하여
-     * AI 오류 분석 서비스 및 Sentry에 상세 로그를 전송
+     * 처리되지 않은 모든 시스템 예외 처리
      */
     @ExceptionHandler(Exception.class)
     protected Object handleException(final Exception e, final HttpServletRequest request, Model model) {
         log.error("Unhandled Exception 발생: {}", e.getMessage(), e);
 
+        // 로그인 미인증 사용자 접근 시 메인 페이지 리다이렉트 제어
+        if (e.getMessage() != null && e.getMessage().contains("로그인이 필요한 서비스입니다")) {
+            return "redirect:/?loginRequired=true";
+        }
+
         ErrorCode errorCode = ErrorCode.INTERNAL_SERVER_ERROR;
         String formattedPath = request.getRequestURI().replaceAll("/\\d+(?=/|$)", "/{id}");
         String transactionName = String.format("[%s] %s", request.getMethod(), formattedPath); 
         
-        // 예외 객체를 순회하여 에러의 근본 원인(Root Cause)을 탐색
+        // 에러의 '진짜 원인(Root Cause)' 찾기
         Throwable rootCause = e;
         while (rootCause.getCause() != null) {
             rootCause = rootCause.getCause();
@@ -134,12 +136,11 @@ public class GlobalExceptionHandler {
         final HttpStatusCode status = Objects.requireNonNull(errorCode.getStatus());
         Long userId = getCurrentUserIdSafe();
 
-        // 수집된 에러 트랜잭션 정보를 AI 에러 분석 서비스로 전달
-        // 현재 AiErrorTrackerService 클래스에 userId 파라미터가 구현되지 않았으므로, 컴파일 에러 방지를 위해 기존 시그니처를 유지
+        // AI에게 트랜잭션 정보 및 사용자 식별자 전달 로직
         String finalLogMessage = String.format("Transaction: %s\nMessage: %s %s", transactionName, e.getMessage(), failedSqlInfo);
-        aiErrorTrackerService.trackAndAnalyze(e, finalLogMessage);
+        aiErrorTrackerService.trackAndAnalyze(e, finalLogMessage, userId);
 
-        // 상세 로그 데이터를 사용자 ID와 함께 Sentry 서버로 전송
+        // 상세 Sentry 기록 제어
         Sentry.withScope(scope -> {
             scope.setTransaction(transactionName);
             scope.setLevel(SentryLevel.ERROR);
@@ -153,7 +154,7 @@ public class GlobalExceptionHandler {
             Sentry.captureException(e);
         });
 
-        // 클라이언트의 요청 헤더를 분석하여 화면 응답(HTML)과 데이터 API 응답(JSON)을 분기 처리
+        // 클라이언트 응답 분기 처리
         String acceptHeader = request.getHeader("Accept");
         if (acceptHeader != null && acceptHeader.contains("text/html")) {
             model.addAttribute("errorMsg", errorCode.getMessage());
@@ -164,9 +165,6 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(ErrorResponse.of(errorCode), status);
     }
 
-    /**
-     * API 요청에 대한 표준 에러 응답 규격을 정의하는 레코드
-     */
     public record ErrorResponse(String code, String message) {
         public static ErrorResponse of(ErrorCode errorCode) {
             return new ErrorResponse(errorCode.getCode(), errorCode.getMessage());
