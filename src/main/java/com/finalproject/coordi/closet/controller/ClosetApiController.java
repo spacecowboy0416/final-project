@@ -11,6 +11,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 
+// AI 코디 추천 결과의 영구 저장 및 관리를 담당하는 API 컨트롤러
 @Slf4j
 @RestController
 @RequestMapping("/api/closet/recommendations")
@@ -19,7 +20,7 @@ public class ClosetApiController {
 
     private final ClosetService closetService;
 
-    // SecurityContext에서 현재 요청 객체의 사용자 인증 정보를 검증하고 추출
+    // SecurityContext에서 현재 요청 객체의 사용자 인증 정보를 검증하고 추출 기능
     private Long getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
@@ -31,7 +32,7 @@ public class ClosetApiController {
         return Long.parseLong(user.getUsername()); 
     }
 
-    // 클라이언트로부터 전달받은 AI 코디 추천 데이터를 데이터베이스에 영구 저장
+    // 클라이언트로부터 전달받은 AI 코디 추천 데이터를 데이터베이스에 영구 저장 기능
     @PostMapping
     public ResponseEntity<String> saveCoordi(@RequestBody SavedCoordiDto dto) {
         dto.setUserId(getCurrentUserId()); 
@@ -39,7 +40,7 @@ public class ClosetApiController {
         return ResponseEntity.ok("코디가 옷장에 저장되었습니다.");
     }
 
-    // 옷장에 이미 저장된 특정 코디 세트의 상세 정보를 수정
+    // 옷장에 이미 저장된 특정 코디 세트의 상세 정보를 수정 기능
     @PutMapping("/{recId}")
     public ResponseEntity<String> updateCoordi(@PathVariable("recId") Long recId, @RequestBody SavedCoordiDto dto) {
         dto.setRecId(recId); 
@@ -48,7 +49,7 @@ public class ClosetApiController {
         return ResponseEntity.ok("코디 정보가 수정되었습니다.");
     }
 
-    // 지정된 식별자(PK)를 바탕으로 사용자의 옷장에서 특정 코디를 삭제
+    // 지정된 식별자(PK)를 바탕으로 사용자의 옷장에서 특정 코디를 삭제 기능
     @DeleteMapping("/{recId}")
     public ResponseEntity<String> deleteCoordi(@PathVariable("recId") Long recId) {
         closetService.deleteSavedCoordi(recId, getCurrentUserId()); 
