@@ -1,0 +1,543 @@
+.board-editor-page {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* 상단 소개 카드 */
+.board-editor-hero {
+    padding: 30px 34px;
+    border: 1px solid var(--line);
+    border-radius: 32px;
+    background: linear-gradient(135deg, #ffffff 0%, #fbfcff 100%);
+    box-shadow: var(--shadow-sm);
+}
+
+.board-editor-hero__intro {
+    display: flex;
+    flex-direction: column;
+}
+
+.board-editor-hero__eyebrow {
+    margin: 0 0 10px;
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--text-muted);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.board-editor-hero h1 {
+    margin: 0;
+    font-size: 36px;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: var(--text-strong);
+}
+
+.board-editor-hero p:last-child {
+    margin: 12px 0 0;
+    color: var(--text-muted);
+    line-height: 1.8;
+}
+
+/* 메인 레이아웃 */
+.board-editor-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.55fr) minmax(340px, 0.95fr);
+    gap: 22px;
+    align-items: start;
+}
+
+.board-editor-layout--single {
+    grid-template-columns: 1fr;
+}
+
+/* 공통 카드 */
+.board-editor-card {
+    padding: 30px 32px;
+    border: 1px solid var(--line);
+    border-radius: 30px;
+    background: #fff;
+    box-shadow: var(--shadow-sm);
+}
+
+.board-editor-card__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.board-editor-card__header h2 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--text-strong);
+}
+
+.board-editor-card__header p {
+    margin: 8px 0 0;
+    color: var(--text-muted);
+    line-height: 1.7;
+}
+
+/* 작성 카드 */
+.board-form-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+#title {
+    height: 56px;
+}
+
+#content {
+    min-height: 260px;
+}
+
+/* 불러오기 안내 영역 */
+.board-editor-coordi-picker {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 18px;
+    margin-top: 22px;
+    padding: 20px 22px;
+    border: 1px solid var(--line);
+    border-radius: 22px;
+    background: var(--surface-muted);
+}
+
+.board-editor-coordi-picker__text {
+    min-width: 0;
+}
+
+.board-editor-coordi-picker__text h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--text-strong);
+}
+
+.board-editor-coordi-picker__text p {
+    margin: 8px 0 0;
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--text-muted);
+}
+
+#loadCoordiBtn {
+    min-width: 148px;
+    flex-shrink: 0;
+}
+
+/* 하단 액션 */
+.board-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 22px;
+}
+
+.board-form-actions button {
+    min-width: 110px;
+}
+
+/* ===== 미리보기 영역 ===== */
+.board-selected-coordi__preview {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+/* 상단 태그 (날씨 / 스타일 / TPO) */
+.board-selected-coordi__summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.board-selected-coordi__chip {
+    display: inline-flex;
+    align-items: center;
+    min-height: 34px;
+    padding: 0 14px;
+    border-radius: 999px;
+    background: #f1f3f6;
+    color: #374151;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+/* 이미지 리스트 */
+.board-selected-coordi__gallery {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* 개별 이미지 카드 */
+.board-selected-coordi__photo-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: 22px;
+    border: 1px solid var(--line);
+    background: var(--surface-muted);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.board-selected-coordi__photo-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+/* 좌상단 카테고리 (TOP, OUTER 등) */
+.board-selected-coordi__slot {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    height: 28px;
+    padding: 0 10px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    font-size: 11px;
+    font-weight: 800;
+    color: #374151;
+    backdrop-filter: blur(6px);
+}
+
+/* 이미지 */
+.board-selected-coordi__photo,
+.board-selected-coordi__photo-empty {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    display: block;
+    background: #e9edf2;
+}
+
+/* 이미지 없을 때 */
+.board-selected-coordi__photo-empty {
+    background: linear-gradient(
+        135deg,
+        #f0f2f5 0%,
+        #f7f8fa 55%,
+        #eceff3 100%
+    );
+}
+
+/* 빈 상태 */
+.board-selected-coordi__empty {
+    padding: 42px 20px;
+    border: 1px dashed var(--line-strong);
+    border-radius: 22px;
+    text-align: center;
+    color: var(--text-muted);
+    background: var(--surface-muted);
+}
+
+/* 모달 */
+.board-modal.hidden {
+    display: none;
+}
+
+.board-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+}
+
+.board-modal__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.5);
+    backdrop-filter: blur(4px);
+}
+
+.board-modal__content {
+    position: relative;
+    z-index: 1;
+    max-width: 1120px;
+    margin: 40px auto;
+    padding: 26px;
+    border-radius: 28px;
+    background: #ffffff;
+    box-shadow: 0 30px 80px rgba(15, 23, 42, 0.22);
+    max-height: calc(100vh - 80px);
+    overflow-y: auto;
+}
+
+.board-modal__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 22px;
+}
+
+.board-modal__header h3 {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--text-strong);
+}
+
+.board-modal__header p {
+    margin: 8px 0 0;
+    color: var(--text-muted);
+}
+
+#closeCoordiModalBtn {
+    min-width: 90px;
+}
+
+/* 코디 목록 */
+.board-coordi-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.board-coordi-card {
+    padding: 18px;
+    border: 1px solid var(--line);
+    border-radius: 26px;
+    background: #fff;
+    cursor: pointer;
+    transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+}
+
+.board-coordi-card:hover {
+    transform: translateY(-3px);
+    border-color: #d9dee8;
+    box-shadow: var(--shadow-sm);
+}
+
+.board-coordi-card__badge-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 14px;
+}
+
+.board-coordi-card__badge {
+    display: inline-flex;
+    align-items: center;
+    height: 32px;
+    padding: 0 12px;
+    border-radius: 999px;
+    background: var(--primary-soft);
+    color: var(--primary-dark);
+    font-size: 12px;
+    font-weight: 800;
+}
+
+/* 모달 카드 이미지 */
+.board-coordi-card__image-grid {
+    display: grid;
+    gap: 10px;
+    margin: 16px 0 18px;
+}
+
+.media-img {
+    position: relative;
+    overflow: hidden;
+    border-radius: 18px;
+    background: #edf1f5;
+    border: 1px solid #e7ecf2;
+}
+
+.media-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.board-coordi-card__thumb-empty {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #f0f2f5 0%, #f7f8fa 55%, #eceff3 100%);
+}
+
+.media-img__more {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(17, 17, 17, 0.46);
+    color: #fff;
+    font-size: 18px;
+    font-weight: 800;
+    backdrop-filter: blur(2px);
+}
+
+.board-coordi-card__image-grid.media-1 {
+    grid-template-columns: 1fr;
+}
+
+.board-coordi-card__image-grid.media-1 .media-img {
+    height: 240px;
+}
+
+.board-coordi-card__image-grid.media-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.board-coordi-card__image-grid.media-2 .media-img {
+    height: 170px;
+}
+
+.board-coordi-card__image-grid.media-3 {
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+}
+
+.board-coordi-card__image-grid.media-3 .media-img:nth-child(1) {
+    grid-row: 1 / 3;
+    height: 220px;
+}
+
+.board-coordi-card__image-grid.media-3 .media-img:nth-child(2),
+.board-coordi-card__image-grid.media-3 .media-img:nth-child(3) {
+    height: 105px;
+}
+
+.board-coordi-card__image-grid.media-4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.board-coordi-card__image-grid.media-4 .media-img {
+    height: 120px;
+}
+
+.board-coordi-card__image-grid.media-5 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.board-coordi-card__image-grid.media-5 .media-img:nth-child(1) {
+    grid-column: 1 / 3;
+    height: 180px;
+}
+
+.board-coordi-card__image-grid.media-5 .media-img:nth-child(2),
+.board-coordi-card__image-grid.media-5 .media-img:nth-child(3) {
+    height: 110px;
+}
+
+.board-coordi-card__image-grid.media-5 .media-img:nth-child(4),
+.board-coordi-card__image-grid.media-5 .media-img:nth-child(5) {
+    height: 90px;
+}
+
+.board-coordi-card__image-grid.media-6 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.board-coordi-card__image-grid.media-6 .media-img {
+    height: 90px;
+}
+
+/* 모달 카드 텍스트 */
+.board-coordi-card__grid {
+    display: grid;
+    gap: 10px;
+}
+
+.board-coordi-card__item {
+    padding: 14px;
+    border-radius: 18px;
+    background: var(--surface-muted);
+    border: 1px solid #edf1f5;
+}
+
+.board-coordi-card__item--full {
+    grid-column: 1 / -1;
+}
+
+.board-coordi-card__item span {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 12px;
+    color: var(--text-light);
+    font-weight: 700;
+}
+
+.board-coordi-card__item strong {
+    color: var(--text-strong);
+    line-height: 1.65;
+    font-size: 14px;
+}
+
+/* 반응형 */
+@media (max-width: 980px) {
+    .board-editor-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .board-editor-hero {
+        padding: 26px 22px;
+    }
+
+    .board-editor-hero h1 {
+        font-size: 30px;
+    }
+
+    .board-editor-card {
+        padding: 22px 18px;
+    }
+
+    #content {
+        min-height: 220px;
+    }
+
+    .board-editor-coordi-picker,
+    .board-editor-card__header,
+    .board-modal__header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .board-coordi-list {
+        grid-template-columns: 1fr;
+    }
+
+    .board-modal__content {
+        margin: 18px 12px;
+        max-height: calc(100vh - 36px);
+        padding: 20px;
+    }
+
+    .board-selected-coordi__row {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .board-selected-coordi__thumb,
+    .board-selected-coordi__thumb-empty {
+        width: 100%;
+        height: 220px;
+    }
+
+    .board-form-actions {
+        flex-direction: column-reverse;
+        align-items: stretch;
+    }
+
+    .board-form-actions button,
+    #loadCoordiBtn,
+    #closeCoordiModalBtn {
+        width: 100%;
+        min-width: 0;
+    }
+}

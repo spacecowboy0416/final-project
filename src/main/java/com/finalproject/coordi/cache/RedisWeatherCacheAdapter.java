@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 /**
  * Redis 기반 날씨 캐시 구현체
  * city + gu 기준으로 날씨 정보를 Redis에 저장하고 재사용한다.
+ * Redis 오류가 발생하면 캐시를 사용하지 않고 null 반환 또는 저장 생략으로 fallback 한다.
  */
 @RequiredArgsConstructor
 public class RedisWeatherCacheAdapter implements WeatherCachePort {
@@ -28,30 +29,44 @@ public class RedisWeatherCacheAdapter implements WeatherCachePort {
     @Override
     public void cacheWeather(String city, String gu, WeatherContextDto dto) {
         String key = buildKey(city, gu);
-        redisTemplate.opsForValue().set(key, dto, WEATHER_TTL);
 
-        log.info("[WEATHER CACHE PUT] key={}, ttlMinutes={}", key, WEATHER_TTL.toMinutes());
+        try {
+            redisTemplate.opsForValue().set(key, dto, WEATHER_TTL);
+            log.info("[WEATHER CACHE PUT] key={}, ttlMinutes={}", key, WEATHER_TTL.toMinutes());
+        } catch (Exception e) {
+            log.warn("[WEATHER CACHE PUT FAIL] key={}, message={}", key, e.getMessage());
+        }
     }
 
     @Override
     public WeatherContextDto getWeather(String city, String gu) {
         String key = buildKey(city, gu);
-        Object value = redisTemplate.opsForValue().get(key);
 
-        if (value == null) {
-            log.info("[WEATHER CACHE MISS] key={}", key);
+        try {
+            Object value = redisTemplate.opsForValue().get(key);
+
+            if (value == null) {
+                log.info("[WEATHER CACHE MISS] key={}", key);
+                return null;
+            }
+
+            log.info("[WEATHER CACHE HIT] key={}", key);
+
+            if (value instanceof WeatherContextDto dto) {
+                return dto;
+            }
+
+            return objectMapper.convertValue(value, WeatherContextDto.class);
+        } catch (Exception e) {
+            log.warn("[WEATHER CACHE READ FAIL] key={}, message={}", key, e.getMessage());
             return null;
         }
-
-        log.info("[WEATHER CACHE HIT] key={}", key);
-
-        if (value instanceof WeatherContextDto dto) {
-            return dto;
-        }
-
-        return objectMapper.convertValue(value, WeatherContextDto.class);
     }
 
+    /**
+     * Redis key 형식: weather:{city}:{gu}
+     * 예: weather:서울:강남구
+     */
     private String buildKey(String city, String gu) {
         return "weather:" + normalize(city, "서울") + ":" + normalize(gu, "unknown");
     }
