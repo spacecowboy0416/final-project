@@ -19,6 +19,7 @@ public class SystemErrorLog {
     private String stackTrace;
     private String aiSolution;
     private int occurrenceCount;
+    private Long userId;
     private LocalDateTime createdAt;
     private LocalDateTime lastOccurredAt;
 }
