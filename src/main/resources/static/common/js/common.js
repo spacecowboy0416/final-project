@@ -54,6 +54,21 @@ function confirmAction(event, message) {
     return false;
 }
 
+// 페이지 로드 시 URL 파라미터를 확인하여 공용 모달 호출
+document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    // 리다이렉트된 파라미터 존재 시 모달 출력
+    if (urlParams.get('loginRequired') === 'true') {
+        showGlobalModal('로그인 필요', '해당 서비스는 로그인이 필요합니다. 로그인 페이지로 이동하시겠습니까?', 'confirm', function() {
+            window.location.href = '/login';
+        });
+        
+        // URL에서 파라미터 제거 (새로고침 시 중복 호출 방지)
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+});
+
 // 공용 모달 외부 영역 클릭 시 닫기 (충돌 방지를 위해 addEventListener 사용)
 window.addEventListener('click', function(event) {
     const globalModal = document.getElementById('globalModal');

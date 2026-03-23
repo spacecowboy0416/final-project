@@ -21,55 +21,56 @@ public class AiErrorTrackerService {
     private final ErrorLogMapper errorLogMapper;
     private final GeminiApiService geminiApiService;
 
-    // 기존 파라미터 1개짜리 메서드
+    // 기존 파라미터 1개 유지
     @Async
     public void trackAndAnalyze(Exception e) {
-        trackAndAnalyze(e, e.getMessage()); 
+        trackAndAnalyze(e, e.getMessage(), null); 
     }
 
-    // 파라미터 2개짜리 메인 로직
+    // 파라미터 2개 유지
     @Async
     public void trackAndAnalyze(Exception e, String customMessage) {
+        trackAndAnalyze(e, customMessage, null);
+    }
+
+    // 유저 ID를 포함한 메인 분석 및 추적
+    @Async
+    public void trackAndAnalyze(Exception e, String customMessage, Long userId) {
         try {
-            // 변수 추출
             String errorType = e.getClass().getSimpleName();
-            String stackTrace = e.getStackTrace()[0].toString();
+            String stackTrace = e.getStackTrace().length > 0 ? e.getStackTrace()[0].toString() : "Unknown Source";
             String messageToSave = (customMessage != null) ? customMessage : "No message"; 
 
-            // 에러 식별용 고유 해시값 생성
             String errorHash = generateHash(errorType + stackTrace);
-
-            // 매퍼 메서드(findByHash) 사용
             SystemErrorLog existingLog = errorLogMapper.findByHash(errorHash);
 
             if (existingLog != null) {
-                // 이미 분석된 에러라면 발생 횟수만 1 증가
                 errorLogMapper.incrementOccurrence(errorHash);
-                log.info("기존 에러 누적 (AI 호출 생략) - 타입: {}, 누적 횟수 증가", errorType);
+                log.info("기존 에러 누적 - 타입: {}, 유저ID: {}", errorType, userId);
             } else {
-                // 처음 보는 에러라면 Gemini AI에게 원인 분석 요청
                 log.info("신규 에러 발생, AI 분석 시작 - 타입: {}", errorType);
                 String aiSolution = geminiApiService.askGemini(messageToSave, stackTrace);
 
-                // DTO를 생성해서 insertLog에 전달
-                SystemErrorLog newLog = new SystemErrorLog();
-                newLog.setErrorHash(errorHash);
-                newLog.setErrorType(errorType);
-                newLog.setMessage(messageToSave);
-                newLog.setStackTrace(stackTrace);
-                newLog.setAiSolution(aiSolution);
+                SystemErrorLog newLog = SystemErrorLog.builder()
+                        .errorHash(errorHash)
+                        .errorType(errorType)
+                        .message(messageToSave)
+                        .stackTrace(stackTrace)
+                        .aiSolution(aiSolution)
+                        .userId(userId) // 유저 ID 할당
+                        .build();
 
                 errorLogMapper.insertLog(newLog);
-                log.info("신규 에러 로깅 및 AI 분석 완료 - 타입: {}", errorType);
+                log.info("신규 에러 로깅 완료 - 유저ID: {}", userId);
             }
 
         } catch (Exception ex) {
-            log.error("AI 에러 트래커 자체 동작 중 오류 발생", ex);
+            log.error("AI 에러 트래커 동작 중 오류 발생", ex);
             Sentry.captureException(ex);
         }
     }
 
-    // 3. 에러 타입과 발생 위치를 조합해 고유한 해시(Hash) 값을 만드는 로직
+    // 에러 고유 해시 생성
     private String generateHash(String input) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
