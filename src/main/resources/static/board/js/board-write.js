@@ -57,6 +57,46 @@ document.addEventListener("DOMContentLoaded", () => {
     if (backdrop) {
         backdrop.addEventListener("click", closeCoordiModal);
     }
+	
+	initializePreselectedCoordi();
+	
+	// 옷장 자랑하기 버튼 누를시
+	async function initializePreselectedCoordi() {
+	    const params = new URLSearchParams(window.location.search);
+
+	    // recId도 받고, closet에서 보내는 coordiId도 같이 받기
+	    const preselectedId = params.get("recId") || params.get("coordiId");
+
+	    if (!preselectedId) {
+	        return;
+	    }
+
+	    try {
+	        const response = await fetch("/api/board/posts/coordis");
+
+	        if (!response.ok) {
+	            throw new Error("저장 코디 조회 실패");
+	        }
+
+	        const coordis = await response.json();
+	        const coordiList = Array.isArray(coordis) ? coordis : [];
+
+	        const matchedCoordi = coordiList.find(
+	            coordi => String(coordi.recId) === String(preselectedId)
+	        );
+
+	        if (!matchedCoordi) {
+	            console.warn("전달받은 코디 ID에 해당하는 코디를 찾지 못했습니다.", preselectedId);
+	            return;
+	        }
+
+	        selectedCoordi = matchedCoordi;
+	        recIdEl.value = matchedCoordi.recId;
+	        renderSelectedCoordi(matchedCoordi);
+	    } catch (error) {
+	        console.error("초기 코디 자동 불러오기 실패", error);
+	    }
+	}
 
     // ===== 저장된 코디 모달 열기 =====
     async function openCoordiModal() {
