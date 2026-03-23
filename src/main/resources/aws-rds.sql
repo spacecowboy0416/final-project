@@ -473,3 +473,7 @@ CREATE INDEX idx_recommendation_style_type ON recommendation (style_type);
 CREATE INDEX idx_recommendation_tpo_type ON recommendation (tpo_type);
 CREATE INDEX idx_recommendation_item_rec_slot ON recommendation_item (rec_id, slot_key);
 CREATE INDEX idx_product_image_meta_product_created ON product_image_metadata (product_id, created_at); 
+
+-- user_id 추가 2026-03-23
+ALTER TABLE system_error_log 
+ADD COLUMN user_id BIGINT NULL AFTER occurrence_count;
