@@ -80,7 +80,15 @@ public enum ErrorCode {
 	
 	//weather
 	CURRENT_WEATHER_RESPONSE_NULL(HttpStatus.INTERNAL_SERVER_ERROR, "W001", "현재 날씨 응답이 비어 있습니다."),
-	FORECAST_WEATHER_RESPONSE_NULL(HttpStatus.INTERNAL_SERVER_ERROR, "W002", "예보 날씨 응답이 비어 있습니다.");
+	FORECAST_WEATHER_RESPONSE_NULL(HttpStatus.INTERNAL_SERVER_ERROR, "W002", "예보 날씨 응답이 비어 있습니다."),
+	
+	// Board
+	POST_NOT_FOUND(HttpStatus.NOT_FOUND, "P001", "해당 게시글을 찾을 수 없습니다."),
+	POST_ALREADY_DELETED(HttpStatus.BAD_REQUEST, "P002", "이미 삭제된 게시글입니다."),
+	COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "P003", "해당 댓글을 찾을 수 없습니다."),
+	BOARD_FORBIDDEN(HttpStatus.FORBIDDEN, "P004", "해당 게시판 작업에 대한 권한이 없습니다."),
+	RECOMMENDATION_NOT_FOUND(HttpStatus.NOT_FOUND, "P005", "공유할 추천 결과를 찾을 수 없습니다."),
+	RECOMMENDATION_NOT_SAVED(HttpStatus.BAD_REQUEST, "P006", "저장된 코디만 게시글로 공유할 수 있습니다.");
 
     private final HttpStatusCode status;
     private final String code;
