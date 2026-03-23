@@ -38,7 +38,8 @@ public class SecurityConfig {
         @Bean
         public WebSecurityCustomizer webSecurityCustomizer() {
                 return (web) -> web.ignoring()
-                        .requestMatchers("/css/**", "/js/**", "/images/**", "/admin/images/**", "/favicon.ico", "/error");
+                                .requestMatchers("/css/**", "/js/**", "/images/**", "/admin/images/**", "/favicon.ico",
+                                                "/error");
         }
 
         // 애플리케이션으로 유입되는 HTTP 요청에 대한 세부 보안 필터 체인 규칙을 정의합니다.
