@@ -575,3 +575,7 @@ INSERT INTO tag (type, name) VALUES
   ('SLOT', 'accessories')
 ON DUPLICATE KEY UPDATE
   name = VALUES(name);
+
+-- user_id 추가 2026-03-23
+ALTER TABLE system_error_log 
+ADD COLUMN user_id BIGINT NULL AFTER occurrence_count;
