@@ -19,6 +19,8 @@ public enum ErrorCode {
     // User
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "U100", "해당 사용자를 찾을 수 없습니다."),
     EMAIL_DUPLICATION(HttpStatus.CONFLICT, "U101", "이미 가입된 이메일입니다."),
+    USER_SUSPENDED(HttpStatus.FORBIDDEN, "U102", "이용 정지된 계정입니다."),
+    DUPLICATE_LOGIN(HttpStatus.CONFLICT, "U103", "다른 기기에서 로그인하여 접속이 종료되었습니다."),
     
     // Item
     ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "I100", "해당 아이템을 찾을 수 없습니다."),
@@ -32,6 +34,7 @@ public enum ErrorCode {
     RECOMMENDATION_BLUEPRINT_TYPE_MISMATCH(HttpStatus.BAD_GATEWAY, "R123", "검증된 blueprint 타입이 JsonNode가 아닙니다."),
     RECOMMENDATION_BLUEPRINT_ENUM_INVALID(HttpStatus.BAD_GATEWAY, "R124", "AI blueprint enum 코드가 유효하지 않습니다."),
     RECOMMENDATION_BLUEPRINT_REQUIRED_SLOTS_MISSING(HttpStatus.BAD_REQUEST, "R125", "blueprint 필수 슬롯이 누락되었습니다."),
+    RECOMMENDATION_BLUEPRINT_AI_EXPLANATION_INVALID(HttpStatus.BAD_GATEWAY, "R126", "AI blueprint ai_explanation은 한글 문장이어야 합니다."),
     RECOMMENDATION_VALIDATION_NATURAL_TEXT_REQUIRED(HttpStatus.BAD_REQUEST, "R130", "요청 사항을 입력해주세요."),
     RECOMMENDATION_VALIDATION_LOCATION_REQUIRED(HttpStatus.BAD_REQUEST, "R131", "위치 정보(위도/경도)가 필요합니다."),
     RECOMMENDATION_PROMPT_TEMPLATE_READ_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "R140", "프롬프트 템플릿을 읽지 못했습니다."),
@@ -77,7 +80,15 @@ public enum ErrorCode {
 	
 	//weather
 	CURRENT_WEATHER_RESPONSE_NULL(HttpStatus.INTERNAL_SERVER_ERROR, "W001", "현재 날씨 응답이 비어 있습니다."),
-	FORECAST_WEATHER_RESPONSE_NULL(HttpStatus.INTERNAL_SERVER_ERROR, "W002", "예보 날씨 응답이 비어 있습니다.");
+	FORECAST_WEATHER_RESPONSE_NULL(HttpStatus.INTERNAL_SERVER_ERROR, "W002", "예보 날씨 응답이 비어 있습니다."),
+	
+	// Board
+	POST_NOT_FOUND(HttpStatus.NOT_FOUND, "P001", "해당 게시글을 찾을 수 없습니다."),
+	POST_ALREADY_DELETED(HttpStatus.BAD_REQUEST, "P002", "이미 삭제된 게시글입니다."),
+	COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "P003", "해당 댓글을 찾을 수 없습니다."),
+	BOARD_FORBIDDEN(HttpStatus.FORBIDDEN, "P004", "해당 게시판 작업에 대한 권한이 없습니다."),
+	RECOMMENDATION_NOT_FOUND(HttpStatus.NOT_FOUND, "P005", "공유할 추천 결과를 찾을 수 없습니다."),
+	RECOMMENDATION_NOT_SAVED(HttpStatus.BAD_REQUEST, "P006", "저장된 코디만 게시글로 공유할 수 있습니다.");
 
     private final HttpStatusCode status;
     private final String code;

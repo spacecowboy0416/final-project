@@ -1,6 +1,7 @@
 package com.finalproject.coordi.auth.handler;
 
 import com.finalproject.coordi.auth.jwt.JwtProvider;
+import com.finalproject.coordi.auth.service.RedisService;
 import com.finalproject.coordi.exception.user.UserNotFoundException;
 import com.finalproject.coordi.users.dto.UsersDto;
 import com.finalproject.coordi.users.service.UsersService;
@@ -25,15 +26,28 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
     private final JwtProvider jwtProvider;
     private final UsersService usersService;
+    private final RedisService redisService; // Redis 연동 추가
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
         Map<String, Object> attributes = oAuth2User.getAttributes();
 
-        // 유저 정보 추출
-        String email = (String) attributes.get("email");
-        UsersDto user = usersService.findByEmail(email);
+        // 1. 유저 정보 추출 (이메일이 없어도 유저를 식별할 수 있도록 서비스명과 고유 ID를 사용)
+        String provider = ((org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken) authentication).getAuthorizedClientRegistrationId();
+        
+        String providerUserId;
+        if ("naver".equals(provider)) {
+            // 네이버
+            Map<String, Object> responseMap = (Map<String, Object>) attributes.get("response");
+            providerUserId = (String) responseMap.get("id");
+        } else {
+            // 구글, 카카오
+            providerUserId = oAuth2User.getName();
+        }
+
+        UsersDto user = usersService.findByProviderAndProviderUserId(provider, providerUserId);
+
         // 유저 정보가 없는 경우 예외 처리
         if (user == null)
             throw new UserNotFoundException();
@@ -41,11 +55,14 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         // 가입 상태 확인
         boolean isNewUser = (boolean) attributes.getOrDefault("isNewUser", false);
 
-        // JWT 토큰 생성 (Stateless)
+        // 2. JWT 토큰 생성 (Stateless 방식 - userId와 role만 포함)
         String accessToken = jwtProvider.createAccessToken(user.getUserId(), user.getRole());
         String refreshToken = jwtProvider.createRefreshToken(user.getUserId(), user.getRole());
 
-        // 보안 쿠키 설정 (HttpOnly, Secure, SameSite=Lax)
+        // 2.5 Redis에 RefreshToken 저장 (중복 로그인 방지 핵심 로직)
+        redisService.saveRefreshToken(user.getUserId(), refreshToken);
+
+        // 3. 보안 쿠키 설정 (HttpOnly, Secure, SameSite=Lax)
         setTokenCookie(response, "accessToken", accessToken, 1800); // 30분
         setTokenCookie(response, "refreshToken", refreshToken, 604800); // 7일
         

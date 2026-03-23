@@ -3,6 +3,7 @@
 
   <head>
     <th:block th:replace="~{layout/common :: configFragment}"></th:block>
+    <link rel="stylesheet" th:href="@{/admin/css/style.css}" />
     <link rel="stylesheet" th:href="@{/admin/css/admin.css}" />
     <link rel="stylesheet" th:href="@{/admin/css/admin-item.css}" />
     <link rel="stylesheet" th:href="@{/admin/css/admin-user.css}" />
@@ -168,20 +169,22 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-8">
+        <div class="grid grid-cols-1 gap-8">
           <div class="chart-container-card">
             <h3 class="text-white font-medium mb-6">최근 7일 이용 추이</h3>
             <div class="h-[300px] relative">
               <canvas id="daily-trend-chart"></canvas>
             </div>
           </div>
+          <!--
           <div class="chart-container-card">
             <h3 class="text-white font-medium mb-6">실시간 인기 태그 TOP 10</h3>
             <div id="popular-tags-list">
               <!-- Tags will be populated here -->
-            </div>
-          </div>
         </div>
+      </div>
+      -->
+      </div>
       </div>
     </template>
 

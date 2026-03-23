@@ -1,6 +1,8 @@
 package com.finalproject.coordi.auth.oauth;
 
-import com.finalproject.coordi.exception.auth.AuthFailedException;
+import com.finalproject.coordi.auth.service.RedisService;
+import com.finalproject.coordi.exception.auth.OAuth2AuthFailedException;
+import com.finalproject.coordi.exception.auth.OAuth2SuspendedException;
 import com.finalproject.coordi.users.dto.UsersDto;
 import com.finalproject.coordi.users.service.UsersService;
 import lombok.RequiredArgsConstructor;
@@ -24,13 +26,14 @@ import java.util.Map;
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     private final UsersService usersService;
+    private final RedisService redisService; // Redis 연동 추가
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
         // OAuth2 Provider로부터 사용자 정보(Entity) 가져오기
         OAuth2User oAuth2User = super.loadUser(userRequest);
+        
         // 사용자 정보 내의 속성값(Attributes)을 Map 형태로 가져오기
-
         Map<String, Object> attributes = oAuth2User.getAttributes();
 
         // 소셜 서비스 구분(ex.google, kakao, naver)
@@ -45,6 +48,15 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         
         // UserDto를 DB에 저장하거나 업데이트하여 최종 UserDto 반환
         UsersDto savedUser = usersService.saveOrUpdate(usersDto);
+
+        // [정지 유저 체크] 로그인을 시도하는 유저가 정지 상태인지 확인
+        if ("SUSPENDED".equalsIgnoreCase(savedUser.getStatus())) {
+            // Redis에 정지 상태를 캐시하여 필터에서 즉시 차단
+            redisService.setSuspendedUser(savedUser.getUserId());
+            
+            // 정지된 유저가 로그인 시도 시 예외 발생
+            throw new OAuth2SuspendedException();
+        }
         
         // attributes는 수정 불가일 수 있으므로 복사해서 필요한 정보(isNewUser) 추가
         Map<String, Object> customAttributes = new HashMap<>(attributes);
@@ -61,35 +73,54 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     // 각 소셜 서비스별로 제공되는 유저 정보를 공통 UserDto로 변환
     @SuppressWarnings("unchecked")
     private UsersDto extractUsersDto(String registrationId, Map<String, Object> attributes) {
+        // 기본 프로필 이미지 경로
+        String defaultProfileImage = "/login/images/default-profile.png";
+
         if ("google".equals(registrationId)) {
+            String picture = (String) attributes.get("picture");
             return UsersDto.builder()
                     .provider("google")
                     .providerUserId((String) attributes.get("sub"))
                     .email((String) attributes.get("email"))
                     .nickname((String) attributes.get("name"))
-                    .profileImageUrl((String) attributes.get("picture"))
+                    .profileImageUrl(picture != null ? picture : defaultProfileImage)
                     .build();
         } else if ("kakao".equals(registrationId)) {
+            // 카카오의 경우 'kakao_account'에 이메일과 프로필 정보가 들어있음
             Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
-            Map<String, Object> profile = (Map<String, Object>) kakaoAccount.get("profile");
+            Map<String, Object> profile = (kakaoAccount != null) ? (Map<String, Object>) kakaoAccount.get("profile") : null;
+
+            // 권한 없거나 동의 안했으면 null
+            String email = (kakaoAccount != null) ? (String) kakaoAccount.get("email") : null;
+            String nickname = (profile != null) ? (String) profile.get("nickname") : "KakaoUser";
+            String profileImageUrl = (profile != null) ? (String) profile.get("profile_image_url") : null;
+            String providerUserId = String.valueOf(attributes.get("id"));
+
+            // 이메일 없을 경우 소셜 ID를 이메일로 대체
+            if (email == null) {
+                email = providerUserId + "@kakao";
+            }
+
             return UsersDto.builder()
                     .provider("kakao")
-                    .providerUserId(String.valueOf(attributes.get("id")))
-                    .email((String) kakaoAccount.get("email"))
-                    .nickname((String) profile.get("nickname"))
-                    .profileImageUrl((String) profile.get("profile_image_url"))
+                    .providerUserId(providerUserId)
+                    .email(email)
+                    .nickname(nickname)
+                    .profileImageUrl(profileImageUrl != null ? profileImageUrl : defaultProfileImage)
                     .build();
         } else if ("naver".equals(registrationId)) {
             Map<String, Object> response = (Map<String, Object>) attributes.get("response");
+            String profileImage = (response != null) ? (String) response.get("profile_image") : null;
+
             return UsersDto.builder()
                     .provider("naver")
                     .providerUserId((String) response.get("id"))
                     .email((String) response.get("email"))
                     .nickname((String) response.get("name"))
-                    .profileImageUrl((String) response.get("profile_image"))
+                    .profileImageUrl(profileImage != null ? profileImage : defaultProfileImage)
                     .build();
         }
         // 지원하지 않는 소셜 서비스인 경우 예외 처리
-        throw new AuthFailedException();
+        throw new OAuth2AuthFailedException();
     }
 }

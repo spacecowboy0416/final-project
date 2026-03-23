@@ -10,8 +10,10 @@ import java.util.Map;
 @Mapper
 public interface StatisticsMapper {
 
-    // 시스템 통계
     AdminStatisticsDto selectSystemSummary();
+
     List<Map<String, Object>> selectDailyTrends();
+
+    // 실시간 인기 태그 10개 조회
     List<AdminStatisticsDto.PopularTagDto> selectPopularTags(@Param("limit") int limit);
 }

@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class ShoppingSearcher {
     // 디버그 검색 엔드포인트에서 사용할 기본 검색 개수다.
-    private static final int DEBUG_RESULT_LIMIT = 10;
+    private static final int DEBUG_RESULT_LIMIT = 1;
 
     private final ShoppingPort shoppingPort;
 
