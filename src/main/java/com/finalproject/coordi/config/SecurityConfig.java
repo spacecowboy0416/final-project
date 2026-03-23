@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -54,17 +55,30 @@ public class SecurityConfig {
                                                 // 일반 관리자 및 최고 관리자 접근 허용 경로
                                                 .requestMatchers("/admin/**", "/admin-management/**")
                                                 .hasAnyRole("ADMIN", "MASTER")
+                                                
+                                                // 로그인 필요 페이지
+                                                .requestMatchers("/board/write", "/board/*/edit").authenticated()
+                                                
                                                 // 인증 절차 없이 누구나 자유롭게 접근할 수 있는 퍼블릭 엔드포인트를 지정합니다.
                                                 .requestMatchers(
                                                         // 기본 페이지 및 인증
                                                         "/", "/oauth2/**", "/logout", "/recommend/**",
                                                         // 도메인별 리소스(js,css,image 등)
-                                                        "/common/**", "/login/**", "/main/**", "/recommendation/**", "/user/**",
+                                                        "/common/**", "/login/**", "/main/**", "/recommendation/**", "/user/**", 
+                                                        "/board", "/board/*", "/board/css/**", "/board/js/**",
                                                         // 보완
                                                         "/favicon.ico", "/css/**", "/js/**", "/images/**", "/image/**", "/admin/images/**", "/error",
                                                         // 공개 API
                                                         "/api/main/**", "/api/recommendations/**")
                                                 .permitAll()
+                                                
+                                                // 게시판 조회 API 공개
+                                                .requestMatchers(HttpMethod.GET,
+                                                        "/api/board/posts",
+                                                        "/api/board/posts/*",
+                                                        "/api/board/posts/*/comments")
+                                                .permitAll()
+
                                                 // 상기 명시되지 않은 모든 나머지 요청은 로그인된(인증된) 사용자만 허용합니다.
                                                 .anyRequest().permitAll()  // [[[[[[개발완료되면 .authenticated()로 바꿔야 함]]]]]]
                                                 )
