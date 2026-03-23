@@ -17,20 +17,20 @@ public interface ErrorLogMapper {
     @Select("SELECT * FROM system_error_log WHERE error_hash = #{errorHash}")
     SystemErrorLog findByHash(String errorHash);
 
-    // 똑같은 에러가 또 터지면 횟수와 시간만 업데이트
+    // 에러 재발생 시 횟수 및 시간 업데이트 제어
     @Update("UPDATE system_error_log SET occurrence_count = occurrence_count + 1, last_occurred_at = NOW() WHERE error_hash = #{errorHash}")
     void incrementOccurrence(String errorHash);
 
-    // 완전 처음 보는 에러면 DB에 새로 저장
-    @Insert("INSERT INTO system_error_log (error_hash, error_type, message, stack_trace, ai_solution) " +
-            "VALUES (#{errorHash}, #{errorType}, #{message}, #{stackTrace}, #{aiSolution})")
+    // 신규 에러 발생 시 유저 ID를 포함하여 DB 저장 제어
+    @Insert("INSERT INTO system_error_log (error_hash, error_type, message, stack_trace, ai_solution, user_id) " +
+            "VALUES (#{errorHash}, #{errorType}, #{message}, #{stackTrace}, #{aiSolution}, #{userId})")
     void insertLog(SystemErrorLog log);
 
-    // AWS RDS 용량 방어: 30일 지난 오래된 로그 지우기
+    // 오래된 로그 자동 삭제 제어
     @Delete("DELETE FROM system_error_log WHERE last_occurred_at < DATE_SUB(NOW(), INTERVAL 30 DAY)")
     void deleteOldLogs();
     
-    // 관리자 화면
+    // 관리자 화면용 전체 로그 조회 기능
     @Select("SELECT * FROM system_error_log ORDER BY last_occurred_at DESC")
     List<SystemErrorLog> findAllLogs();
 }
