@@ -26,6 +26,7 @@ public interface BoardPostMapper {
             @Param("weather") String weather,
             @Param("style") String style,
             @Param("tpo") String tpo,
+            @Param("sort") String sort,
             @Param("offset") int offset,
             @Param("size") int size
     );

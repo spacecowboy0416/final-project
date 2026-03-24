@@ -75,10 +75,10 @@ public class BoardPostService {
 
     // 게시판 목록 조회
     @Transactional(readOnly = true)
-    public BoardPostListResponse getPostList(String weather, String style, String tpo, int page, int size) {
+    public BoardPostListResponse getPostList(String weather, String style, String tpo, String sort, int page, int size) {
         int offset = page * size;
 
-        List<BoardPostListItemResponse> posts = boardPostMapper.findBoardPostList(weather, style, tpo, offset, size)
+        List<BoardPostListItemResponse> posts = boardPostMapper.findBoardPostList(weather, style, tpo, sort, offset, size)
                 .stream()
                 .map(this::toListItemResponse)
                 .toList();

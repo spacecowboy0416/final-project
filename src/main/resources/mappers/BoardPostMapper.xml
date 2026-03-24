@@ -109,7 +109,15 @@
             AND LOWER(r.tpo_type) = LOWER(#{tpo})
         </if>
 
-        ORDER BY bp.created_at DESC
+		<choose>
+		    <when test="sort == 'view'">
+		        ORDER BY bp.view_count DESC, bp.created_at DESC
+		    </when>
+		    <otherwise>
+		        ORDER BY bp.created_at DESC
+		    </otherwise>
+		</choose>
+
         LIMIT #{size} OFFSET #{offset}
     </select>
 

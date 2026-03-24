@@ -13,7 +13,7 @@
 
 <main class="board-list-page">
 
-    <!-- 상단 소개 + 버튼 + 필터 통합 카드 -->
+    <!-- 상단 소개 + 필터 카드 -->
     <section class="board-hero">
         <div class="board-hero__top">
             <div class="board-hero__text">
@@ -52,32 +52,32 @@
 
                 <div class="board-filter-inline">
                     <span>스타일</span>
-						<select id="style">
-						    <option value="">전체</option>
-						    <option value="minimal">미니멀</option>
-						    <option value="casual">캐주얼</option>
-						    <option value="street">스트릿</option>
-						    <option value="classic">클래식</option>
-						    <option value="lovely">러블리</option>
-						    <option value="amikaji">아메카지</option>
-						    <option value="gorpcore">고프코어</option>
-						    <option value="chic">시크</option>
-						</select>
+                    <select id="style">
+                        <option value="">전체</option>
+                        <option value="minimal">미니멀</option>
+                        <option value="casual">캐주얼</option>
+                        <option value="street">스트릿</option>
+                        <option value="classic">클래식</option>
+                        <option value="lovely">러블리</option>
+                        <option value="amikaji">아메카지</option>
+                        <option value="gorpcore">고프코어</option>
+                        <option value="chic">시크</option>
+                    </select>
                 </div>
 
                 <div class="board-filter-inline">
                     <span>TPO</span>
-						<select id="tpo">
-						    <option value="">전체</option>
-						    <option value="daily">일상</option>
-						    <option value="office">출근</option>
-						    <option value="date">데이트</option>
-						    <option value="wedding">하객</option>
-						    <option value="formal">격식</option>
-						    <option value="exercise">운동</option>
-						    <option value="travel">여행</option>
-						    <option value="camping">캠핑</option>
-						</select>
+                    <select id="tpo">
+                        <option value="">전체</option>
+                        <option value="daily">일상</option>
+                        <option value="office">출근</option>
+                        <option value="date">데이트</option>
+                        <option value="wedding">하객</option>
+                        <option value="formal">격식</option>
+                        <option value="exercise">운동</option>
+                        <option value="travel">여행</option>
+                        <option value="camping">캠핑</option>
+                    </select>
                 </div>
 
                 <div class="board-filter-actions">
@@ -91,14 +91,25 @@
     <!-- 피드 영역 -->
     <section class="board-feed-section">
         <div class="board-feed-section__header">
-            <div>
+            <div class="board-feed-section__title-wrap">
                 <h2>오늘의 코디 피드</h2>
                 <p>다른 사용자가 공유한 코디를 피드 형태로 둘러보세요.</p>
             </div>
-            <span id="postCountText">불러오는 중...</span>
+
+            <div class="board-feed-section__controls">
+                <span id="postCountText">총 0개의 게시글</span>
+
+                <div class="board-sort-buttons">
+                    <button type="button" class="board-sort-btn active" data-sort="latest">최신순</button>
+                    <button type="button" class="board-sort-btn" data-sort="view">조회순</button>
+                </div>
+            </div>
         </div>
 
-        <section id="postList" class="board-feed"></section>
+        <section id="postList" class="board-feed">
+            <div class="board-feed__col" id="postColLeft"></div>
+            <div class="board-feed__col" id="postColRight"></div>
+        </section>
     </section>
 
 </main>
