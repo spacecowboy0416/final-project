@@ -32,7 +32,6 @@ public final class RecommendationPromptTemplates {
             - image: The attached main clothing item to be used as the anchor for coordination.
             - naturalText: %s
             - targetGender: %s
-            - scheduleTime: %s
             - weather.feelsLike: %s
             - weather.status: %s
             - weather.rainProbability: %s
@@ -67,7 +66,6 @@ public final class RecommendationPromptTemplates {
             - image: 첨부된 메인 의류 아이템
             - naturalText: %s
             - targetGender: %s
-            - scheduleTime: %s
             - weather.feelsLike: %s
             - weather.status: %s
             - weather.rainProbability: %s

@@ -10,6 +10,7 @@
         INSERT INTO recommendation
         (
             user_id,
+            weather_status,
             input_mode,
             input_text,
             product_option,
@@ -22,6 +23,7 @@
         VALUES
         (
             #{userId},
+            #{weatherStatus},
             #{inputMode},
             #{inputText},
             #{productOption},
@@ -40,6 +42,7 @@
             rec_id,
             slot_key,
             source_type,
+            closet_item_id,
             product_id,
             search_query,
             priority,
@@ -51,6 +54,7 @@
             #{recId},
             #{slotKey},
             #{sourceType},
+            #{closetItemId},
             #{productId},
             #{searchQuery},
             #{priority},
@@ -72,7 +76,10 @@
         )
     </insert>
 
-    <insert id="upsertProduct" parameterType="com.finalproject.coordi.recommendation.dto.persistent.ProductDto">
+    <insert id="upsertProduct"
+            parameterType="com.finalproject.coordi.recommendation.dto.persistent.ProductDto"
+            useGeneratedKeys="true"
+            keyProperty="productId">
         INSERT INTO product
         (
             source,
@@ -112,6 +119,7 @@
             #{tempMax}
         )
         ON DUPLICATE KEY UPDATE
+            product_id = LAST_INSERT_ID(product_id),
             gender = VALUES(gender),
             name = VALUES(name),
             brand = VALUES(brand),
@@ -168,8 +176,44 @@
         )
     </insert>
 
+    <select id="findCategoryIdByCode" resultType="long">
+        SELECT category_id
+        FROM category
+        WHERE code = #{code, typeHandler=com.finalproject.coordi.recommendation.mapper.typehandler.ProductCategoryCodeTypeHandler}
+        LIMIT 1
+    </select>
+
+    <select id="findProductIdByChecksum" resultType="long">
+        SELECT pim.product_id
+        FROM product_image_metadata pim
+        WHERE pim.checksum_sha256 = #{checksumSha256}
+        ORDER BY pim.created_at DESC, pim.image_meta_id DESC
+        LIMIT 1
+    </select>
+
+    <select id="findProductImageUrlByProductId" resultType="string">
+        SELECT image_url
+        FROM product
+        WHERE product_id = #{productId}
+        LIMIT 1
+    </select>
+
+    <update id="updateProductImageUrlById">
+        UPDATE product
+        SET image_url = #{imageUrl}
+        WHERE product_id = #{productId}
+    </update>
+
+    <select id="findClosetItemIdByUserAndProduct" resultType="long">
+        SELECT item_id
+        FROM closet_item
+        WHERE user_id = #{userId}
+          AND product_id = #{productId}
+        LIMIT 1
+    </select>
+
     <insert id="insertClosetItem">
-        INSERT INTO closet_item
+        INSERT IGNORE INTO closet_item
         (
             user_id,
             product_id,
@@ -182,19 +226,6 @@
             TRUE
         )
     </insert>
-
-    <update id="updateRecommendationItemClosetItemId">
-        UPDATE recommendation_item
-        SET closet_item_id = #{closetItemId}
-        WHERE rec_item_id = #{recItemId}
-    </update>
-
-    <select id="findCategoryIdByCode" resultType="long">
-        SELECT category_id
-        FROM category
-        WHERE code = #{code}
-        LIMIT 1
-    </select>
 
     <select id="findProductIdBySourceAndExternalId" resultType="long">
         SELECT product_id
@@ -226,14 +257,6 @@
         FROM product
         WHERE source = #{source}
           AND external_id = #{externalId}
-        LIMIT 1
-    </select>
-
-    <select id="findClosetItemIdByUserIdAndProductId" resultType="long">
-        SELECT item_id
-        FROM closet_item
-        WHERE user_id = #{userId}
-          AND product_id = #{productId}
         LIMIT 1
     </select>
 

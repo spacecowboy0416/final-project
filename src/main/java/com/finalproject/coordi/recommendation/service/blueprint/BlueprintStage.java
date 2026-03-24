@@ -1,7 +1,7 @@
 package com.finalproject.coordi.recommendation.service.blueprint;
 
 import com.finalproject.coordi.recommendation.config.annotation.LogStage;
-import com.finalproject.coordi.recommendation.dto.api.PayloadDto;
+import com.finalproject.coordi.recommendation.dto.api.UserRequestDto.PayloadDto;
 import com.finalproject.coordi.recommendation.dto.api.RawBlueprintDto;
 import com.finalproject.coordi.recommendation.dto.internal.NormalizedBlueprintDto;
 import lombok.RequiredArgsConstructor;
@@ -32,3 +32,4 @@ public class BlueprintStage {
     ) {
     }
 }
+

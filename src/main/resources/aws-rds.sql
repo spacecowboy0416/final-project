@@ -579,3 +579,32 @@ ON DUPLICATE KEY UPDATE
 -- user_id 추가 2026-03-23
 ALTER TABLE system_error_log 
 ADD COLUMN user_id BIGINT NULL AFTER occurrence_count;
+
+-- =========================================================
+-- 2026-03-23, jin, recommendation weather_snapshot FK 분리 + weather_status 직접 저장
+-- =========================================================
+
+SET @rec_weather_fk = (
+  SELECT tc.CONSTRAINT_NAME
+  FROM information_schema.TABLE_CONSTRAINTS tc
+  JOIN information_schema.KEY_COLUMN_USAGE kcu
+    ON tc.CONSTRAINT_SCHEMA = kcu.CONSTRAINT_SCHEMA
+   AND tc.TABLE_NAME = kcu.TABLE_NAME
+   AND tc.CONSTRAINT_NAME = kcu.CONSTRAINT_NAME
+  WHERE tc.CONSTRAINT_SCHEMA = DATABASE()
+    AND tc.TABLE_NAME = 'recommendation'
+    AND tc.CONSTRAINT_TYPE = 'FOREIGN KEY'
+    AND kcu.COLUMN_NAME = 'weather_id'
+  LIMIT 1
+);
+SET @drop_rec_weather_fk_sql = IF(
+  @rec_weather_fk IS NULL,
+  'SELECT ''recommendation.weather_id FK not found'' AS message',
+  CONCAT('ALTER TABLE recommendation DROP FOREIGN KEY ', @rec_weather_fk)
+);
+PREPARE stmt_drop_rec_weather_fk FROM @drop_rec_weather_fk_sql;
+EXECUTE stmt_drop_rec_weather_fk;
+DEALLOCATE PREPARE stmt_drop_rec_weather_fk;
+
+ALTER TABLE recommendation
+  ADD COLUMN weather_status VARCHAR(40) NULL AFTER weather_id;
