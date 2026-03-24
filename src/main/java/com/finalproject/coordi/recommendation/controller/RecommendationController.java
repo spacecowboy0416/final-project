@@ -1,23 +1,17 @@
 package com.finalproject.coordi.recommendation.controller;
 
 import com.finalproject.coordi.recommendation.dto.api.CoordinationOutputDto;
-import com.finalproject.coordi.recommendation.dto.api.RecommendationDebugResponseDto;
 import com.finalproject.coordi.recommendation.dto.api.RecommendationSaveRequestDto;
 import com.finalproject.coordi.recommendation.dto.api.UserRequestDto;
 import com.finalproject.coordi.recommendation.config.RecommendationImageProperties;
 import com.finalproject.coordi.exception.auth.AuthFailedException;
 import com.finalproject.coordi.recommendation.service.Orchestrator;
 import com.finalproject.coordi.recommendation.service.persistent.RecommendationSavePersistence;
-import com.finalproject.coordi.recommendation.service.productSearch.ShoppingSearcher;
-import com.finalproject.coordi.recommendation.service.productSearch.ShoppingPort.SearchedProduct;
-import com.finalproject.coordi.recommendation.infra.gemini.GeminiProperties;
 import com.finalproject.coordi.recommendation.infra.map.KakaoMapProperties;
 import com.finalproject.coordi.users.annotation.LoginUser;
 import com.finalproject.coordi.users.dto.UsersDto;
 
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -39,9 +33,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public class RecommendationController {
     private final Orchestrator orchestratorService;
     private final RecommendationSavePersistence recommendationSavePersistence;
-    private final ShoppingSearcher shoppingSearcher;
     private final KakaoMapProperties kakaoMapProperties;
-    private final GeminiProperties geminiProperties;
     private final RecommendationImageProperties recommendationImageProperties;
 
     // 추천 입력/출력 페이지를 반환한다.
@@ -56,15 +48,6 @@ public class RecommendationController {
         model.addAttribute("recommendationImageMaxBytes", recommendationImageProperties.getMaxSize().toBytes());
         model.addAttribute("recommendationSaveEnabled", isAuthenticated(authentication));
         return "recommendation/recommend";
-    }
-
-    // 디버그 테스트 페이지 진입점 (/recommend-test, /recommend/test 모두 허용)
-    @GetMapping({"/recommend-test", "/recommend/test"})
-    public String recommendTestPage(Model model) {
-        model.addAttribute("kakaoMapApiKey", kakaoMapProperties.getJsKey());
-        model.addAttribute("geminiModel", geminiProperties.getModel());
-        model.addAttribute("recommendationImageMaxBytes", recommendationImageProperties.getMaxSize().toBytes());
-        return "recommendation/recommend-test";
     }
 
     // 추천 요청을 받아 오케스트레이터로 최종 coordination 응답을 생성한다.
@@ -87,22 +70,6 @@ public class RecommendationController {
         }
         Long recId = recommendationSavePersistence.save(loginUser.getUserId(), request);
         return ResponseEntity.ok(new PersistResponse(recId));
-    }
-
-    @PostMapping("/api/recommendations/debug")
-    @ResponseBody
-    public ResponseEntity<RecommendationDebugResponseDto> recommendDebug(
-        @Valid @RequestBody UserRequestDto request
-    ) {
-        return ResponseEntity.ok(orchestratorService.coordinateDebug(request));
-    }
-
-    @GetMapping("/api/recommendations/debug/shopping")
-    @ResponseBody
-    public ResponseEntity<List<SearchedProduct>> searchShopping(
-        @RequestParam("query") @NotBlank String query
-    ) {
-        return ResponseEntity.ok(shoppingSearcher.search(query));
     }
 
     private boolean isAuthenticated(Authentication authentication) {
