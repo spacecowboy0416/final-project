@@ -16,13 +16,4 @@ public class AdminStatisticsDto {
     private long activeErrors;
 
     private List<Map<String, Object>> dailyTrends;
-    private List<PopularTagDto> popularTags;
-
-    @Getter
-    @Setter
-    public static class PopularTagDto {
-        private String tagName;
-        private String tagType;
-        private long usageCount;
-    }
 }

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <!-- Spring Boot의 기본 설정을 일부 포함합니다. -->
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+    <!-- 콘솔 Appender 설정 -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <!-- 로그 패턴을 Spring Boot 기본값과 일치시킵니다. -->
+            <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+            <charset>utf8</charset>
+        </encoder>
+    </appender>
+
+    <!-- application.yml의 설정을 이곳으로 이전합니다. -->
+    <!-- 프로젝트 전반의 로그 레벨 -->
+    <logger name="com.finalproject.coordi" level="DEBUG"/>
+
+    <!-- 특정 매퍼들의 상세 SQL 로그 (TRACE 레벨) -->
+    <logger name="com.finalproject.coordi.closet.mapper" level="TRACE"/>
+    <logger name="com.finalproject.coordi.recommend.mapper" level="TRACE"/>
+    <logger name="com.finalproject.coordi.errorlog.mapper" level="TRACE"/>
+    
+    <!-- 관리자 관련 매퍼들은 DEBUG 레벨로 유지하여 어떤 쿼리가 실행되는지 확인합니다. -->
+    <logger name="com.finalproject.coordi.admin" level="DEBUG"/>
+
+    <!-- Root 로거 설정 -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+
+</configuration>
