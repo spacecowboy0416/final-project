@@ -1,0 +1,714 @@
+/* ========================================
+   추천 페이지 토큰
+   - 화면 수치(간격/높이/폰트)는 이 블록에서만 조절한다.
+======================================== */
+.recommend-page {
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 20px;
+
+    --font-xs: 13px;
+    --font-sm: 14px;
+    --font-md: 15px;
+    --font-lg: 20px;
+    --font-xl: 32px;
+
+    --radius-sm: 10px;
+    --radius-md: 14px;
+    --radius-lg: 18px;
+    --radius-xl: 22px;
+
+    --control-h: 52px;
+    --control-h-sm: 42px;
+    --control-h-xs: 36px;
+    --floating-button-h: 32px;
+    --floating-button-pad-x: 12px;
+
+    --submit-button-offset-right: var(--space-4);
+    --submit-button-offset-bottom: var(--space-4);
+
+    --main-pad-y: 8px;
+    --main-pad-x: 14px;
+    --wrap-pad-top: 6px;
+
+    --section-pad: 12px;
+    --section-gap: 12px;
+    --column-gap: 12px;
+    --media-stack-gap: 10px;
+    --control-stack-gap: 12px;
+    --compose-vertical-expand: 50px;
+    --control-weather-row-fr: 0.9fr;
+    --control-map-row-fr: 1.1fr;
+    --textarea-pad-top: 15px;
+    --textarea-pad-y: 16px;
+    --textarea-pad-x: 18px;
+    --textarea-pad-right: 156px;
+    --textarea-pad-right-mobile: 124px;
+    --textarea-fixed-h: calc((var(--font-md) * 1.65 * 4) + 34px);
+
+    --image-panel-h-desktop: clamp(360px, 53dvh, 560px);
+    --image-panel-h-mobile: clamp(300px, 40dvh, 440px);
+    --map-h: clamp(180px, calc(100dvh - 660px), 240px);
+
+    --item-image-h: 180px;
+
+    --color-text: #111111;
+    --color-text-muted: #6b7280;
+    --color-line: rgba(255, 255, 255, 0.52);
+    --color-bg: rgba(255, 255, 255, 0.72);
+    --color-bg-soft: rgba(255, 255, 255, 0.62);
+    --color-primary: #30343a;
+    --color-ghost: rgba(255, 255, 255, 0.82);
+
+    --shadow-soft: 0 20px 48px rgba(15, 23, 42, 0.14), 0 8px 24px rgba(15, 23, 42, 0.08);
+    --focus-ring: 0 0 0 4px rgba(17, 17, 17, 0.08);
+    font-family: "Pretendard", "Noto Sans KR", Arial, sans-serif;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ========================================
+   페이지 레이아웃
+======================================== */
+.recommend-main {
+    flex: 1;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: var(--main-pad-y) var(--main-pad-x);
+}
+
+.recommend-wrap {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding-top: var(--wrap-pad-top);
+}
+
+.recommend-root {
+    width: 100%;
+    position: relative;
+}
+
+.recommend-form {
+    position: relative;
+    display: block;
+}
+
+.rc-control.recommend-textarea {
+    /* 입력창은 고정 높이로 유지하고 내용이 길면 내부 스크롤로 처리한다. */
+    height: var(--textarea-fixed-h);
+    min-height: var(--textarea-fixed-h);
+    max-height: var(--textarea-fixed-h);
+    padding: var(--textarea-pad-top) var(--textarea-pad-x) var(--textarea-pad-y) var(--textarea-pad-x);
+    padding-right: var(--textarea-pad-right);
+    line-height: 1.65;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    resize: none;
+    overflow-y: auto;
+}
+
+.rc-btn.recommend-floating-button {
+    min-height: var(--floating-button-h);
+    padding: 0 var(--floating-button-pad-x);
+    font-size: var(--font-xs);
+    font-weight: 800;
+}
+
+.recommend-submit-button {
+    position: absolute;
+    right: var(--submit-button-offset-right);
+    bottom: var(--submit-button-offset-bottom);
+}
+
+.recommend-merged-section {
+    padding: var(--section-pad);
+}
+
+.recommend-merged-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: var(--column-gap);
+    align-items: start;
+}
+
+.recommend-pane {
+    gap: var(--control-stack-gap);
+}
+
+.recommend-media-pane,
+.recommend-pane--image {
+    /* 좌측 미디어는 우측 컬럼과 높이를 강제 동기화하지 않는다. */
+    position: relative;
+    gap: var(--media-stack-gap);
+}
+
+.recommend-control-pane {
+    /* 우측 컨트롤 섹션을 좌측 이미지 섹션과 동일 높이 기준으로 정렬한다. */
+    height: calc(var(--image-panel-h-desktop) + var(--compose-vertical-expand));
+    grid-template-rows: auto minmax(0, var(--control-weather-row-fr)) minmax(0, var(--control-map-row-fr));
+    gap: var(--control-stack-gap);
+}
+
+.recommend-options-section,
+.recommend-weather-section,
+.recommend-map-section {
+    margin: 0;
+}
+
+.recommend-weather-section,
+.recommend-map-section {
+    min-height: 0;
+}
+
+.recommend-image-preview-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius-xl);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    background: var(--color-bg-soft);
+    width: 100%;
+    height: calc(var(--image-panel-h-desktop) + var(--compose-vertical-expand));
+    min-height: 0;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.58),
+        0 14px 32px rgba(15, 23, 42, 0.11);
+}
+
+.recommend-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.recommend-image-empty {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    padding: var(--space-5);
+    text-align: center;
+    color: var(--color-text-muted);
+}
+
+.recommend-image-upload-overlay {
+    position: absolute;
+    left: var(--space-3);
+    right: var(--space-3);
+    bottom: var(--space-3);
+    display: flex;
+    justify-content: flex-end;
+    z-index: 3;
+    pointer-events: none;
+}
+
+.recommend-image-upload-button {
+    pointer-events: auto;
+    background: rgba(255, 255, 255, 0.9);
+}
+
+.recommend-empty-title {
+    font-size: var(--font-md);
+    color: var(--color-text);
+}
+
+.recommend-empty-desc {
+    font-size: var(--font-sm);
+}
+
+.recommend-upload-row {
+    /* 메타 슬롯을 오버레이로 고정해 사진 카드 하단 여백이 상/좌와 동일하게 보이게 한다. */
+    position: absolute;
+    left: var(--space-3);
+    bottom: var(--space-3);
+    z-index: 4;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 20px;
+    margin: 0;
+    pointer-events: none;
+}
+
+.recommend-meta-text {
+    margin: 0;
+    min-height: 18px;
+    font-size: var(--font-xs);
+    font-weight: 600;
+    color: var(--color-text-muted);
+}
+
+.recommend-options {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-2);
+}
+
+.recommend-field {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: var(--radius-md);
+    background: rgba(255, 255, 255, 0.62);
+    min-height: 56px;
+    padding: 8px 10px;
+    box-sizing: border-box;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.54),
+        0 8px 18px rgba(15, 23, 42, 0.06);
+}
+
+.recommend-field-label {
+    font-size: var(--font-sm);
+    font-weight: 800;
+    color: var(--color-text);
+}
+
+.recommend-brand-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: var(--radius-md);
+    background: rgba(255, 255, 255, 0.62);
+    min-height: 56px;
+    padding: 8px 10px;
+    box-sizing: border-box;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.54),
+        0 8px 18px rgba(15, 23, 42, 0.06);
+}
+
+.recommend-brand-title {
+    font-size: var(--font-sm);
+    font-weight: 800;
+    color: var(--color-text);
+}
+
+.rc-control.recommend-option-select {
+    width: 112px;
+    min-width: 112px;
+    padding: 0 10px;
+    font-size: var(--font-xs);
+}
+
+.recommend-checkbox {
+    width: 16px;
+    height: 16px;
+    accent-color: #1f2937;
+}
+
+.recommend-map-shell {
+    position: relative;
+    height: 100%;
+}
+
+.recommend-map {
+    width: 100%;
+    height: 100%;
+    min-height: var(--map-h);
+    overflow: hidden;
+    border-radius: var(--radius-xl);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.58),
+        0 12px 28px rgba(15, 23, 42, 0.1);
+}
+
+.recommend-map-location-button {
+    position: absolute;
+    top: var(--space-2);
+    right: var(--space-2);
+    z-index: 5;
+}
+
+.recommend-weather-card {
+    height: 100%;
+    padding: 14px;
+    background: rgba(255, 255, 255, 0.66);
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.62),
+        0 14px 32px rgba(15, 23, 42, 0.12);
+}
+
+.recommend-weather-top {
+    display: block;
+}
+
+.recommend-weather-desc {
+    margin: 0;
+    max-width: 100%;
+    font-size: var(--font-xs);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--color-text-muted);
+}
+
+.recommend-weather-grid {
+    margin-top: var(--space-3);
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    gap: var(--space-3);
+    align-items: start;
+}
+
+.recommend-weather-main {
+    display: grid;
+    gap: 16px;
+    align-content: start;
+}
+
+.recommend-weather-location {
+    display: block;
+    font-size: clamp(30px, 3.4vw, 38px);
+    font-weight: 800;
+    line-height: 1.04;
+    letter-spacing: -0.02em;
+    color: var(--color-text);
+}
+
+.recommend-weather-badge {
+    display: block;
+    align-self: flex-start;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: #334155;
+    padding: 0;
+    font-size: clamp(24px, 2.1vw, 30px);
+    font-weight: 900;
+    line-height: 1.05;
+}
+
+.recommend-weather-temperature {
+    display: block;
+    font-size: clamp(30px, 3.2vw, 36px);
+    font-weight: 900;
+    line-height: 1.02;
+    letter-spacing: -0.02em;
+    color: var(--color-text);
+}
+
+.recommend-weather-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-2);
+    margin-top: 30px;
+}
+
+.recommend-weather-item {
+    display: grid;
+    gap: 2px;
+    padding: 8px 10px;
+    border: 1px solid rgba(255, 255, 255, 0.56);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.52);
+}
+
+.recommend-weather-item dt {
+    font-size: var(--font-xs);
+    font-weight: 700;
+    color: var(--color-text-muted);
+}
+
+.recommend-weather-item dd {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--color-text);
+}
+
+.recommend-weather-item--last {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.56);
+}
+
+/* ========================================
+   로딩/피드백
+======================================== */
+.recommend-loading-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-xl);
+    background: rgba(241, 245, 249, 0.8);
+    backdrop-filter: blur(4px);
+}
+
+.recommend-loading-box {
+    width: min(340px, calc(100% - 32px));
+    padding: var(--space-5);
+    text-align: center;
+}
+
+.recommend-loading-title {
+    display: block;
+    margin-top: var(--space-2);
+    color: var(--color-text);
+}
+
+.recommend-loading-desc {
+    margin-top: var(--space-2);
+    font-size: var(--font-sm);
+    color: var(--color-text-muted);
+}
+
+.rc-feedback {
+    min-height: 21px;
+    margin: 0;
+    padding: 0 var(--space-1);
+    font-size: var(--font-sm);
+}
+
+.rc-feedback--default {
+    color: var(--color-text-muted);
+}
+
+.rc-feedback--error {
+    color: #dc2626;
+}
+
+.rc-feedback--success {
+    color: #059669;
+}
+
+/* ========================================
+   공통 컨트롤/유틸
+======================================== */
+.rc-control {
+    width: 100%;
+    height: var(--control-h);
+    padding: 0 14px;
+    border: 1px solid rgba(255, 255, 255, 0.56);
+    border-radius: var(--radius-md);
+    background: rgba(255, 255, 255, 0.76);
+    color: var(--color-text);
+    font-size: var(--font-md);
+    line-height: 1.5;
+    font-weight: 500;
+    box-sizing: border-box;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow:
+        inset 0 1px 1px rgba(255, 255, 255, 0.65),
+        0 10px 22px rgba(15, 23, 42, 0.08);
+}
+
+.rc-control--sm {
+    height: var(--control-h-sm);
+}
+
+.rc-control--xs {
+    height: var(--control-h-xs);
+}
+
+.rc-control:focus,
+.rc-control:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+}
+
+.rc-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: var(--control-h-sm);
+    padding: 0 16px;
+    border-radius: var(--radius-md);
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--color-text);
+    font-size: var(--font-md);
+    font-weight: 700;
+    line-height: 1;
+    text-decoration: none;
+    cursor: pointer;
+    box-sizing: border-box;
+    transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.rc-btn:hover {
+    transform: translateY(-1px);
+}
+
+.rc-btn:focus,
+.rc-btn:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+}
+
+.rc-btn:disabled,
+.rc-btn[aria-disabled="true"] {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.rc-btn-primary {
+    color: #ffffff;
+    background: linear-gradient(180deg, rgba(58, 58, 58, 0.92) 0%, rgba(34, 34, 34, 0.96) 100%);
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 8px 20px rgba(0, 0, 0, 0.16);
+}
+
+.rc-btn-ghost {
+    color: var(--color-text);
+    background: rgba(255, 255, 255, 0.76);
+    border-color: rgba(255, 255, 255, 0.52);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.58), 0 4px 12px rgba(15, 23, 42, 0.04);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.rc-btn-xs {
+    min-height: var(--control-h-xs);
+    font-size: var(--font-xs);
+    padding: 0 10px;
+}
+
+.rc-card {
+    position: relative;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.68);
+    border: 1px solid rgba(255, 255, 255, 0.56);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-soft);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+}
+
+.rc-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(160deg, rgba(255, 255, 255, 0.34) 0%, rgba(255, 255, 255, 0) 34%);
+}
+
+.rc-stack {
+    display: grid;
+    gap: var(--section-gap);
+}
+
+.rc-hidden {
+    display: none !important;
+}
+
+.rc-muted {
+    color: var(--color-text-muted);
+}
+
+.rc-spinner {
+    width: 40px;
+    height: 40px;
+    margin: 0 auto;
+    border: 3px solid #d6ddea;
+    border-top-color: #4e5665;
+    border-radius: 50%;
+    animation: rc-spin 0.8s linear infinite;
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+@keyframes rc-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ========================================
+   반응형
+======================================== */
+@media (max-width: 900px) {
+    .recommend-page {
+        --main-pad-y: 6px;
+        --main-pad-x: 10px;
+        --wrap-pad-top: 4px;
+
+        --section-pad: 8px;
+        --section-gap: 8px;
+        --column-gap: 8px;
+        --media-stack-gap: 8px;
+        --control-stack-gap: 8px;
+        --compose-vertical-expand: 24px;
+        --control-weather-row-fr: 0.95fr;
+        --control-map-row-fr: 1.05fr;
+        --font-lg: 18px;
+        --font-xl: 30px;
+
+        --map-h: clamp(170px, 28dvh, 220px);
+    }
+
+    .recommend-form {
+        display: block;
+    }
+
+    .recommend-merged-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .recommend-control-pane {
+        height: auto;
+        grid-template-rows: auto;
+    }
+
+    .recommend-weather-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .recommend-options {
+        grid-template-columns: 1fr;
+    }
+
+    .rc-control.recommend-textarea {
+        padding-right: var(--textarea-pad-right-mobile);
+    }
+
+    .recommend-weather-desc {
+        max-width: 100%;
+        white-space: normal;
+    }
+
+    .recommend-weather-list {
+        grid-template-columns: 1fr;
+    }
+
+    .recommend-image-preview-card {
+        height: calc(var(--image-panel-h-mobile) + var(--compose-vertical-expand));
+    }
+}

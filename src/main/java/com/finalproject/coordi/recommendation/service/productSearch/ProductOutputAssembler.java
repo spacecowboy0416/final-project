@@ -69,6 +69,7 @@ public class ProductOutputAssembler {
                 top1Product == null ? null : top1Product.salePrice(),
                 top1Product == null ? null : top1Product.productDetailUrl(),
                 itemInfo == null ? null : itemInfo.category(),
+                itemInfo == null || itemInfo.attributes() == null ? null : itemInfo.attributes().gender(),
                 top1Product == null ? 0.0d : 1.0d,
                 tempMin,
                 tempMax,
