@@ -39,16 +39,5 @@
         ORDER BY d.date ASC
     </select>
 
-    <!-- 인기 태그 조회 (최근 7일 사용 빈도순) -->
-    <select id="selectPopularTags" resultType="com.finalproject.coordi.admin.statistics.dto.AdminStatisticsDto$PopularTagDto">
-        SELECT 
-            t.name as tagName,
-            t.type as tagType,
-            COUNT(rt.tag_id) as usageCount
-        FROM tag t
-        JOIN recommendation_tag rt ON t.tag_id = rt.tag_id
-        GROUP BY t.tag_id, t.name, t.type
-        ORDER BY usageCount DESC
-        LIMIT #{limit}
-    </select>
+
 </mapper>

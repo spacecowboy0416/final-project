@@ -46,7 +46,7 @@
             r.ai_explanation,
 
             ws.weather_id,
-            ws.weather_status,
+            COALESCE(r.weather_status, ws.weather_status) AS weather_status,
             ws.temp,
             ws.feels_like,
             ws.humidity,
@@ -57,7 +57,6 @@
         JOIN users u ON u.user_id = bp.user_id
         JOIN recommendation r ON r.rec_id = bp.rec_id
         LEFT JOIN weather_snapshot ws ON ws.weather_id = r.weather_id
-
         WHERE bp.post_id = #{postId}
           AND bp.deleted_at IS NULL
           AND bp.is_public = TRUE
@@ -84,7 +83,7 @@
             r.tpo_type,
 
             ws.weather_id,
-            ws.weather_status,
+            COALESCE(r.weather_status, ws.weather_status) AS weather_status,
             ws.temp,
             ws.place_name
 
@@ -95,12 +94,11 @@
           ON r.rec_id = bp.rec_id
         LEFT JOIN weather_snapshot ws
           ON ws.weather_id = r.weather_id
-
         WHERE bp.deleted_at IS NULL
           AND bp.is_public = TRUE
 
         <if test="weather != null and weather != ''">
-            AND LOWER(ws.weather_status) = LOWER(#{weather})
+            AND LOWER(COALESCE(r.weather_status, ws.weather_status)) = LOWER(#{weather})
         </if>
 
         <if test="style != null and style != ''">
@@ -136,7 +134,7 @@
           AND bp.is_public = TRUE
 
         <if test="weather != null and weather != ''">
-            AND LOWER(ws.weather_status) = LOWER(#{weather})
+            AND LOWER(COALESCE(r.weather_status, ws.weather_status)) = LOWER(#{weather})
         </if>
 
         <if test="style != null and style != ''">
@@ -300,7 +298,7 @@
     <!-- 저장 코디의 날씨 상태 조회 -->
     <!-- ========================= -->
     <select id="findWeatherStatusByRecId" resultType="string">
-        SELECT ws.weather_status
+        SELECT COALESCE(r.weather_status, ws.weather_status)
         FROM recommendation r
         LEFT JOIN weather_snapshot ws ON ws.weather_id = r.weather_id
         WHERE r.rec_id = #{recId}

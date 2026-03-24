@@ -16,7 +16,9 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 외부 AI 응답의 원본 경계 DTO
@@ -75,6 +77,11 @@ public record RawBlueprintDto(
         @Valid
         ItemInfo accessories
     ) {
+        public List<ItemInfo> getAllItems() {
+            return Arrays.stream(new ItemInfo[]{tops, bottoms, outerwear, shoes, headwear, accessories})
+                .filter(Objects::nonNull)
+                .toList();
+        }
     }
 
     public record ItemInfo(
@@ -97,6 +104,21 @@ public record RawBlueprintDto(
         @NotNull
         PriorityType priority
     ) {
+        public ItemInfo withFallbackGender(GenderType fallbackGender) {
+            if (attributes == null || attributes.gender() != null) {
+                return this;
+            }
+
+            return new ItemInfo(
+                slotKey,
+                itemName,
+                category,
+                attributes.withGender(fallbackGender),
+                tempRange,
+                reasoning,
+                priority
+            );
+        }
     }
 
     public record Attributes(
@@ -111,5 +133,15 @@ public record RawBlueprintDto(
         @NotNull
         StyleType style
     ) {
+        public Attributes withGender(GenderType gender) {
+            return new Attributes(
+                gender,
+                color,
+                material,
+                fit,
+                brand,
+                style
+            );
+        }
     }
 }
