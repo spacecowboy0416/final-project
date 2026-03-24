@@ -54,10 +54,11 @@ public class BoardApiController {
             @RequestParam(name = "weather", required = false) String weather,
             @RequestParam(name = "style", required = false) String style,
             @RequestParam(name = "tpo", required = false) String tpo,
+            @RequestParam(name = "sort", defaultValue = "latest") String sort,
             @RequestParam(name = "page", defaultValue = "0") int page,
             @RequestParam(name = "size", defaultValue = "12") int size
     ) {
-        return boardPostService.getPostList(weather, style, tpo, page, size);
+        return boardPostService.getPostList(weather, style, tpo, sort, page, size);
     }
 
     // 게시글 상세 조회
