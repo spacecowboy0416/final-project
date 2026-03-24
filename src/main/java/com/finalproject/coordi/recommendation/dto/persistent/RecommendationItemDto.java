@@ -20,6 +20,7 @@ public class RecommendationItemDto {
     private Long recId;
     private String slotKey;
     private String sourceType;
+    private Long closetItemId;
     private Long productId;
     private String searchQuery;
     private String priority;

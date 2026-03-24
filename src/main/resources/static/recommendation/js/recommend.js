@@ -18,7 +18,7 @@
   const WEATHER_FALLBACK = {
     weatherStatus: "CLOUDY",
     weatherStateKo: "흐림",
-    weatherDesc: "날씨 정보를 불러오지 못했습니다.",
+    weatherDesc: "일시적으로 날씨 설명을 준비 중입니다.",
     temperature: 0,
     feelsLike: 0,
     humidity: 0,
@@ -54,6 +54,18 @@
     HAIL: "우박",
   };
 
+  const WEATHER_DESCRIPTION_POLICY = {
+    defaultDescription: "일시적으로 날씨 설명을 준비 중입니다.",
+    rainDescription: "강수 가능성이 있어 우산을 챙기는 것을 권장해요.",
+    stateSuffix: "날씨예요.",
+  };
+
+  const SAVE_BUTTON_POLICY = {
+    idleLabel: "저장하기",
+    savingLabel: "저장 중...",
+    savedLabel: "저장됨",
+  };
+
   const state = {
     imageBase64: "",
     imageMimeType: "",
@@ -62,15 +74,14 @@
     selectedPosition: { ...DEFAULT_POSITION },
     selectedLocationLabel: DEFAULT_LOCATION_TEXT,
     currentResult: null,
+    persistRequest: null,
+    recommendationSaveEnabled: root.dataset.recommendationSaveEnabled === "true",
     map: null,
     marker: null,
     geocoder: null,
     isSubmitting: false,
-    isSaving: false,
-    currentRequestPayload: null,
-    hasSavedCurrentResult: false,
-    developerPanelOpen: false,
-    currentDebugResult: null,
+    isSaveSubmitting: false,
+    isSaved: false,
   };
 
   const elements = {
@@ -85,7 +96,6 @@
     imageMetaText: document.getElementById("imageMetaText"),
     gender: document.getElementById("gender"),
     brandEnabled: document.getElementById("brandEnabled"),
-    scheduleTime: document.getElementById("scheduleTime"),
     useCurrentLocationButton: document.getElementById("useCurrentLocationButton"),
     locationLabel: document.getElementById("locationLabel"),
     locationSubLabel: document.getElementById("locationSubLabel"),
@@ -106,29 +116,67 @@
     saveRecommendationButton: document.getElementById("saveRecommendationButton"),
     backToComposeButton: document.getElementById("backToComposeButton"),
     map: document.getElementById("map"),
-    resultLayout: document.getElementById("resultLayout"),
-    developerToggleButton: document.getElementById("developerToggleButton"),
-    developerPanel: document.getElementById("developerPanel"),
-    developerSearchQueries: document.getElementById("developerSearchQueries"),
-    developerBlueprint: document.getElementById("developerBlueprint"),
   };
 
   document.addEventListener("DOMContentLoaded", initRecommendPage);
 
   async function initRecommendPage() {
-    elements.naturalText.value = INITIAL_NATURAL_TEXT;
-    elements.scheduleTime.value = toDateTimeLocalString(new Date());
-    bindEvents();
-    renderEmptyItems();
-    preloadSampleImageOnInit();
+    if (!initStateAndElements()) {
+      return;
+    }
+    initImageModule();
+    initMapModule();
+    initWeatherModule();
+    initSubmissionModule();
+    initResultModule();
 
     try {
+      preloadSampleImageOnInit();
       await initializeLocationAndMap();
     } catch (error) {
       console.error("추천 페이지 초기화 실패", error);
       applyWeatherSummary(WEATHER_FALLBACK, true);
       setFeedback("위치 또는 날씨 정보를 기본값으로 표시합니다.", "error");
     }
+  }
+
+  function initStateAndElements() {
+    // 필수 DOM이 없으면 조기 종료해 이후 초기화 실패를 막는다.
+    const requiredElementIds = ["recommendForm", "submitButton", "imageFile", "map"];
+    const missingElements = requiredElementIds.filter((key) => !elements[key]);
+    if (missingElements.length > 0) {
+      console.error("추천 페이지 필수 요소 누락", missingElements);
+      return false;
+    }
+    if (elements.naturalText) {
+      elements.naturalText.value = INITIAL_NATURAL_TEXT;
+    }
+    return true;
+  }
+
+  function initImageModule() {
+    elements.imageFile.addEventListener("change", handleImageChange);
+  }
+
+  function initMapModule() {
+    elements.useCurrentLocationButton.addEventListener("click", handleUseCurrentLocation);
+  }
+
+  function initWeatherModule() {
+    applyWeatherSummary(WEATHER_FALLBACK, true);
+  }
+
+  function initSubmissionModule() {
+    elements.recommendForm.addEventListener("submit", handleRecommendSubmit);
+  }
+
+  function initResultModule() {
+    renderEmptyItems();
+    if (elements.saveRecommendationButton) {
+      elements.saveRecommendationButton.addEventListener("click", handleSaveRecommendation);
+      updateSaveButtonState();
+    }
+    elements.backToComposeButton.addEventListener("click", handleBackToCompose);
   }
 
   async function preloadSampleImageOnInit() {
@@ -150,35 +198,14 @@
         type: sampleBlob.type || "image/webp",
       });
       const imageBase64 = await fileToBase64(sampleFile);
-
-      if (elements.imagePreview.dataset.objectUrl) {
-        URL.revokeObjectURL(elements.imagePreview.dataset.objectUrl);
-      }
-
-      state.imageBase64 = imageBase64;
-      state.imageMimeType = sampleFile.type || "image/webp";
-
       // 초기 로딩 시 샘플 이미지를 업로드된 이미지처럼 동일한 상태로 맞춘다.
-      const objectUrl = URL.createObjectURL(sampleFile);
-      state.uploadedImageUrl = objectUrl;
-      elements.imagePreview.src = objectUrl;
-      elements.imagePreview.dataset.objectUrl = objectUrl;
-      elements.imagePreviewCard.classList.add("recommend-image-card--filled");
+      applyImagePreview(sampleFile, imageBase64);
       elements.imageMetaText.textContent = `${SAMPLE_IMAGE_FILE_NAME} · ${formatBytes(
         sampleFile.size
       )}`;
     } catch (error) {
       console.warn("초기 샘플 이미지 적용 실패", error);
     }
-  }
-
-  function bindEvents() {
-    elements.recommendForm.addEventListener("submit", handleRecommendSubmit);
-    elements.imageFile.addEventListener("change", handleImageChange);
-    elements.useCurrentLocationButton.addEventListener("click", handleUseCurrentLocation);
-    elements.backToComposeButton.addEventListener("click", handleBackToCompose);
-    elements.saveRecommendationButton.addEventListener("click", handleSaveRecommendation);
-    elements.developerToggleButton.addEventListener("click", toggleDeveloperPanel);
   }
 
   async function handleRecommendSubmit(event) {
@@ -194,25 +221,14 @@
       setFeedback("", "");
 
       const payload = buildRequestPayload();
-      const response = await fetch("/api/recommendations/debug", {
+      const body = await requestJson("/api/recommendations", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
+        body: payload,
       });
 
-      const body = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        throw new Error(resolveErrorMessage(body));
-      }
-
       state.currentResult = body;
-      state.currentRequestPayload = payload;
-      state.hasSavedCurrentResult = false;
-      state.currentDebugResult = body;
+      resetSaveStateForNewResult(body, payload);
       renderResult(body, payload.naturalText);
-      updateSaveButtonState();
       toggleScreen("result");
       setFeedback("추천 결과를 불러왔습니다.", "success");
     } catch (error) {
@@ -225,51 +241,42 @@
 
   function handleBackToCompose() {
     toggleScreen("compose");
-    setDeveloperPanelOpen(false);
     setFeedback("", "");
   }
 
   async function handleSaveRecommendation() {
-    if (state.isSaving || state.hasSavedCurrentResult) {
+    if (state.isSaveSubmitting || state.isSaved) {
       return;
     }
-
-    if (!state.currentRequestPayload) {
-      setFeedback("먼저 추천 결과를 생성해주세요.", "error");
+    if (!state.persistRequest) {
+      setFeedback("저장할 추천 결과가 없습니다. 먼저 추천을 생성해주세요.", "error");
       return;
     }
-    if (!state.currentDebugResult) {
-      setFeedback("저장할 추천 결과가 없습니다. 다시 추천을 생성해주세요.", "error");
+    if (!state.recommendationSaveEnabled) {
+      requestLoginForSave();
       return;
     }
 
     try {
-      setSaving(true);
+      state.isSaveSubmitting = true;
+      updateSaveButtonState();
       setFeedback("", "");
 
-      const response = await fetch("/api/recommendations/debug/save", {
+      const body = await requestJson("/api/recommendations/save", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          request: state.currentRequestPayload,
-          debugResult: state.currentDebugResult,
-        }),
+        body: state.persistRequest,
       });
 
-      const body = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        throw new Error(resolveErrorMessage(body));
-      }
-
-      state.hasSavedCurrentResult = true;
-      setFeedback("추천 결과를 저장했습니다.", "success");
+      state.isSaved = true;
+      setFeedback(`코디가 저장되었습니다. (recId: ${body.recId})`, "success");
     } catch (error) {
-      console.error("추천 저장 실패", error);
+      if (isAuthError(error)) {
+        requestLoginForSave();
+        return;
+      }
       setFeedback(error.message || "추천 저장에 실패했습니다.", "error");
     } finally {
-      setSaving(false);
+      state.isSaveSubmitting = false;
       updateSaveButtonState();
     }
   }
@@ -305,18 +312,7 @@
 
     try {
       const imageBase64 = await fileToBase64(imageFile);
-      if (elements.imagePreview.dataset.objectUrl) {
-        URL.revokeObjectURL(elements.imagePreview.dataset.objectUrl);
-      }
-
-      state.imageBase64 = imageBase64;
-      state.imageMimeType = imageFile.type || "image/jpeg";
-
-      const objectUrl = URL.createObjectURL(imageFile);
-      state.uploadedImageUrl = objectUrl;
-      elements.imagePreview.src = objectUrl;
-      elements.imagePreview.dataset.objectUrl = objectUrl;
-      elements.imagePreviewCard.classList.add("recommend-image-card--filled");
+      applyImagePreview(imageFile, imageBase64);
       elements.imageMetaText.textContent = `${imageFile.name} · ${formatBytes(
         imageFile.size
       )}`;
@@ -420,11 +416,9 @@
   }
 
   async function fetchWeatherSummary(lat, lon) {
-    const response = await fetch(`/api/main/summary?lat=${lat}&lon=${lon}`);
-    if (!response.ok) {
-      throw new Error("날씨 정보를 가져오지 못했습니다.");
-    }
-    return response.json();
+    return requestJson(`/api/main/summary?lat=${lat}&lon=${lon}`, {
+      defaultErrorMessage: "날씨 정보를 가져오지 못했습니다.",
+    });
   }
 
   async function resolveAddress(lat, lon, isDefaultLocation) {
@@ -463,8 +457,7 @@
     elements.weatherTemperature.textContent = `${Math.round(
       safeSummary.temperature ?? 0
     )}°`;
-    elements.weatherDescription.textContent =
-      safeSummary.weatherDesc || "날씨 설명이 없습니다.";
+    elements.weatherDescription.textContent = resolveWeatherDescription(safeSummary);
     elements.weatherFeelsLike.textContent = `${Math.round(
       safeSummary.feelsLike ?? 0
     )}°`;
@@ -472,6 +465,32 @@
     elements.weatherWind.textContent = `${safeSummary.windMs ?? 0} m/s`;
     elements.weatherPrecipitation.textContent = `${safeSummary.precipMm ?? 0} mm`;
     setLocationText(safeSummary.locationText || DEFAULT_LOCATION_TEXT, isDefaultLocation);
+  }
+
+  function resolveWeatherDescription(summary) {
+    // 1순위: 서버에서 내려준 설명이 있으면 그대로 사용한다.
+    if (hasText(summary.weatherDesc)) {
+      return summary.weatherDesc.trim();
+    }
+
+    // 2순위: 강수 정보가 있으면 우산 안내 문구를 노출한다.
+    const precipitation = Number(summary.precipMm ?? 0);
+    if (summary.todayRain === true || precipitation > 0) {
+      return WEATHER_DESCRIPTION_POLICY.rainDescription;
+    }
+
+    // 3순위: 한글 상태명이 있으면 자연어 설명으로 변환한다.
+    if (hasText(summary.weatherStateKo)) {
+      return `${summary.weatherStateKo.trim()} ${WEATHER_DESCRIPTION_POLICY.stateSuffix}`;
+    }
+
+    const weatherLabel = WEATHER_LABELS[summary.weatherStatus];
+    if (hasText(weatherLabel)) {
+      return `${weatherLabel} ${WEATHER_DESCRIPTION_POLICY.stateSuffix}`;
+    }
+
+    // 마지막 폴백: 사용자에게 항상 안내 문구를 제공한다.
+    return WEATHER_DESCRIPTION_POLICY.defaultDescription;
   }
 
   function validateBeforeSubmit() {
@@ -483,10 +502,6 @@
       throw new Error("추천을 위해 사진을 업로드해주세요.");
     }
 
-    if (!elements.scheduleTime.value) {
-      throw new Error("일정 시간을 선택해주세요.");
-    }
-
     if (!state.weatherSummary) {
       throw new Error("날씨 정보를 아직 불러오지 못했습니다.");
     }
@@ -496,7 +511,6 @@
     return {
       naturalText: elements.naturalText.value.trim(),
       gender: elements.gender.value,
-      scheduleTime: toOffsetDateTimeString(elements.scheduleTime.value),
       weather: {
         status: state.weatherSummary.weatherStatus,
         temperature: state.weatherSummary.temperature,
@@ -528,7 +542,56 @@
     elements.resultItems.innerHTML = visibleCoordination
       .map((item) => createItemMarkup(item))
       .join("");
-    renderDeveloperPanel(result);
+  }
+
+  function resetSaveStateForNewResult(result, requestPayload) {
+    state.persistRequest = buildPersistRequest(result, requestPayload);
+    state.isSaved = false;
+    state.isSaveSubmitting = false;
+    updateSaveButtonState();
+  }
+
+  function buildPersistRequest(result, requestPayload) {
+    if (!result || !requestPayload) {
+      return null;
+    }
+    if (!Array.isArray(result.coordination) || !result.tpoType || !result.styleType) {
+      return null;
+    }
+    if (!result.queryMap || typeof result.queryMap !== "object") {
+      return null;
+    }
+    return {
+      naturalText: requestPayload.naturalText,
+      weather: requestPayload.weather,
+      tpoType: result.tpoType,
+      styleType: result.styleType,
+      aiExplanation: result.aiExplanation || "",
+      mainItemImageBase64: requestPayload.imageBase64,
+      mainItemImageMimeType: requestPayload.imageMimeType || "image/jpeg",
+      coordination: result.coordination,
+      queryMap: result.queryMap,
+    };
+  }
+
+  function updateSaveButtonState() {
+    if (!elements.saveRecommendationButton) {
+      return;
+    }
+
+    const canSave = !!state.persistRequest;
+    elements.saveRecommendationButton.disabled =
+      !canSave || state.isSaveSubmitting || state.isSaved;
+
+    if (state.isSaveSubmitting) {
+      elements.saveRecommendationButton.textContent = SAVE_BUTTON_POLICY.savingLabel;
+      return;
+    }
+    if (state.isSaved) {
+      elements.saveRecommendationButton.textContent = SAVE_BUTTON_POLICY.savedLabel;
+      return;
+    }
+    elements.saveRecommendationButton.textContent = SAVE_BUTTON_POLICY.idleLabel;
   }
 
   function buildResultMetaText(result) {
@@ -653,35 +716,12 @@
     elements.resultItemCount.textContent = "";
   }
 
-  function renderDeveloperPanel(result) {
-    const safeResult = result || {};
-    const slotSearchQueries = safeResult.slotSearchQueries || {};
-    const rawBlueprint = safeResult.rawBlueprint || {};
-
-    elements.developerSearchQueries.textContent = toPrettyJson(slotSearchQueries);
-    elements.developerBlueprint.textContent = toPrettyJson(rawBlueprint);
-  }
-
   function toggleScreen(screen) {
     const isResult = screen === "result";
     elements.composeView.classList.toggle("recommend-screen--hidden", isResult);
     elements.composeView.classList.toggle("recommend-screen--active", !isResult);
     elements.resultView.classList.toggle("recommend-screen--hidden", !isResult);
     elements.resultView.classList.toggle("recommend-screen--active", isResult);
-  }
-
-  function toggleDeveloperPanel() {
-    setDeveloperPanelOpen(!state.developerPanelOpen);
-  }
-
-  function setDeveloperPanelOpen(isOpen) {
-    state.developerPanelOpen = isOpen;
-    elements.developerPanel.classList.toggle("recommend-dev-panel--hidden", !isOpen);
-    elements.resultLayout.classList.toggle("recommend-result-layout--with-dev", isOpen);
-    elements.developerToggleButton.setAttribute("aria-expanded", String(isOpen));
-    elements.developerToggleButton.textContent = isOpen
-      ? "개발자 영역 닫기"
-      : "개발자 영역 보기";
   }
 
   function setSubmitting(isSubmitting) {
@@ -692,31 +732,6 @@
       "recommend-loading-overlay--hidden",
       !isSubmitting
     );
-    // 제출 상태가 바뀌면 저장 버튼 비활성 조건도 즉시 다시 계산한다.
-    updateSaveButtonState();
-  }
-
-  function setSaving(isSaving) {
-    state.isSaving = isSaving;
-    updateSaveButtonState();
-  }
-
-  function updateSaveButtonState() {
-    const isDisabled =
-      state.isSaving || state.isSubmitting || !state.currentResult || state.hasSavedCurrentResult;
-    elements.saveRecommendationButton.disabled = isDisabled;
-
-    if (state.isSaving) {
-      elements.saveRecommendationButton.textContent = "저장 중...";
-      return;
-    }
-
-    if (state.hasSavedCurrentResult) {
-      elements.saveRecommendationButton.textContent = "저장 완료";
-      return;
-    }
-
-    elements.saveRecommendationButton.textContent = "저장";
   }
 
   function setFeedback(message, tone) {
@@ -735,13 +750,29 @@
     state.imageMimeType = "";
     state.uploadedImageUrl = "";
     elements.imageFile.value = "";
-    if (elements.imagePreview.dataset.objectUrl) {
-      URL.revokeObjectURL(elements.imagePreview.dataset.objectUrl);
-      delete elements.imagePreview.dataset.objectUrl;
-    }
+    revokeImagePreviewObjectUrl();
     elements.imagePreview.removeAttribute("src");
     elements.imagePreviewCard.classList.remove("recommend-image-card--filled");
     elements.imageMetaText.textContent = "아직 업로드된 사진이 없습니다.";
+  }
+
+  function applyImagePreview(file, imageBase64) {
+    revokeImagePreviewObjectUrl();
+    state.imageBase64 = imageBase64;
+    state.imageMimeType = file.type || "image/jpeg";
+
+    const objectUrl = URL.createObjectURL(file);
+    state.uploadedImageUrl = objectUrl;
+    elements.imagePreview.src = objectUrl;
+    elements.imagePreview.dataset.objectUrl = objectUrl;
+    elements.imagePreviewCard.classList.add("recommend-image-card--filled");
+  }
+
+  function revokeImagePreviewObjectUrl() {
+    if (elements.imagePreview && elements.imagePreview.dataset.objectUrl) {
+      URL.revokeObjectURL(elements.imagePreview.dataset.objectUrl);
+      delete elements.imagePreview.dataset.objectUrl;
+    }
   }
 
   function fileToBase64(file) {
@@ -783,20 +814,6 @@
     });
   }
 
-  function toOffsetDateTimeString(localDateTime) {
-    const date = new Date(localDateTime);
-    return date.toISOString();
-  }
-
-  function toDateTimeLocalString(date) {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    const hours = String(date.getHours()).padStart(2, "0");
-    const minutes = String(date.getMinutes()).padStart(2, "0");
-    return `${year}-${month}-${day}T${hours}:${minutes}`;
-  }
-
   function formatBytes(size) {
     if (!size) {
       return "0 B";
@@ -815,6 +832,54 @@
     );
   }
 
+  function requestLoginForSave() {
+    const loginGuideMessage = "저장 기능은 로그인 후 사용할 수 있습니다. 로그인 페이지로 이동하시겠습니까?";
+    if (typeof window.showGlobalModal === "function") {
+      window.showGlobalModal("로그인 필요", loginGuideMessage, "confirm", () => {
+        window.location.href = "/login";
+      });
+      return;
+    }
+
+    if (window.confirm(loginGuideMessage)) {
+      window.location.href = "/login";
+    }
+  }
+
+  function isAuthError(error) {
+    return error && (error.status === 401 || error.code === "T100");
+  }
+
+  async function requestJson(url, options = {}) {
+    const {
+      method = "GET",
+      body,
+      headers = {},
+      defaultErrorMessage = "요청을 처리하지 못했습니다.",
+    } = options;
+
+    const fetchOptions = {
+      method,
+      headers: {
+        "Content-Type": "application/json",
+        ...headers,
+      },
+    };
+    if (body !== undefined) {
+      fetchOptions.body = typeof body === "string" ? body : JSON.stringify(body);
+    }
+
+    const response = await fetch(url, fetchOptions);
+    const parsedBody = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      const error = new Error(resolveErrorMessage(parsedBody) || defaultErrorMessage);
+      error.status = response.status;
+      error.code = parsedBody?.code || parsedBody?.error?.code;
+      throw error;
+    }
+    return parsedBody;
+  }
+
   function escapeHtml(value) {
     return String(value)
       .replaceAll("&", "&amp;")
@@ -828,12 +893,4 @@
     return typeof value === "string" && value.trim().length > 0;
   }
 
-  function toPrettyJson(value) {
-    try {
-      return JSON.stringify(value ?? {}, null, 2);
-    } catch (error) {
-      console.error("디버그 데이터 직렬화 실패", error);
-      return "{}";
-    }
-  }
 })();

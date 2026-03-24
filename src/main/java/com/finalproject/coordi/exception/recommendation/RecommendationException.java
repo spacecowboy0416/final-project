@@ -172,6 +172,12 @@ public final class RecommendationException {
         );
     }
 
+    public static ValidationException blueprintRequiredSlotsMissing() {
+        return new ValidationException(
+            ErrorCode.RECOMMENDATION_BLUEPRINT_REQUIRED_SLOTS_MISSING
+        );
+    }
+
     public static ComponentException promptTemplateReadFailed(IOException exception) {
         return new ComponentException(ErrorCode.RECOMMENDATION_PROMPT_TEMPLATE_READ_FAILED, exception);
     }
