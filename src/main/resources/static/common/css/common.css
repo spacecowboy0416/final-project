@@ -28,6 +28,8 @@ img {
     display: block;
 }
 
+
+
 /* =========================================
    2. 레이아웃 (헤더, 메인, 푸터)
    ========================================= */
@@ -48,10 +50,9 @@ img {
     align-items: center;
 }
 
-.logo a {
-    color: #222;
-    font-size: 1.5rem;
-    font-weight: 900;
+.logo {
+    margin-top: 8px;
+    margin-left: 10px;
 }
 
 .nav-menu {
