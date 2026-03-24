@@ -8,9 +8,8 @@ import com.finalproject.coordi.recommendation.infra.navershopping.policy.NaverSh
 import com.finalproject.coordi.recommendation.infra.navershopping.policy.NaverShoppingQueryPolicy.QueryTokenType;
 import com.finalproject.coordi.recommendation.infra.navershopping.policy.NaverShoppingQueryPolicy.SearchQueryContext;
 import com.finalproject.coordi.recommendation.service.productSearch.ShoppingPort.ShoppingSearchQuery;
-
-import java.util.LinkedHashSet;
 import java.util.EnumMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
@@ -22,14 +21,11 @@ public class SearchQueryExtractor {
     private final NaverShoppingProperties shoppingProperties;
     private final NaverShoppingQueryPolicy queryPolicy;
 
-    public Map<CategoryType, ShoppingSearchQuery> extract(
+    public SlotSearchQueries extract(
         NormalizedBlueprintDto normalizedBlueprint,
         Boolean brandEnabled
     ) {
         Map<CategoryType, ShoppingSearchQuery> queriesBySlot = new EnumMap<>(CategoryType.class);
-        if (normalizedBlueprint == null || normalizedBlueprint.itemsBySlot() == null) {
-            return queriesBySlot;
-        }
 
         SearchQueryContext queryContext = buildQueryContext(brandEnabled);
         normalizedBlueprint.itemsBySlot().forEach((categoryType, item) -> {
@@ -45,16 +41,16 @@ public class SearchQueryExtractor {
                 item,
                 queryContext
             );
-            if (searchQuery == null || searchQuery.isBlank()) {
+            if (searchQuery.isBlank()) {
                 return;
             }
 
             queriesBySlot.put(
                 categoryType,
-                new ShoppingSearchQuery(searchQuery.trim(), shoppingProperties.getResultLimit())
+                new ShoppingSearchQuery(searchQuery, shoppingProperties.getResultLimit())
             );
         });
-        return queriesBySlot;
+        return new SlotSearchQueries(queriesBySlot);
     }
 
     private String buildSearchQuery(
@@ -75,9 +71,6 @@ public class SearchQueryExtractor {
         RawBlueprintDto.ItemInfo item,
         SearchQueryContext queryContext
     ) {
-        if (tokenType == null) {
-            return null;
-        }
         return queryPolicy.extractToken(tokenType, slotKey, item, queryContext);
     }
 

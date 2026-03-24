@@ -19,6 +19,7 @@ import lombok.ToString;
 public class RecommendationDto {
     private Long recId;
     private Long userId;
+    private String weatherStatus;
     private String inputMode;
     private String inputText;
     private String productOption;

@@ -1,89 +1,55 @@
-package com.finalproject.coordi.recommendation.service.finaloutput;
+package com.finalproject.coordi.recommendation.service.productSearch;
 
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.CategoryType;
 import com.finalproject.coordi.recommendation.dto.api.CoordinationItemOutputDto;
 import com.finalproject.coordi.recommendation.dto.api.CoordinationOutputDto;
-import com.finalproject.coordi.recommendation.dto.api.PayloadDto;
-import com.finalproject.coordi.recommendation.dto.api.UserRequestDto;
 import com.finalproject.coordi.recommendation.dto.api.RawBlueprintDto;
 import com.finalproject.coordi.recommendation.dto.internal.NormalizedBlueprintDto;
 import com.finalproject.coordi.recommendation.service.productSearch.ShoppingPort.SearchedProduct;
-import com.finalproject.coordi.recommendation.service.productSearch.ShoppingPort.ShoppingSearchQuery;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 /**
- * 최종 API 응답 DTO를 조립한다.
- * effectiveProducts(필터 적용 여부와 무관한 최종 상품 맵)에서 슬롯별 TOP1을 선택해
- * 코디 아이템을 만든다. 저장은 표준 추천 경로에서만 별도로 수행한다.
+ * ProductSearch 단계 마지막에서 사용자 노출용 coordination 출력을 조립한다.
  */
 @Component
-@RequiredArgsConstructor
-public class FinalOutputBuilder {
-    private static final String AI_EXPLANATION = "";
+public class ProductOutputAssembler {
     private static final List<CategoryType> OPTIONAL_OUTPUT_SLOTS = List.of(
         CategoryType.HEADWEAR,
         CategoryType.ACCESSORIES
     );
 
-    private final FinalOutputPersistenceService finalOutputPersistenceService;
-
-    /**
-     * @param effectiveProducts 실제 최종 출력에 사용할 슬롯별 상품 맵
-     *                          (FAST: 비필터 searchedProductsBySlot,
-     *                           LEGACY: imageFilter 통과 filteredProductsBySlot)
-     */
-    public CoordinationOutputDto build(
+    public CoordinationOutputDto assemble(
         NormalizedBlueprintDto normalizedBlueprint,
-        Map<CategoryType, List<SearchedProduct>> effectiveProducts
+        SearchedProductsBySlot searchedProductsBySlot,
+        SlotSearchQueries slotSearchQueries
     ) {
-        RawBlueprintDto.AiBlueprint aiBlueprint = normalizedBlueprint == null ? null : normalizedBlueprint.aiBlueprint();
-        String blueprintId = UUID.randomUUID().toString();
-        List<CoordinationItemOutputDto> coordinationItems = buildCoordinationItems(normalizedBlueprint, effectiveProducts);
+        RawBlueprintDto.AiBlueprint aiBlueprint = normalizedBlueprint.aiBlueprint();
+        List<CoordinationItemOutputDto> coordinationItems = buildCoordinationItems(normalizedBlueprint, searchedProductsBySlot);
         return new CoordinationOutputDto(
-            blueprintId,
-            aiBlueprint == null ? null : aiBlueprint.tpoType(),
-            aiBlueprint == null ? null : aiBlueprint.styleType(),
-            aiBlueprint == null ? AI_EXPLANATION : aiBlueprint.aiExplanation(),
-            coordinationItems
+            UUID.randomUUID().toString(),
+            aiBlueprint.tpoType(),
+            aiBlueprint.styleType(),
+            aiBlueprint.aiExplanation(),
+            coordinationItems,
+            buildQueryMap(slotSearchQueries)
         );
-    }
-
-    public CoordinationOutputDto buildAndPersist(
-        UserRequestDto request,
-        Long userId,
-        PayloadDto payload,
-        NormalizedBlueprintDto normalizedBlueprint,
-        Map<CategoryType, List<SearchedProduct>> effectiveProducts,
-        Map<CategoryType, ShoppingSearchQuery> slotSearchQueries
-    ) {
-        CoordinationOutputDto outputDto = build(normalizedBlueprint, effectiveProducts);
-        // 일반 추천 API는 최종 응답 기준으로 recommendation 결과를 저장한다.
-        finalOutputPersistenceService.save(
-            userId,
-            request,
-            payload,
-            normalizedBlueprint,
-            effectiveProducts,
-            slotSearchQueries
-        );
-        return outputDto;
     }
 
     private List<CoordinationItemOutputDto> buildCoordinationItems(
         NormalizedBlueprintDto normalizedBlueprint,
-        Map<CategoryType, List<SearchedProduct>> effectiveProducts
+        SearchedProductsBySlot searchedProductsBySlot
     ) {
         List<CoordinationItemOutputDto> coordinationItems = new ArrayList<>();
-        CategoryType anchorSlot = normalizedBlueprint == null ? null : normalizedBlueprint.anchorSlot();
+        CategoryType anchorSlot = normalizedBlueprint.anchorSlot();
         for (CategoryType categoryType : CategoryType.values()) {
-            var itemInfo = normalizedBlueprint == null ? null : normalizedBlueprint.itemBySlot(categoryType);
+            RawBlueprintDto.ItemInfo itemInfo = normalizedBlueprint.itemBySlot(categoryType);
             boolean isAnchorSlot = categoryType == anchorSlot;
-            SearchedProduct top1Product = isAnchorSlot ? null : extractTop1Product(categoryType, effectiveProducts);
+            SearchedProduct top1Product = isAnchorSlot ? null : searchedProductsBySlot.top1(categoryType);
 
             Integer tempMin = null;
             Integer tempMax = null;
@@ -114,6 +80,7 @@ public class FinalOutputBuilder {
                 itemInfo == null || itemInfo.attributes() == null ? null : itemInfo.attributes().style()
             );
 
+            // 선택 슬롯은 출력 근거가 없으면 사용자 화면과 저장 모두에서 제외한다.
             if (shouldSkipOptionalSlot(coordinationItem)) {
                 continue;
             }
@@ -123,14 +90,24 @@ public class FinalOutputBuilder {
         return coordinationItems;
     }
 
-    /**
-     * 선택 슬롯은 실제 출력 근거가 없는 경우 응답에서 제거한다.
-     */
+    private Map<String, String> buildQueryMap(SlotSearchQueries slotSearchQueries) {
+        if (slotSearchQueries == null || slotSearchQueries.isEmpty()) {
+            return Map.of();
+        }
+        Map<String, String> queryMap = new LinkedHashMap<>();
+        slotSearchQueries.forEach((slotKey, query) -> {
+            if (slotKey == null || query == null || query.searchKeyword() == null) {
+                return;
+            }
+            queryMap.put(slotKey.getCode(), query.searchKeyword());
+        });
+        return queryMap;
+    }
+
     private boolean shouldSkipOptionalSlot(CoordinationItemOutputDto coordinationItem) {
         if (coordinationItem == null || !OPTIONAL_OUTPUT_SLOTS.contains(coordinationItem.slotKey())) {
             return false;
         }
-
         return !coordinationItem.isMyItem()
             && !hasText(coordinationItem.imageUrl())
             && !hasText(coordinationItem.productDetailUrl())
@@ -138,25 +115,7 @@ public class FinalOutputBuilder {
             && !hasText(coordinationItem.itemName());
     }
 
-    /**
-     * 문자열 출력 근거 존재 여부를 공통 판정한다.
-     */
     private boolean hasText(String value) {
         return value != null && !value.isBlank();
-    }
-
-    // 슬롯별 effectiveProducts 에서 TOP1 상품을 추출한다.
-    private SearchedProduct extractTop1Product(
-        CategoryType categoryType,
-        Map<CategoryType, List<SearchedProduct>> effectiveProducts
-    ) {
-        if (effectiveProducts == null) {
-            return null;
-        }
-        List<SearchedProduct> products = effectiveProducts.get(categoryType);
-        if (products == null || products.isEmpty()) {
-            return null;
-        }
-        return products.getFirst();
     }
 }

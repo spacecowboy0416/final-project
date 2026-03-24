@@ -162,8 +162,7 @@
             </div>
 
             <div class="panel">
-                <h3>2. 시간 & 위치</h3>
-                <input id="scheduleTime" type="datetime-local" value="2026-03-18T20:30">
+                <h3>2. 위치</h3>
                 <button id="useCurrentLocationBtn" type="button">현재 위치 사용</button>
                 <div id="map" style="width:100%; height:100px; border:1px solid #ccc; margin:8px 0;"></div>
                 <p id="weatherPreview" style="font-size: 12px; color: blue;">날씨: 대기 중...</p>
@@ -232,7 +231,6 @@ const els = {
         imagePreview: document.getElementById('imagePreview'),
         naturalText: document.getElementById('naturalText'),
         gender: document.getElementById('gender'),
-        scheduleTime: document.getElementById('scheduleTime'),
         useCurrentLocationBtn: document.getElementById('useCurrentLocationBtn'),
         latitude: document.getElementById('latitude'),
         longitude: document.getElementById('longitude'),
@@ -256,24 +254,10 @@ const els = {
     };
 
     // 2. 유틸리티 함수
-    function toOffsetDateTime(localValue) {
-        if (!localValue) return "";
-        try {
-            const date = new Date(localValue);
-            if (isNaN(date.getTime())) return "";
-            const offsetMin = -date.getTimezoneOffset();
-            const sign = offsetMin >= 0 ? "+" : "-";
-            const h = String(Math.floor(Math.abs(offsetMin) / 60)).padStart(2, "0");
-            const m = String(Math.abs(offsetMin) % 60).padStart(2, "0");
-            return `${localValue}:00${sign}${h}:${m}`;
-        } catch (e) { return ""; }
-    }
-
     function buildPayload() {
         const payload = {
             naturalText: els.naturalText.value,
             gender: els.gender.value,
-            scheduleTime: toOffsetDateTime(els.scheduleTime.value),
             weather: cachedWeather || { status: "UNKNOWN", temperature: 0, feelsLike: 0 },
             imageBase64: selectedImageBase64,
             imageMimeType: selectedImageMimeType,

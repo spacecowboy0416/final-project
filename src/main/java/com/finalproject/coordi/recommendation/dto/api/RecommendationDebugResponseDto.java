@@ -4,9 +4,10 @@ import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.Sty
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.CategoryType;
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.TpoType;
 import com.finalproject.coordi.recommendation.service.Orchestrator.PipelineResult;
-import com.finalproject.coordi.recommendation.service.productSearch.ShoppingPort.ShoppingSearchQuery;
+import com.finalproject.coordi.recommendation.service.productSearch.SlotSearchQueries;
 
 import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -59,16 +60,18 @@ public record RecommendationDebugResponseDto(
     }
 
     private static Map<String, String> toDebugSlotSearchQueries(
-        Map<CategoryType, ShoppingSearchQuery> slotSearchQueries
+        SlotSearchQueries slotSearchQueries
     ) {
         if (slotSearchQueries == null || slotSearchQueries.isEmpty()) {
             return Map.of();
         }
-        return slotSearchQueries.entrySet().stream().collect(
-            java.util.stream.Collectors.toMap(
-                entry -> entry.getKey().getCode(),
-                entry -> entry.getValue() == null ? "" : entry.getValue().searchKeyword()
-            )
-        );
+        Map<String, String> debugQueries = new LinkedHashMap<>();
+        slotSearchQueries.forEach((categoryType, query) -> {
+            if (categoryType == null) {
+                return;
+            }
+            debugQueries.put(categoryType.getCode(), query == null ? "" : query.searchKeyword());
+        });
+        return debugQueries;
     }
 }

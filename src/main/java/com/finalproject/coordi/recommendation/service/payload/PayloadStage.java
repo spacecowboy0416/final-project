@@ -4,10 +4,9 @@ import static com.finalproject.coordi.recommendation.domain.prompt.Recommendatio
 import static com.finalproject.coordi.recommendation.domain.prompt.RecommendationPromptTemplates.USER_PROMPT_EN;
 
 import com.finalproject.coordi.recommendation.config.annotation.LogStage;
-import com.finalproject.coordi.recommendation.dto.api.PayloadDto;
 import com.finalproject.coordi.recommendation.dto.api.UserRequestDto;
-import com.finalproject.coordi.recommendation.dto.internal.UserRequest;
-import com.finalproject.coordi.recommendation.dto.internal.Weather;
+import com.finalproject.coordi.recommendation.dto.internal.PayloadDto;
+import com.finalproject.coordi.recommendation.service.payload.UserRequestNormalizer.NormalizedUserRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -19,25 +18,18 @@ import org.springframework.stereotype.Component;
 public class PayloadStage {
     private final PayloadBuilder payloadBuilder;
     private final UserRequestMapper userRequestMapper;
+    private final UserRequestNormalizer userRequestNormalizer;
 
     @LogStage("payload.build")
-    public PayloadStageResult build(UserRequestDto UserRequest) {
-        UserRequest mappedUserRequest = userRequestMapper.map(UserRequest);
-        Weather weather = mappedUserRequest.weather();
-        PayloadDto payload = payloadBuilder.build(
+    public UserRequestDto.PayloadDto build(UserRequestDto userRequest) {
+        PayloadDto mappedRequest = userRequestMapper.map(userRequest);
+        NormalizedUserRequest normalizedBuildInput = userRequestNormalizer.normalize(mappedRequest);
+        UserRequestDto.PayloadDto payload = payloadBuilder.build(
             SYSTEM_PROMPT_EN,
             USER_PROMPT_EN,
-            mappedUserRequest.naturalText(),
-            mappedUserRequest.gender(),
-            weather,
-            mappedUserRequest.scheduleTime(),
-            mappedUserRequest.imageData()
+            normalizedBuildInput
         );
-        return new PayloadStageResult(payload);
-    }
-
-    public record PayloadStageResult(
-        PayloadDto payload
-    ) {
+        return payload;
     }
 }
+

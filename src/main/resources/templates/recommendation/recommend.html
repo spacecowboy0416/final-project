@@ -18,7 +18,7 @@
         <div class="mainCard recommend-card">
             <div id="recommendRoot"
                  class="recommend-root"
-                 th:attr="data-initial-natural-text=${initialNaturalText},data-kakao-map-api-key=${kakaoMapApiKey},data-recommendation-image-max-bytes=${recommendationImageMaxBytes}">
+                 th:attr="data-initial-natural-text=${initialNaturalText},data-kakao-map-api-key=${kakaoMapApiKey},data-recommendation-image-max-bytes=${recommendationImageMaxBytes},data-recommendation-save-enabled=${recommendationSaveEnabled}">
 
                 <section id="composeView" class="recommend-screen recommend-screen--active" aria-label="추천 입력 화면">
                     <div class="recommend-search-bar">
@@ -88,15 +88,10 @@
                         <section class="recommend-panel recommend-panel--context" aria-labelledby="contextSectionTitle">
                             <div class="recommend-panel__header">
                                 <p class="recommend-panel__eyebrow">CONTEXT</p>
-                                <h2 id="contextSectionTitle" class="recommend-panel__title">시간과 위치 컨텍스트</h2>
+                                <h2 id="contextSectionTitle" class="recommend-panel__title">위치 컨텍스트</h2>
                             </div>
 
                             <div class="recommend-context-stack">
-                                <label class="recommend-select-field">
-                                    <span>일정 시간</span>
-                                    <input id="scheduleTime" type="datetime-local" name="scheduleTime">
-                                </label>
-
                                 <div class="recommend-location-toolbar">
                                     <div>
                                         <strong id="locationLabel">위치를 불러오는 중입니다</strong>
@@ -158,11 +153,8 @@
                                     <p id="resultMetaText" class="recommend-result-meta"></p>
                                 </div>
                                 <div class="recommend-result-actions">
-                                    <button id="saveRecommendationButton" class="recommend-ghost-button" type="button">
-                                        저장
-                                    </button>
-                                    <button id="developerToggleButton" class="recommend-ghost-button" type="button" aria-expanded="false" aria-controls="developerPanel">
-                                        개발자 영역 보기
+                                    <button id="saveRecommendationButton" class="recommend-save-button" type="button">
+                                        저장하기
                                     </button>
                                     <button id="backToComposeButton" class="recommend-ghost-button" type="button">
                                         다시 추천하기
@@ -183,29 +175,6 @@
                                 <div id="resultItems" class="recommend-items-grid"></div>
                             </section>
                         </div>
-
-                        <aside id="developerPanel" class="recommend-dev-panel recommend-dev-panel--hidden" aria-label="개발자 디버그 정보">
-                            <div class="recommend-dev-panel__header">
-                                <div>
-                                    <p class="recommend-summary-card__eyebrow">DEVELOPER</p>
-                                    <h3 class="recommend-dev-panel__title">Search Query / Blueprint</h3>
-                                </div>
-                            </div>
-
-                            <section class="recommend-dev-section">
-                                <div class="recommend-dev-section__header">
-                                    <h4>Search Query</h4>
-                                </div>
-                                <pre id="developerSearchQueries" class="recommend-dev-code">아직 추천 결과가 없습니다.</pre>
-                            </section>
-
-                            <section class="recommend-dev-section">
-                                <div class="recommend-dev-section__header">
-                                    <h4>Blueprint</h4>
-                                </div>
-                                <pre id="developerBlueprint" class="recommend-dev-code">아직 추천 결과가 없습니다.</pre>
-                            </section>
-                        </aside>
                     </div>
                 </section>
 
