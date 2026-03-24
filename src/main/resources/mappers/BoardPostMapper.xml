@@ -44,19 +44,11 @@
             r.style_type,
             r.tpo_type,
             r.ai_explanation,
-
-            ws.weather_id,
-            COALESCE(r.weather_status, ws.weather_status) AS weather_status,
-            ws.temp,
-            ws.feels_like,
-            ws.humidity,
-            ws.wind_speed,
-            ws.place_name
+            r.weather_status AS weather_status
 
         FROM board_post bp
         JOIN users u ON u.user_id = bp.user_id
         JOIN recommendation r ON r.rec_id = bp.rec_id
-        LEFT JOIN weather_snapshot ws ON ws.weather_id = r.weather_id
         WHERE bp.post_id = #{postId}
           AND bp.deleted_at IS NULL
           AND bp.is_public = TRUE
@@ -81,24 +73,18 @@
             r.rec_id,
             r.style_type,
             r.tpo_type,
-
-            ws.weather_id,
-            COALESCE(r.weather_status, ws.weather_status) AS weather_status,
-            ws.temp,
-            ws.place_name
+			r.weather_status AS weather_status
 
         FROM board_post bp
         JOIN users u
           ON u.user_id = bp.user_id
         JOIN recommendation r
           ON r.rec_id = bp.rec_id
-        LEFT JOIN weather_snapshot ws
-          ON ws.weather_id = r.weather_id
         WHERE bp.deleted_at IS NULL
           AND bp.is_public = TRUE
 
         <if test="weather != null and weather != ''">
-            AND LOWER(COALESCE(r.weather_status, ws.weather_status)) = LOWER(#{weather})
+            AND LOWER(r.weather_status) = LOWER(#{weather})
         </if>
 
         <if test="style != null and style != ''">
@@ -128,13 +114,12 @@
         SELECT COUNT(*)
         FROM board_post bp
         JOIN recommendation r ON r.rec_id = bp.rec_id
-        LEFT JOIN weather_snapshot ws ON ws.weather_id = r.weather_id
 
         WHERE bp.deleted_at IS NULL
           AND bp.is_public = TRUE
 
         <if test="weather != null and weather != ''">
-            AND LOWER(COALESCE(r.weather_status, ws.weather_status)) = LOWER(#{weather})
+            AND LOWER(r.weather_status) = LOWER(#{weather})
         </if>
 
         <if test="style != null and style != ''">
@@ -297,11 +282,10 @@
     <!-- ========================= -->
     <!-- 저장 코디의 날씨 상태 조회 -->
     <!-- ========================= -->
-    <select id="findWeatherStatusByRecId" resultType="string">
-        SELECT COALESCE(r.weather_status, ws.weather_status)
-        FROM recommendation r
-        LEFT JOIN weather_snapshot ws ON ws.weather_id = r.weather_id
-        WHERE r.rec_id = #{recId}
-    </select>
+	<select id="findWeatherStatusByRecId" resultType="string">
+	    SELECT r.weather_status
+	    FROM recommendation r
+	    WHERE r.rec_id = #{recId}
+	</select>
 
 </mapper>
