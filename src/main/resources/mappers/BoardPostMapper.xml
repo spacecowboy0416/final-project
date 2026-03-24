@@ -257,8 +257,7 @@
             p.color AS color,
             p.material AS material,
             p.fit AS fit,
-            p.style AS style,
-            p.season AS season
+            p.style AS style
 
         FROM board_post bp
         JOIN recommendation_item ri

@@ -490,14 +490,12 @@ public class BoardPostService {
                 row.getPriority(),
                 row.getProductName(),
                 row.getBrand(),
-                row.getPrice(),
                 row.getImageUrl(),
                 row.getLink(),
                 row.getColor(),
                 row.getMaterial(),
                 row.getFit(),
-                row.getStyle(),
-                row.getSeason()
+                row.getStyle()
         );
     }
 

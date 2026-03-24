@@ -189,10 +189,6 @@ document.addEventListener("DOMContentLoaded", () => {
                                         <span class="board-item-meta-label">스타일</span>
                                         <span class="board-item-meta-value">${escapeHtml(safeText(item.style))}</span>
                                     </div>
-                                    <div class="board-item-meta-row">
-                                        <span class="board-item-meta-label">시즌</span>
-                                        <span class="board-item-meta-value">${escapeHtml(safeText(item.season))}</span>
-                                    </div>
                                 </div>
 
                                 ${item.link
