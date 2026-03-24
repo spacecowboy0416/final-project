@@ -348,10 +348,7 @@ public class BoardPostService {
                 row.getRecId(),
                 row.getStyleType(),
                 row.getTpoType(),
-                row.getWeatherId(),
                 row.getWeatherStatus(),
-                row.getTemp(),
-                row.getPlaceName(),
                 previewBundle.previewItems(),
                 previewBundle.extraItemCount()
         );
@@ -544,13 +541,7 @@ public class BoardPostService {
                 row.getStyleType(),
                 row.getTpoType(),
                 row.getAiExplanation(),
-                row.getWeatherId(),
                 row.getWeatherStatus(),
-                row.getTemp(),
-                row.getFeelsLike(),
-                row.getHumidity(),
-                row.getWindSpeed(),
-                row.getPlaceName(),
                 mine,
                 items,
                 comments
