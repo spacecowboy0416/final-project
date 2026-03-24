@@ -2,7 +2,6 @@ package com.finalproject.coordi.recommendation.service.productSearch;
 
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.CategoryType;
 import com.finalproject.coordi.recommendation.service.productSearch.ShoppingPort.SearchedProduct;
-import com.finalproject.coordi.recommendation.service.productSearch.ShoppingPort.ShoppingSearchQuery;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -15,15 +14,7 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class ShoppingSearcher {
-    // 디버그 검색 엔드포인트에서 사용할 기본 검색 개수다.
-    private static final int DEBUG_RESULT_LIMIT = 1;
-
     private final ShoppingPort shoppingPort;
-
-    public List<SearchedProduct> search(String searchKeyword) {
-        ShoppingSearchQuery query = new ShoppingSearchQuery(searchKeyword, DEBUG_RESULT_LIMIT);
-        return shoppingPort.search(query);
-    }
 
     public SearchedProductsBySlot searchBySlot(
         SlotSearchQueries slotSearchQueries

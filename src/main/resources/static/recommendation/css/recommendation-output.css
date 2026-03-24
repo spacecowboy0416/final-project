@@ -1,0 +1,167 @@
+/* ========================================
+   결과 영역
+======================================== */
+.recommend-result-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-3);
+}
+
+.recommend-result-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.recommend-result-kicker {
+    margin: 0;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    color: #94a3b8;
+}
+
+.recommend-result-title {
+    margin: var(--space-1) 0 0;
+    font-size: var(--font-lg);
+    font-weight: 800;
+    color: var(--color-text);
+}
+
+.recommend-result-meta {
+    margin: var(--space-1) 0 0;
+    font-size: var(--font-sm);
+    color: var(--color-text-muted);
+}
+
+.recommend-summary-card {
+    padding: var(--space-3);
+}
+
+.recommend-summary-text {
+    margin: var(--space-2) 0 0;
+    font-size: var(--font-sm);
+    line-height: 1.6;
+    color: #334155;
+}
+
+.recommend-items-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+}
+
+.recommend-items-title {
+    margin: 0;
+    font-size: var(--font-lg);
+    font-weight: 800;
+    color: var(--color-text);
+}
+
+.recommend-items-count {
+    font-size: var(--font-xs);
+    color: var(--color-text-muted);
+}
+
+.recommend-items-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-3);
+}
+
+/* ========================================
+   추천 아이템 카드 (JS 렌더링)
+======================================== */
+.recommend-item-card {
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+}
+
+.recommend-item-image {
+    width: 100%;
+    min-height: var(--item-image-h);
+    object-fit: cover;
+    background: #f1f5f9;
+}
+
+.recommend-item-image--placeholder {
+    width: 100%;
+    min-height: var(--item-image-h);
+    background: #f1f5f9;
+}
+
+.recommend-item-body {
+    display: grid;
+    gap: var(--space-2);
+    padding: var(--space-3);
+}
+
+.recommend-item-slot {
+    display: inline-flex;
+    width: fit-content;
+    align-items: center;
+    border-radius: 999px;
+    background: #f1f5f9;
+    color: #475569;
+    padding: 4px 8px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.recommend-item-brand {
+    margin: 0;
+    font-size: 11px;
+    color: var(--color-text-muted);
+}
+
+.recommend-item-name {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--color-text);
+}
+
+.recommend-item-price {
+    margin: 0;
+    font-size: var(--font-sm);
+    font-weight: 800;
+    color: #1f2937;
+}
+
+.recommend-item-reason {
+    margin: 0;
+    font-size: var(--font-sm);
+    line-height: 1.55;
+    color: #475569;
+}
+
+.recommend-item-link {
+    width: fit-content;
+}
+
+.recommend-empty-card {
+    border-style: dashed;
+    padding: var(--space-5);
+    text-align: center;
+    color: var(--color-text-muted);
+}
+
+/* ========================================
+   반응형
+======================================== */
+@media (max-width: 900px) {
+    .recommend-result-head {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .recommend-result-actions {
+        justify-content: flex-start;
+    }
+
+    .recommend-items-grid {
+        grid-template-columns: 1fr;
+    }
+}
