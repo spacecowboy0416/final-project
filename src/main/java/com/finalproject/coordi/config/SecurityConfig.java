@@ -33,15 +33,6 @@ public class SecurityConfig {
     private final JwtProvider jwtProvider;
     private final RedisService redisService;
 
-<<<<<<< HEAD
-        // 정적 리소스 자원(CSS, JS, 이미지 등)에 대한 요청은 보안 검증 절차를 생략하도록 필터망 적용을 예외 처리(ignoring)합니다.
-        @Bean
-        public WebSecurityCustomizer webSecurityCustomizer() {
-                return (web) -> web.ignoring()
-                                .requestMatchers("/css/**", "/js/**", "/images/**", "/admin/images/**", "/favicon.ico",
-                                                "/error");
-        }
-=======
     // 보안 필터 체인 세부 구성 로직
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -50,7 +41,6 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .formLogin(form -> form.disable())
                 .httpBasic(basic -> basic.disable())
->>>>>>> dbc4007ba0b81319092b9a595ada264e00c298ae
 
                 // 세션 정책 JWT 사용 무상태(STATELESS) 설정
                 .sessionManagement(session -> session
