@@ -567,6 +567,8 @@
       tpoType: result.tpoType,
       styleType: result.styleType,
       aiExplanation: result.aiExplanation || "",
+      mainItemImageBase64: requestPayload.imageBase64,
+      mainItemImageMimeType: requestPayload.imageMimeType || "image/jpeg",
       coordination: result.coordination,
       queryMap: result.queryMap,
     };

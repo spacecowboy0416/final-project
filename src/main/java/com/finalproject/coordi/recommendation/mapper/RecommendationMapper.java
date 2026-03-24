@@ -31,6 +31,11 @@ public interface RecommendationMapper {
     int insertProductTag(ProductTagDto productTag);
 
     Long findCategoryIdByCode(@Param("code") ProductCategoryCode code);
+    Long findProductIdByChecksum(@Param("checksumSha256") String checksumSha256);
+    String findProductImageUrlByProductId(@Param("productId") Long productId);
+    int updateProductImageUrlById(@Param("productId") Long productId, @Param("imageUrl") String imageUrl);
+    Long findClosetItemIdByUserAndProduct(@Param("userId") Long userId, @Param("productId") Long productId);
+    int insertClosetItem(@Param("userId") Long userId, @Param("productId") Long productId);
 
     Long findProductIdBySourceAndExternalId(@Param("source") String source, @Param("externalId") String externalId);
 

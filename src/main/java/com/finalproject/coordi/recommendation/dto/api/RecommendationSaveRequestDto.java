@@ -4,6 +4,7 @@ import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.Cat
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.StyleType;
 import com.finalproject.coordi.recommendation.domain.enums.CoordinationEnums.TpoType;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -23,6 +24,8 @@ public record RecommendationSaveRequestDto(
     @NotNull
     StyleType styleType,
     String aiExplanation,
+    String mainItemImageBase64,
+    String mainItemImageMimeType,
     @NotEmpty
     List<@Valid @NotNull CoordinationItemOutputDto> coordination,
     @NotNull
@@ -49,6 +52,19 @@ public record RecommendationSaveRequestDto(
             .toList();
     }
 
+    public boolean hasMainItem() {
+        return persistableCoordination().stream()
+            .anyMatch(CoordinationItemOutputDto::isMyItem);
+    }
+
+    @AssertTrue(message = "main item이 있으면 이미지(base64/mimeType)는 필수입니다.")
+    public boolean isMainItemImagePresentWhenNeeded() {
+        if (!hasMainItem()) {
+            return true;
+        }
+        return hasText(mainItemImageBase64) && hasText(mainItemImageMimeType);
+    }
+
     public String searchQueryOf(CategoryType slotKey) {
         if (queryMap == null || queryMap.isEmpty() || slotKey == null) {
             return "";
@@ -59,5 +75,9 @@ public record RecommendationSaveRequestDto(
         }
         String byName = queryMap.get(slotKey.name());
         return byName == null ? "" : byName;
+    }
+
+    private boolean hasText(String value) {
+        return value != null && !value.isBlank();
     }
 }

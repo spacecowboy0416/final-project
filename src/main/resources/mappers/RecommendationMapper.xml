@@ -42,6 +42,7 @@
             rec_id,
             slot_key,
             source_type,
+            closet_item_id,
             product_id,
             search_query,
             priority,
@@ -53,6 +54,7 @@
             #{recId},
             #{slotKey},
             #{sourceType},
+            #{closetItemId},
             #{productId},
             #{searchQuery},
             #{priority},
@@ -180,6 +182,50 @@
         WHERE code = #{code, typeHandler=com.finalproject.coordi.recommendation.mapper.typehandler.ProductCategoryCodeTypeHandler}
         LIMIT 1
     </select>
+
+    <select id="findProductIdByChecksum" resultType="long">
+        SELECT pim.product_id
+        FROM product_image_metadata pim
+        WHERE pim.checksum_sha256 = #{checksumSha256}
+        ORDER BY pim.created_at DESC, pim.image_meta_id DESC
+        LIMIT 1
+    </select>
+
+    <select id="findProductImageUrlByProductId" resultType="string">
+        SELECT image_url
+        FROM product
+        WHERE product_id = #{productId}
+        LIMIT 1
+    </select>
+
+    <update id="updateProductImageUrlById">
+        UPDATE product
+        SET image_url = #{imageUrl}
+        WHERE product_id = #{productId}
+    </update>
+
+    <select id="findClosetItemIdByUserAndProduct" resultType="long">
+        SELECT item_id
+        FROM closet_item
+        WHERE user_id = #{userId}
+          AND product_id = #{productId}
+        LIMIT 1
+    </select>
+
+    <insert id="insertClosetItem">
+        INSERT IGNORE INTO closet_item
+        (
+            user_id,
+            product_id,
+            is_active
+        )
+        VALUES
+        (
+            #{userId},
+            #{productId},
+            TRUE
+        )
+    </insert>
 
     <select id="findProductIdBySourceAndExternalId" resultType="long">
         SELECT product_id
