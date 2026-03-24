@@ -6,11 +6,11 @@ document.addEventListener("DOMContentLoaded", () => {
 		formatStyle,
 		formatTpo,
         formatDate,
-        formatDegree,
         formatSlotLabel,
         getInitial,
         escapeHtml,
-        escapeAttr
+        escapeAttr,
+		safeText
     } = window.BoardCommon || {};
 
     if (!window.BoardCommon) {
@@ -171,31 +171,27 @@ document.addEventListener("DOMContentLoaded", () => {
                                 <div class="board-item-meta">
                                     <div class="board-item-meta-row">
                                         <span class="board-item-meta-label">브랜드</span>
-                                        <span class="board-item-meta-value">${escapeHtml(item.brand ?? "-")}</span>
+                                        <span class="board-item-meta-value">${escapeHtml(safeText(item.brand))}</span>
                                     </div>
                                     <div class="board-item-meta-row">
                                         <span class="board-item-meta-label">색상</span>
-                                        <span class="board-item-meta-value">${escapeHtml(item.color ?? "-")}</span>
+                                        <span class="board-item-meta-value">${escapeHtml(safeText(item.color))}</span>
                                     </div>
                                     <div class="board-item-meta-row">
                                         <span class="board-item-meta-label">소재</span>
-                                        <span class="board-item-meta-value">${escapeHtml(item.material ?? "-")}</span>
+                                        <span class="board-item-meta-value">${escapeHtml(safeText(item.material))}</span>
                                     </div>
                                     <div class="board-item-meta-row">
                                         <span class="board-item-meta-label">핏</span>
-                                        <span class="board-item-meta-value">${escapeHtml(item.fit ?? "-")}</span>
+                                        <span class="board-item-meta-value">${escapeHtml(safeText(item.fit))}</span>
                                     </div>
                                     <div class="board-item-meta-row">
                                         <span class="board-item-meta-label">스타일</span>
-                                        <span class="board-item-meta-value">${escapeHtml(item.style ?? "-")}</span>
+                                        <span class="board-item-meta-value">${escapeHtml(safeText(item.style))}</span>
                                     </div>
                                     <div class="board-item-meta-row">
                                         <span class="board-item-meta-label">시즌</span>
-                                        <span class="board-item-meta-value">${escapeHtml(item.season ?? "-")}</span>
-                                    </div>
-                                    <div class="board-item-meta-row">
-                                        <span class="board-item-meta-label">온도</span>
-                                        <span class="board-item-meta-value">${formatDegree(item.temperature)}</span>
+                                        <span class="board-item-meta-value">${escapeHtml(safeText(item.season))}</span>
                                     </div>
                                 </div>
 
