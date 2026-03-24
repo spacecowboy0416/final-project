@@ -50,7 +50,6 @@
         JOIN users u ON u.user_id = bp.user_id
         JOIN recommendation r ON r.rec_id = bp.rec_id
         WHERE bp.post_id = #{postId}
-          AND bp.deleted_at IS NULL
           AND bp.is_public = TRUE
     </select>
 
@@ -80,8 +79,7 @@
           ON u.user_id = bp.user_id
         JOIN recommendation r
           ON r.rec_id = bp.rec_id
-        WHERE bp.deleted_at IS NULL
-          AND bp.is_public = TRUE
+        WHERE bp.is_public = TRUE
 
         <if test="weather != null and weather != ''">
             AND LOWER(r.weather_status) = LOWER(#{weather})
@@ -115,8 +113,7 @@
         FROM board_post bp
         JOIN recommendation r ON r.rec_id = bp.rec_id
 
-        WHERE bp.deleted_at IS NULL
-          AND bp.is_public = TRUE
+        WHERE bp.is_public = TRUE
 
         <if test="weather != null and weather != ''">
             AND LOWER(r.weather_status) = LOWER(#{weather})
@@ -168,7 +165,6 @@
         UPDATE board_post
         SET view_count = view_count + 1
         WHERE post_id = #{postId}
-          AND deleted_at IS NULL
     </update>
 
     <!-- ========================= -->
@@ -180,17 +176,14 @@
             content = #{content},
             updated_at = CURRENT_TIMESTAMP
         WHERE post_id = #{postId}
-          AND deleted_at IS NULL
     </update>
 
     <!-- ========================= -->
     <!-- 삭제 -->
     <!-- ========================= -->
-    <update id="softDeleteBoardPost">
-        UPDATE board_post
-        SET deleted_at = CURRENT_TIMESTAMP
-        WHERE post_id = #{postId}
-          AND deleted_at IS NULL
+    <update id="deleteBoardPost">
+	    DELETE FROM board_post
+	    WHERE post_id = #{postId}
     </update>
 
     <!-- ========================= -->
@@ -200,7 +193,6 @@
         SELECT user_id
         FROM board_post
         WHERE post_id = #{postId}
-          AND deleted_at IS NULL
     </select>
 
     <!-- ========================= -->
@@ -210,7 +202,6 @@
         SELECT COUNT(*)
         FROM board_post
         WHERE post_id = #{postId}
-          AND deleted_at IS NULL
     </select>
 
     <!-- ========================= -->
@@ -265,7 +256,6 @@
         LEFT JOIN product p
             ON p.product_id = ri.product_id
         WHERE bp.post_id = #{postId}
-          AND bp.deleted_at IS NULL
         ORDER BY
             CASE ri.slot_key
                 WHEN 'tops' THEN 1
