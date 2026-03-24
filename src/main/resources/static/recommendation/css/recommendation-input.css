@@ -23,6 +23,11 @@
     --control-h: 52px;
     --control-h-sm: 42px;
     --control-h-xs: 36px;
+    --floating-button-h: 32px;
+    --floating-button-pad-x: 12px;
+
+    --submit-button-offset-right: var(--space-4);
+    --submit-button-offset-bottom: var(--space-4);
 
     --main-pad-y: 8px;
     --main-pad-x: 14px;
@@ -30,8 +35,21 @@
 
     --section-pad: 12px;
     --section-gap: 12px;
+    --column-gap: 12px;
+    --media-stack-gap: 10px;
+    --control-stack-gap: 12px;
+    --compose-vertical-expand: 50px;
+    --control-weather-row-fr: 0.9fr;
+    --control-map-row-fr: 1.1fr;
+    --textarea-pad-top: 15px;
+    --textarea-pad-y: 16px;
+    --textarea-pad-x: 18px;
+    --textarea-pad-right: 156px;
+    --textarea-pad-right-mobile: 124px;
+    --textarea-fixed-h: calc((var(--font-md) * 1.65 * 4) + 34px);
 
-    --image-h: clamp(240px, calc(100dvh - 520px), 420px);
+    --image-panel-h-desktop: clamp(360px, 53dvh, 560px);
+    --image-panel-h-mobile: clamp(300px, 40dvh, 440px);
     --map-h: clamp(180px, calc(100dvh - 660px), 240px);
 
     --item-image-h: 180px;
@@ -78,25 +96,31 @@
     display: block;
 }
 
-.recommend-textarea {
-    height: auto;
-    min-height: calc((var(--font-md) * 1.65 * 4) + 34px);
-    padding: 14px 16px;
-    padding-right: 148px;
+.rc-control.recommend-textarea {
+    /* 입력창은 고정 높이로 유지하고 내용이 길면 내부 스크롤로 처리한다. */
+    height: var(--textarea-fixed-h);
+    min-height: var(--textarea-fixed-h);
+    max-height: var(--textarea-fixed-h);
+    padding: var(--textarea-pad-top) var(--textarea-pad-x) var(--textarea-pad-y) var(--textarea-pad-x);
+    padding-right: var(--textarea-pad-right);
     line-height: 1.65;
     font-weight: 500;
     letter-spacing: -0.01em;
-    resize: vertical;
+    resize: none;
+    overflow-y: auto;
+}
+
+.rc-btn.recommend-floating-button {
+    min-height: var(--floating-button-h);
+    padding: 0 var(--floating-button-pad-x);
+    font-size: var(--font-xs);
+    font-weight: 800;
 }
 
 .recommend-submit-button {
     position: absolute;
-    right: var(--space-2);
-    bottom: var(--space-2);
-    min-height: 40px;
-    padding: 0 18px;
-    font-size: var(--font-xs);
-    font-weight: 800;
+    right: var(--submit-button-offset-right);
+    bottom: var(--submit-button-offset-bottom);
 }
 
 .recommend-merged-section {
@@ -106,16 +130,37 @@
 .recommend-merged-grid {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    gap: var(--section-gap);
-    align-items: stretch;
+    gap: var(--column-gap);
+    align-items: start;
 }
 
 .recommend-pane {
-    gap: var(--section-gap);
+    gap: var(--control-stack-gap);
 }
 
+.recommend-media-pane,
 .recommend-pane--image {
-    grid-template-rows: minmax(0, 1fr) auto;
+    /* 좌측 미디어는 우측 컬럼과 높이를 강제 동기화하지 않는다. */
+    position: relative;
+    gap: var(--media-stack-gap);
+}
+
+.recommend-control-pane {
+    /* 우측 컨트롤 섹션을 좌측 이미지 섹션과 동일 높이 기준으로 정렬한다. */
+    height: calc(var(--image-panel-h-desktop) + var(--compose-vertical-expand));
+    grid-template-rows: auto minmax(0, var(--control-weather-row-fr)) minmax(0, var(--control-map-row-fr));
+    gap: var(--control-stack-gap);
+}
+
+.recommend-options-section,
+.recommend-weather-section,
+.recommend-map-section {
+    margin: 0;
+}
+
+.recommend-weather-section,
+.recommend-map-section {
+    min-height: 0;
 }
 
 .recommend-image-preview-card {
@@ -124,8 +169,9 @@
     border-radius: var(--radius-xl);
     border: 1px solid rgba(255, 255, 255, 0.5);
     background: var(--color-bg-soft);
-    height: 100%;
-    min-height: var(--image-h);
+    width: 100%;
+    height: calc(var(--image-panel-h-desktop) + var(--compose-vertical-expand));
+    min-height: 0;
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     box-shadow:
@@ -178,17 +224,24 @@
 }
 
 .recommend-upload-row {
+    /* 메타 슬롯을 오버레이로 고정해 사진 카드 하단 여백이 상/좌와 동일하게 보이게 한다. */
+    position: absolute;
+    left: var(--space-3);
+    bottom: var(--space-3);
+    z-index: 4;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: var(--space-2);
-    margin-top: var(--space-3);
+    justify-content: flex-start;
+    min-height: 20px;
+    margin: 0;
+    pointer-events: none;
 }
 
 .recommend-meta-text {
     margin: 0;
     min-height: 18px;
     font-size: var(--font-xs);
+    font-weight: 600;
     color: var(--color-text-muted);
 }
 
@@ -246,10 +299,9 @@
     color: var(--color-text);
 }
 
-.recommend-option-select {
+.rc-control.recommend-option-select {
     width: 112px;
     min-width: 112px;
-    height: 36px;
     padding: 0 10px;
     font-size: var(--font-xs);
 }
@@ -262,11 +314,13 @@
 
 .recommend-map-shell {
     position: relative;
+    height: 100%;
 }
 
 .recommend-map {
     width: 100%;
-    height: var(--map-h);
+    height: 100%;
+    min-height: var(--map-h);
     overflow: hidden;
     border-radius: var(--radius-xl);
     border: 1px solid rgba(255, 255, 255, 0.5);
@@ -282,13 +336,11 @@
     position: absolute;
     top: var(--space-2);
     right: var(--space-2);
-    min-height: 32px;
-    padding: 0 12px;
-    font-size: var(--font-xs);
     z-index: 5;
 }
 
 .recommend-weather-card {
+    height: 100%;
     padding: 14px;
     background: rgba(255, 255, 255, 0.66);
     border: 1px solid rgba(255, 255, 255, 0.55);
@@ -300,15 +352,12 @@
 }
 
 .recommend-weather-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-2);
+    display: block;
 }
 
 .recommend-weather-desc {
     margin: 0;
-    max-width: 78%;
+    max-width: 100%;
     font-size: var(--font-xs);
     white-space: nowrap;
     overflow: hidden;
@@ -316,38 +365,41 @@
     color: var(--color-text-muted);
 }
 
-.recommend-weather-badge {
-    display: inline-flex;
-    align-items: center;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.72);
-    color: #334155;
-    border: 1px solid rgba(255, 255, 255, 0.56);
-    padding: 5px 10px;
-    font-size: var(--font-xs);
-    font-weight: 800;
-}
-
 .recommend-weather-grid {
     margin-top: var(--space-3);
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
     gap: var(--space-3);
+    align-items: start;
 }
 
 .recommend-weather-main {
     display: grid;
-    gap: 6px;
+    gap: 16px;
     align-content: start;
 }
 
 .recommend-weather-location {
     display: block;
-    font-size: clamp(36px, 4.2vw, 46px);
+    font-size: clamp(30px, 3.4vw, 38px);
     font-weight: 800;
     line-height: 1.04;
     letter-spacing: -0.02em;
     color: var(--color-text);
+}
+
+.recommend-weather-badge {
+    display: block;
+    align-self: flex-start;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: #334155;
+    padding: 0;
+    font-size: clamp(24px, 2.1vw, 30px);
+    font-weight: 900;
+    line-height: 1.05;
 }
 
 .recommend-weather-temperature {
@@ -362,8 +414,8 @@
 .recommend-weather-list {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px 10px;
-    margin: 0;
+    gap: var(--space-2);
+    margin-top: 30px;
 }
 
 .recommend-weather-item {
@@ -610,10 +662,15 @@
 
         --section-pad: 8px;
         --section-gap: 8px;
+        --column-gap: 8px;
+        --media-stack-gap: 8px;
+        --control-stack-gap: 8px;
+        --compose-vertical-expand: 24px;
+        --control-weather-row-fr: 0.95fr;
+        --control-map-row-fr: 1.05fr;
         --font-lg: 18px;
         --font-xl: 30px;
 
-        --image-h: clamp(220px, 33dvh, 320px);
         --map-h: clamp(170px, 28dvh, 220px);
     }
 
@@ -625,6 +682,11 @@
         grid-template-columns: 1fr;
     }
 
+    .recommend-control-pane {
+        height: auto;
+        grid-template-rows: auto;
+    }
+
     .recommend-weather-grid {
         grid-template-columns: 1fr;
     }
@@ -633,13 +695,8 @@
         grid-template-columns: 1fr;
     }
 
-    .recommend-textarea {
-        padding-right: 118px;
-    }
-
-    .recommend-submit-button {
-        min-height: 36px;
-        padding: 0 14px;
+    .rc-control.recommend-textarea {
+        padding-right: var(--textarea-pad-right-mobile);
     }
 
     .recommend-weather-desc {
@@ -651,16 +708,7 @@
         grid-template-columns: 1fr;
     }
 
-    .recommend-upload-row {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .recommend-pane--image {
-        grid-template-rows: auto auto;
-    }
-
     .recommend-image-preview-card {
-        height: var(--image-h);
+        height: calc(var(--image-panel-h-mobile) + var(--compose-vertical-expand));
     }
 }

@@ -37,7 +37,7 @@
         b.disabled = !S.persist || S.saveBusy || S.saved;
         b.textContent = S.saveBusy ? C.msg.saveBusy : S.saved ? C.msg.saveDone : C.msg.saveIdle;
       },
-      weather(w = {}, isDefault = false, addr) {
+      weather(w = {}, addr) {
         E.weatherStatusBadge && (E.weatherStatusBadge.textContent = w?.label ?? w?.weatherStateKo ?? w?.weatherStatus ?? "날씨");
         E.weatherDescription && (E.weatherDescription.textContent = w?.displayMessage ?? w?.weatherDesc ?? "");
         E.weatherTemperature && (E.weatherTemperature.textContent = `${Math.round(w?.temperature ?? 0)}°`);
@@ -46,11 +46,16 @@
         E.weatherWind && (E.weatherWind.textContent = `${w?.windMs ?? 0} m/s`);
         E.weatherPrecipitation && (E.weatherPrecipitation.textContent = `${w?.precipMm ?? 0} mm`);
         E.locationLabel && (E.locationLabel.textContent = addr ?? w?.locationText ?? C.map.defaultText);
-        E.locationSubLabel && (E.locationSubLabel.textContent = isDefault ? C.map.subDefault : C.map.subSelected);
       },
       result(out = {}, query = "") {
-        E.resultQueryText && (E.resultQueryText.textContent = query);
-        E.resultMetaText && (E.resultMetaText.textContent = [out?.tpoType ? `상황 ${out.tpoType}` : "", out?.styleType ? `스타일 ${out.styleType}` : ""].filter(Boolean).join(" · "));
+        E.resultQueryText && (E.resultQueryText.textContent = query || "입력한 요청 문장이 없습니다.");
+        if (E.resultMetaTags) {
+          const tags = [
+            out?.tpoType ? `상황 ${out.tpoType}` : "",
+            out?.styleType ? `스타일 ${out.styleType}` : "",
+          ].filter(Boolean);
+          E.resultMetaTags.innerHTML = tags.map((tag) => `<span class="recommend-meta-tag">${esc(tag)}</span>`).join("");
+        }
         E.resultExplanation && (E.resultExplanation.textContent = out?.aiExplanation ?? "추천 설명이 아직 준비되지 않았습니다.");
         const items = Array.isArray(out?.coordination) ? out.coordination : [];
         E.resultItemCount && (E.resultItemCount.textContent = items.length ? `${items.length}개 아이템` : "");
@@ -67,14 +72,14 @@
       const load = async () => {
         if (!window.kakao?.maps) {
           const key = root.dataset.kakaoMapApiKey ?? "";
-          if (!key) throw new Error("카카오 지도 키가 설정되지 않았습니다.");
+          if (!key) throw new Error(C.msg.mapKeyMissing);
           await new Promise((ok, no) => {
             if (byId(C.map.sdkId)) return ok();
             const s = document.createElement("script");
             s.id = C.map.sdkId;
             s.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${encodeURIComponent(key)}&autoload=false&libraries=services`;
             s.onload = ok;
-            s.onerror = () => no(new Error("카카오 지도 스크립트 로딩 실패"));
+            s.onerror = () => no(new Error(C.msg.mapScriptLoadFail));
             document.head.appendChild(s);
           });
         }
@@ -143,7 +148,7 @@
             const t = typeof r.result === "string" ? r.result : "";
             ok(t.includes(",") ? t.split(",")[1] : t);
           };
-          r.onerror = () => no(new Error("이미지 인코딩에 실패했습니다."));
+          r.onerror = () => no(new Error(C.msg.imageEncodeFail));
           r.readAsDataURL(f);
         });
 
@@ -151,7 +156,7 @@
         if (!f) return clear();
         if (max > 0 && f.size > max) {
           clear();
-          throw new Error("이미지 크기가 업로드 제한을 초과했습니다.");
+          throw new Error(C.msg.imageTooLarge);
         }
         revoke();
         const url = URL.createObjectURL(f);
@@ -169,10 +174,10 @@
 
     // 날씨 모듈: API 조회 후 화면 반영을 담당한다.
     const Weather = {
-      async refresh(lat, lon, isDefault = false) {
+      async refresh(lat, lon) {
         const w = await request(`${C.api.weather}?lat=${lat}&lon=${lon}`, { defaultErrorMessage: C.msg.weatherError });
         S.weather = w;
-        View.weather(w, isDefault, await Map.addr(lat, lon));
+        View.weather(w, await Map.addr(lat, lon));
       },
     };
 
@@ -180,6 +185,7 @@
     const Recommend = {
       payload() {
         const fd = new FormData(E.recommendForm);
+        const selectedGender = String(E.gender?.value ?? "").trim();
         fd.set("brandEnabled", String(E.brandEnabled?.checked ?? false));
         fd.set("imageBase64", S.img.b64 ?? "");
         fd.set("imageMimeType", S.img.mime || C.img.mime);
@@ -189,7 +195,7 @@
         const r = Object.fromEntries(fd.entries());
         return {
           naturalText: String(r.naturalText ?? "").trim(),
-          gender: r.gender,
+          gender: selectedGender,
           weather: { status: r.weatherStatus, temperature: Number(r.weatherTemperature ?? 0), feelsLike: Number(r.weatherFeelsLike ?? 0) },
           imageBase64: r.imageBase64,
           imageMimeType: r.imageMimeType,
@@ -211,9 +217,11 @@
         };
       },
       validate(p) {
-        if (!p.naturalText) throw new Error("추천 요청 문장을 입력해주세요.");
-        if (!p.imageBase64) throw new Error("추천을 위해 사진을 업로드해주세요.");
-        if (!p.weather?.status) throw new Error("날씨 정보를 아직 불러오지 못했습니다.");
+        if (!p.naturalText) throw new Error(C.msg.naturalTextRequired);
+        if (!p.gender) throw new Error(C.msg.genderRequired);
+        if (!C.policy.allowedGenders.includes(p.gender)) throw new Error(C.msg.genderInvalid);
+        if (!p.imageBase64) throw new Error(C.msg.imageRequired);
+        if (!p.weather?.status) throw new Error(C.msg.weatherNotReady);
       },
       async submit(ev) {
         ev.preventDefault();
@@ -230,7 +238,7 @@
           View.saveBtn();
           View.result(out, p.naturalText);
           View.toggle("result");
-          View.feedback("추천 결과를 불러왔습니다.", "success");
+          View.feedback();
         } catch (e) {
           View.feedback(e?.message ?? C.msg.recommendError, "error");
         } finally {
@@ -249,7 +257,7 @@
           View.feedback(`코디가 저장되었습니다. (recId: ${out?.recId ?? "-"})`, "success");
         } catch (e) {
           if (e?.status === 401 || e?.code === "T100") return askLogin();
-          View.feedback(e?.message ?? "추천 저장에 실패했습니다.", "error");
+          View.feedback(e?.message ?? C.msg.saveFail, "error");
         } finally {
           S.saveBusy = false;
           View.saveBtn();

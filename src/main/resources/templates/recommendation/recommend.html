@@ -24,17 +24,17 @@
                               rows="4"
                               maxlength="1000"
                               placeholder="예: 내일 비 오는데 출근룩 차분하게 추천해줘"></textarea>
-                    <button id="submitButton" class="rc-btn rc-btn-primary recommend-submit-button" type="submit">코디 생성</button>
+                    <button id="submitButton" class="rc-btn rc-btn-ghost recommend-floating-button recommend-submit-button" type="submit">코디 생성</button>
                 </form>
 
                 <section class="recommend-merged-section rc-card" aria-label="추천 입력 상세">
                     <div class="recommend-merged-grid">
-                        <div class="recommend-pane recommend-pane--image rc-stack">
+                        <!-- 좌측: 이미지 관련 UI를 담당하는 독립 섹션 -->
+                        <section class="recommend-pane recommend-media-pane rc-stack" aria-label="이미지 섹션">
                             <div id="imagePreviewCard" class="recommend-image-preview-card">
                                 <img id="imagePreview" class="rc-hidden recommend-image" alt="업로드 이미지 미리보기">
                                 <div id="imageEmptyState" class="recommend-image-empty">
-                                    <strong class="recommend-empty-title">사진을 올리면 여기서 바로 확인할 수 있어요</strong>
-                                    <p class="recommend-empty-desc">전신 또는 상반신이 비교적 선명한 사진을 권장합니다.</p>
+                                    <strong class="recommend-empty-title">코디에 들어갈 옷 사진을 올려주세요</strong>
                                 </div>
                                 <!-- 미리보기 카드 내부에서 바로 업로드할 수 있는 버튼 -->
                                 <div class="recommend-image-upload-overlay">
@@ -46,11 +46,13 @@
                                 <input id="imageFile" type="file" accept="image/*" hidden>
                                 <p id="imageMetaText" class="recommend-meta-text"></p>
                             </div>
-                        </div>
+                        </section>
 
-                        <div class="recommend-pane rc-stack">
-                            <!-- 성별/브랜드 옵션을 날씨 카드 상단에 같은 크기 버튼으로 배치 -->
-                            <div class="recommend-options" aria-label="추천 옵션">
+                        <!-- 우측: 옵션/날씨/지도 컨트롤을 담당하는 독립 섹션 -->
+                        <section class="recommend-pane recommend-control-pane rc-stack" aria-label="컨트롤 섹션">
+                            <section class="recommend-options-section" aria-label="추천 옵션">
+                                <!-- 성별/브랜드 옵션을 같은 행 컨트롤로 배치 -->
+                                <div class="recommend-options">
                                 <label class="recommend-field" for="gender">
                                     <span class="recommend-field-label">성별</span>
                                     <select id="gender" name="gender" class="rc-control rc-control--xs recommend-option-select">
@@ -64,48 +66,54 @@
                                     <span class="recommend-brand-title">브랜드 포함</span>
                                     <input id="brandEnabled" type="checkbox" checked class="recommend-checkbox">
                                 </label>
-                            </div>
-
-                            <!-- 날씨 정보를 지도보다 먼저 보여주기 위한 블록 순서 -->
-                            <article class="recommend-weather-card rc-card" aria-label="날씨 정보">
-                                <div class="recommend-weather-top">
-                                    <p id="weatherDescription" class="recommend-weather-desc">날씨 정보를 가져오는 중입니다.</p>
-                                    <span id="weatherStatusBadge" class="recommend-weather-badge">불러오는 중</span>
                                 </div>
+                            </section>
 
-                                <div class="recommend-weather-grid">
-                                    <!-- 위치 정보를 온도 위에 크게 배치한다 -->
-                                    <div class="recommend-weather-main">
-                                        <strong id="locationLabel" class="recommend-weather-location">서울 강남구</strong>
-                                        <strong id="weatherTemperature" class="recommend-weather-temperature">-</strong>
+                            <section class="recommend-weather-section" aria-label="날씨 섹션">
+                                <!-- 날씨 정보를 지도보다 먼저 보여주기 위한 블록 순서 -->
+                                <article class="recommend-weather-card rc-card" aria-label="날씨 정보">
+                                    <div class="recommend-weather-top">
+                                        <p id="weatherDescription" class="recommend-weather-desc">날씨 정보를 가져오는 중입니다.</p>
                                     </div>
-                                    <dl class="recommend-weather-list">
-                                        <div class="recommend-weather-item">
-                                            <dt>체감 온도</dt>
-                                            <dd id="weatherFeelsLike">-</dd>
-                                        </div>
-                                        <div class="recommend-weather-item">
-                                            <dt>습도</dt>
-                                            <dd id="weatherHumidity">-</dd>
-                                        </div>
-                                        <div class="recommend-weather-item">
-                                            <dt>바람</dt>
-                                            <dd id="weatherWind">-</dd>
-                                        </div>
-                                        <div class="recommend-weather-item recommend-weather-item--last">
-                                            <dt>강수량</dt>
-                                            <dd id="weatherPrecipitation">-</dd>
-                                        </div>
-                                    </dl>
-                                </div>
-                            </article>
 
-                            <div class="recommend-map-shell">
-                                <div id="map" class="recommend-map" aria-label="지도"></div>
-                                <!-- 카카오 지도 위에 겹쳐 보이는 현위치 버튼 -->
-                                <button id="useCurrentLocationButton" class="rc-btn rc-btn-ghost recommend-map-location-button" type="button">현위치</button>
-                            </div>
-                        </div>
+                                    <div class="recommend-weather-grid">
+                                        <!-- 위치/상태/현재온도 -->
+                                        <div class="recommend-weather-main">
+                                            <strong id="locationLabel" class="recommend-weather-location">서울 강남구</strong>
+                                            <span id="weatherStatusBadge" class="recommend-weather-badge">불러오는 중</span>
+                                            <strong id="weatherTemperature" class="recommend-weather-temperature">-</strong>
+                                        </div>
+                                        <!-- 상세 지표 4종 -->
+                                        <dl class="recommend-weather-list">
+                                            <div class="recommend-weather-item">
+                                                <dt>체감 온도</dt>
+                                                <dd id="weatherFeelsLike">-</dd>
+                                            </div>
+                                            <div class="recommend-weather-item">
+                                                <dt>습도</dt>
+                                                <dd id="weatherHumidity">-</dd>
+                                            </div>
+                                            <div class="recommend-weather-item">
+                                                <dt>바람</dt>
+                                                <dd id="weatherWind">-</dd>
+                                            </div>
+                                            <div class="recommend-weather-item recommend-weather-item--last">
+                                                <dt>강수량</dt>
+                                                <dd id="weatherPrecipitation">-</dd>
+                                            </div>
+                                        </dl>
+                                    </div>
+                                </article>
+                            </section>
+
+                            <section class="recommend-map-section" aria-label="지도 섹션">
+                                <div class="recommend-map-shell">
+                                    <div id="map" class="recommend-map" aria-label="지도"></div>
+                                    <!-- 카카오 지도 위에 겹쳐 보이는 현위치 버튼 -->
+                                    <button id="useCurrentLocationButton" class="rc-btn rc-btn-ghost recommend-floating-button recommend-map-location-button" type="button">현위치</button>
+                                </div>
+                            </section>
+                        </section>
                     </div>
                 </section>
             </section>
@@ -114,11 +122,6 @@
                 <div id="resultLayout" class="rc-stack">
                     <div class="rc-stack">
                         <div class="recommend-result-head">
-                            <div>
-                                <p class="recommend-result-kicker">RECOMMENDATION RESULT</p>
-                                <h2 id="resultQueryText" class="recommend-result-title"></h2>
-                                <p id="resultMetaText" class="recommend-result-meta"></p>
-                            </div>
                             <div class="recommend-result-actions">
                                 <button id="saveRecommendationButton" class="rc-btn rc-btn-primary" type="button">저장하기</button>
                                 <button id="backToComposeButton" class="rc-btn rc-btn-ghost" type="button">다시 추천하기</button>
@@ -126,7 +129,13 @@
                         </div>
 
                         <article class="recommend-summary-card rc-card">
+                            <p class="recommend-result-kicker">YOUR REQUEST</p>
+                            <p id="resultQueryText" class="recommend-summary-text recommend-summary-text--query"></p>
+                        </article>
+
+                        <article class="recommend-summary-card rc-card">
                             <p class="recommend-result-kicker">AI EXPLANATION</p>
+                            <div id="resultMetaTags" class="recommend-meta-tags"></div>
                             <p id="resultExplanation" class="recommend-summary-text"></p>
                         </article>
 

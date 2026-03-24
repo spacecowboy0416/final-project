@@ -4,7 +4,7 @@
 
   // 추천 페이지 이벤트를 연결한다.
   const bind = (core, service) => {
-    const { E, locate } = core;
+    const { E, locate, C } = core;
     const { View, Map, Image, Weather, Recommend } = service;
 
     E.imageFile?.addEventListener("change", async (ev) => {
@@ -12,7 +12,7 @@
         View.feedback();
         await Image.set(ev?.target?.files?.[0]);
       } catch (e) {
-        View.feedback(e?.message ?? "이미지 파일을 읽지 못했습니다.", "error");
+        View.feedback(e?.message ?? C.msg.imageReadFail, "error");
       }
     });
 
@@ -21,9 +21,9 @@
         View.feedback();
         const p = await locate();
         Map.move(p.lat, p.lon);
-        await Weather.refresh(p.lat, p.lon, p.isDefault);
+        await Weather.refresh(p.lat, p.lon);
       } catch (e) {
-        View.feedback(e?.message ?? "현재 위치를 다시 불러오지 못했습니다.", "error");
+        View.feedback(e?.message ?? C.msg.locationReloadFail, "error");
       }
     });
 
@@ -68,15 +68,15 @@
       const p = await core.locate();
       await Map.init(p, async ({ lat, lon }) => {
         try {
-          await Weather.refresh(lat, lon, false);
+          await Weather.refresh(lat, lon);
         } catch (e) {
           View.feedback(e?.message ?? C.msg.weatherError, "error");
         }
       });
-      await Weather.refresh(p.lat, p.lon, p.isDefault);
+      await Weather.refresh(p.lat, p.lon);
     } catch (_) {
       View.weather({}, true, C.map.defaultText);
-      View.feedback("위치 또는 날씨 정보를 기본값으로 표시합니다.", "error");
+      View.feedback(C.msg.weatherFallback, "error");
     }
   };
 

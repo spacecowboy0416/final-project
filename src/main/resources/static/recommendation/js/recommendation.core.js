@@ -17,8 +17,6 @@
         defaultPos: { lat: 37.5665, lon: 126.978 },
         // 위치 기본 표시는 화면 요구사항에 맞춰 강남구 기준으로 노출한다.
         defaultText: "서울 강남구",
-        subDefault: "",
-        subSelected: "",
       },
       ui: { hidden: "rc-hidden" },
       // 업로드 메타 기본 문구는 비워서 화면 안내 문구를 노출하지 않는다.
@@ -34,8 +32,24 @@
         saveNoResult: "저장할 추천 결과가 없습니다. 먼저 추천을 생성해주세요.",
         weatherError: "날씨 정보를 가져오지 못했습니다.",
         recommendError: "추천 요청을 처리하지 못했습니다.",
+        genderRequired: "성별을 선택해주세요.",
+        genderInvalid: "성별 값이 올바르지 않습니다.",
+        mapKeyMissing: "카카오 지도 키가 설정되지 않았습니다.",
+        mapScriptLoadFail: "카카오 지도 스크립트 로딩 실패",
+        imageReadFail: "이미지 파일을 읽지 못했습니다.",
+        imageEncodeFail: "이미지 인코딩에 실패했습니다.",
+        imageTooLarge: "이미지 크기가 업로드 제한을 초과했습니다.",
+        naturalTextRequired: "추천 요청 문장을 입력해주세요.",
+        imageRequired: "추천을 위해 사진을 업로드해주세요.",
+        weatherNotReady: "날씨 정보를 아직 불러오지 못했습니다.",
+        locationReloadFail: "현재 위치를 다시 불러오지 못했습니다.",
+        weatherFallback: "위치 또는 날씨 정보를 기본값으로 표시합니다.",
+        saveFail: "추천 저장에 실패했습니다.",
       },
       tone: { error: "rc-feedback--error", success: "rc-feedback--success", default: "rc-feedback--default" },
+      policy: {
+        allowedGenders: ["UNISEX", "MALE", "FEMALE"],
+      },
     };
 
     const S = {
@@ -62,7 +76,6 @@
       "brandEnabled",
       "useCurrentLocationButton",
       "locationLabel",
-      "locationSubLabel",
       "weatherStatusBadge",
       "weatherTemperature",
       "weatherDescription",
@@ -73,7 +86,7 @@
       "loadingOverlay",
       "feedbackMessage",
       "resultQueryText",
-      "resultMetaText",
+      "resultMetaTags",
       "resultExplanation",
       "resultItems",
       "resultItemCount",
