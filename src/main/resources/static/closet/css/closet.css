@@ -137,3 +137,14 @@
 .btn-closet.danger { background: #fff5f5; color: #dc3545; border: 1px solid #ffcaca; }
 .btn-closet.danger:hover { background: #ffebeb; }
 .btn-closet.full-width { width: 100%; flex: none; }
+
+/* 프로필 모달 및 게시판 관련 스타일 */
+.profile-modal-grid { display: flex; flex-direction: column; gap: 20px; }
+.modal-board-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+.modal-board-table th, .modal-board-table td { padding: 10px; border-bottom: 1px solid #eee; text-align: left; }
+.modal-board-table tr:hover { background: #f9f9f9; cursor: pointer; }
+.modal-post-title { font-weight: 600; color: #333; }
+.modal-post-date { color: #999; font-size: 0.75rem; text-align: right; }
+.modal-pagination { display: flex; justify-content: center; gap: 5px; margin-top: 15px; }
+.modal-page-link { padding: 5px 10px; border-radius: 5px; border: 1px solid #ddd; text-decoration: none; color: #555; font-size: 0.8rem; }
+.modal-page-link.active { background: #111; color: #fff; border-color: #111; }

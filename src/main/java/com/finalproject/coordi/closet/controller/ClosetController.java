@@ -1,6 +1,7 @@
 package com.finalproject.coordi.closet.controller;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import jakarta.servlet.http.Cookie;
@@ -8,12 +9,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.finalproject.coordi.closet.dto.ClosetItemDto;
@@ -27,7 +23,6 @@ import org.springframework.security.core.userdetails.User;
 
 import lombok.RequiredArgsConstructor;
 
-// 옷장 관련 화면 및 기능(추가, 삭제, 프로필 관리 등)을 처리하는 컨트롤러
 @Controller
 @RequestMapping("/closet")
 @RequiredArgsConstructor
@@ -38,38 +33,41 @@ public class ClosetController {
     // 현재 요청 유저 식별자 추출 공통 메서드
     private Long getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
         if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getPrincipal())) {
             throw new RuntimeException("로그인이 필요한 서비스입니다.");
         }
-
         User user = (User) authentication.getPrincipal();
         return Long.parseLong(user.getUsername()); 
     }
 
-    // 옷장 메인 화면 데이터 바인딩 및 렌더링 기능
+    // 옷장 메인 화면 데이터 바인딩 및 렌더링 기능 (페이징 데이터 추가)
     @GetMapping
-    public String myCloset(Model model) {
+    public String myCloset(Model model, @RequestParam(value = "page", defaultValue = "1") int page) {
         Long currentUserId = getCurrentUserId();
         
         List<SavedCoordiDto> allCoordis = closetService.getSavedCoordis(currentUserId);
         
         List<SavedCoordiDto> aiCoordis = allCoordis.stream()
-                .filter(c -> !"MANUAL_SET".equals(c.getInputMode()))
-                .collect(Collectors.toList());
-                
+                .filter(c -> !"MANUAL_SET".equals(c.getInputMode())).collect(Collectors.toList());
         List<SavedCoordiDto> manualSets = allCoordis.stream()
-                .filter(c -> "MANUAL_SET".equals(c.getInputMode()))
-                .collect(Collectors.toList());
+                .filter(c -> "MANUAL_SET".equals(c.getInputMode())).collect(Collectors.toList());
         
+        // 1. 프로필 정보 
         model.addAttribute("userId", currentUserId);
         model.addAttribute("nickname", closetService.getUserNickname(currentUserId)); 
         model.addAttribute("profileImageUrl", closetService.getUserProfileImageUrl(currentUserId)); 
         
+        // 2. 옷장 데이터
         model.addAttribute("savedCoordis", aiCoordis);
         model.addAttribute("manualSets", manualSets);
         model.addAttribute("items", closetService.getUserCloset(currentUserId));
         
+        // 3. 내가 쓴 게시글 데이터 (프로필 모달창 표시용, 페이징 포함)
+        Map<String, Object> boardData = closetService.getMyBoardData(currentUserId, page, 5);
+        model.addAttribute("myPosts", boardData.get("posts"));
+        model.addAttribute("currentPage", boardData.get("currentPage"));
+        model.addAttribute("totalPages", boardData.get("totalPages"));
+
         return "closet/closet-main";
     }
 
@@ -81,10 +79,11 @@ public class ClosetController {
         return "redirect:/closet";
     }
 
-    // 개별 아이템 정보 수정 및 세트 동기화 제어
+    // 개별 아이템 정보 및 이미지 수정 제어
     @PostMapping("/update")
-    public String updateItem(@ModelAttribute ClosetItemDto itemDto) {
-        closetService.updateClosetItem(itemDto, getCurrentUserId());
+    public String updateItem(@ModelAttribute ClosetItemDto itemDto,
+                             @RequestParam(value = "imageFile", required = false) MultipartFile imageFile) {
+        closetService.updateClosetItem(itemDto, getCurrentUserId(), imageFile);
         return "redirect:/closet";
     }
 
@@ -129,13 +128,11 @@ public class ClosetController {
     @PostMapping("/profile/withdraw")
     public String withdraw(HttpServletRequest request, HttpServletResponse response) {
         closetService.withdrawUser(getCurrentUserId());
-        
         SecurityContextHolder.clearContext();
         Cookie accessCookie = new Cookie("accessToken", null);
         accessCookie.setMaxAge(0);
         accessCookie.setPath("/");
         response.addCookie(accessCookie);
-
         return "redirect:/";
     }
 }

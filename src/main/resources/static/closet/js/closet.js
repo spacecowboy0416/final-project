@@ -2,6 +2,22 @@
 let currentSetId = null;
 let currentItemId = null;
 
+// [추가] 페이지 진입 시, 파라미터에 openProfile이 있다면 자동으로 프로필 모달을 띄움 (페이징 UX 유지용)
+document.addEventListener("DOMContentLoaded", () => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.has('openProfile')) {
+        openProfileModal();
+    }
+});
+
+// 프로필 모달 열기/닫기 함수
+function openProfileModal() {
+    document.getElementById('profileModal').style.display = 'flex';
+}
+function closeProfileModal() {
+    document.getElementById('profileModal').style.display = 'none';
+}
+
 // 개별 아이템 상세 정보 및 수정 모달 제어 로직
 function openItemDetailModal(element) {
     const isElement = element instanceof HTMLElement;
@@ -146,15 +162,7 @@ function shareCoordi() {
     if(currentSetId) window.location.href = '/board/write?coordiId=' + currentSetId;
 }
 
-// 개인정보 프로필 수정 및 탈퇴 제어 로직
-function openProfileEditModal() {
-    document.getElementById('profileEditModal').style.display = 'flex';
-}
-
-function closeProfileEditModal() {
-    document.getElementById('profileEditModal').style.display = 'none';
-}
-
+// 프로필 이미지 미리보기 기능
 function previewProfileImage(input) {
     if (input.files && input.files[0]) {
         const reader = new FileReader();
@@ -168,8 +176,9 @@ function previewProfileImage(input) {
     }
 }
 
+// 회원 탈퇴 제어 로직
 function confirmWithdraw() {
-    closeProfileEditModal();
+    closeProfileModal();
     setTimeout(() => {
         showGlobalModal('회원 탈퇴', '정말로 탈퇴하시겠습니까? 탈퇴 시 모든 데이터가 파기됩니다.', 'danger', () => {
             document.getElementById('withdrawForm').submit();
@@ -203,7 +212,7 @@ function closeAddSetModal() {
 
 // 모달 외부 영역 클릭 시 자동 닫기 통합 제어 로직
 window.addEventListener('click', (e) => {
-    const ids = ['coordiModal', 'setDetailModal', 'itemDetailModal', 'addItemModal', 'addSetModal', 'profileEditModal'];
+    const ids = ['coordiModal', 'setDetailModal', 'itemDetailModal', 'addItemModal', 'addSetModal', 'profileModal'];
     ids.forEach(id => {
         const modal = document.getElementById(id);
         if (e.target === modal) modal.style.display = 'none';
