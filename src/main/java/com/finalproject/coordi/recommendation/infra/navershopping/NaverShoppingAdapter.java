@@ -3,8 +3,6 @@ package com.finalproject.coordi.recommendation.infra.navershopping;
 import com.finalproject.coordi.exception.recommendation.RecommendationException;
 import com.finalproject.coordi.recommendation.infra.navershopping.policy.NaverShoppingQueryPolicy;
 import com.finalproject.coordi.recommendation.service.productSearch.ShoppingPort;
-import com.finalproject.coordi.recommendation.service.productSearch.ShoppingPort.SearchedProduct;
-import com.finalproject.coordi.recommendation.service.productSearch.ShoppingPort.ShoppingSearchQuery;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.net.URI;
