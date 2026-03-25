@@ -2,8 +2,8 @@
 document.addEventListener("DOMContentLoaded", () => {
     const {
         formatWeather,
-		formatStyle,
-		formatTpo, 
+        formatStyle,
+        formatTpo,
         normalizeSlotKey,
         getSlotOrderIndex,
         escapeHtml,
@@ -15,19 +15,35 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
-    // ===== 필터 요소 =====
+    // ===== 필터 / 정렬 요소 =====
     const weatherEl = document.getElementById("weather");
     const styleEl = document.getElementById("style");
     const tpoEl = document.getElementById("tpo");
+    const sortButtons = document.querySelectorAll(".board-sort-btn");
 
     // ===== 버튼 / 출력 영역 =====
     const searchBtn = document.getElementById("searchBtn");
     const resetBtn = document.getElementById("resetBtn");
     const postListEl = document.getElementById("postList");
+    const postColLeftEl = document.getElementById("postColLeft");
+    const postColRightEl = document.getElementById("postColRight");
     const postCountTextEl = document.getElementById("postCountText");
 
-    // 요소가 없으면 이후 코드가 전부 깨질 수 있으니 방어
-    if (!weatherEl || !styleEl || !tpoEl || !searchBtn || !resetBtn || !postListEl || !postCountTextEl) {
+    let currentSort = "latest";
+
+    // ===== 필수 요소 체크 =====
+    if (
+        !weatherEl ||
+        !styleEl ||
+        !tpoEl ||
+        !searchBtn ||
+        !resetBtn ||
+        !postListEl ||
+        !postColLeftEl ||
+        !postColRightEl ||
+        !postCountTextEl ||
+        sortButtons.length === 0
+    ) {
         console.error("board-list.js: 필요한 DOM 요소를 찾지 못했습니다.");
         return;
     }
@@ -39,29 +55,46 @@ document.addEventListener("DOMContentLoaded", () => {
         weatherEl.value = "";
         styleEl.value = "";
         tpoEl.value = "";
+        currentSort = "latest";
+
+        updateSortUI();
         loadPosts();
     });
 
-    // select 변경시 즉시 검색
     weatherEl.addEventListener("change", loadPosts);
     styleEl.addEventListener("change", loadPosts);
     tpoEl.addEventListener("change", loadPosts);
 
+    sortButtons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+            currentSort = btn.dataset.sort;
+            updateSortUI();
+            loadPosts();
+        });
+    });
+
+    // ===== 정렬 버튼 active 상태 =====
+    function updateSortUI() {
+        sortButtons.forEach((btn) => {
+            btn.classList.toggle("active", btn.dataset.sort === currentSort);
+        });
+    }
+
     // ===== 게시글 목록 조회 =====
     async function loadPosts() {
+        const startTime = Date.now();
+
         try {
-            postListEl.innerHTML = `<div class="board-loading">게시글을 불러오는 중입니다...</div>`;
-            postCountTextEl.textContent = "불러오는 중...";
+            renderSkeletonCards();
 
             const params = new URLSearchParams();
 
             if (weatherEl.value) params.append("weather", weatherEl.value);
             if (styleEl.value) params.append("style", styleEl.value);
             if (tpoEl.value) params.append("tpo", tpoEl.value);
+            params.append("sort", currentSort);
 
-            const queryString = params.toString();
-            const requestUrl = `/api/board/posts${queryString ? `?${queryString}` : ""}`;
-
+            const requestUrl = `/api/board/posts?${params.toString()}`;
             const response = await fetch(requestUrl);
 
             if (!response.ok) {
@@ -71,19 +104,24 @@ document.addEventListener("DOMContentLoaded", () => {
             const data = await response.json();
             const posts = extractPostList(data);
 
+            // 스켈레톤이 너무 짧게 번쩍이지 않도록 최소 시간 유지
+            const elapsed = Date.now() - startTime;
+            const delay = Math.max(400 - elapsed, 0);
+            await new Promise(resolve => setTimeout(resolve, delay));
+
             renderPosts(posts);
             postCountTextEl.textContent = `총 ${posts.length}개의 게시글`;
         } catch (error) {
             console.error("게시글 목록 API 실패", error);
 
-            postListEl.innerHTML = `
+            postColLeftEl.innerHTML = `
                 <div class="board-error">
                     게시글을 불러오지 못했습니다 😢<br>
                     잠시 후 다시 시도해주세요.
                 </div>
             `;
-
-            postCountTextEl.textContent = "0개";
+            postColRightEl.innerHTML = "";
+            postCountTextEl.textContent = "총 0개의 게시글";
         }
     }
 
@@ -95,14 +133,79 @@ document.addEventListener("DOMContentLoaded", () => {
         return [];
     }
 
+    // ===== 스켈레톤 렌더링 =====
+    function renderSkeletonCards(count = 6) {
+        const leftColumnHtml = [];
+        const rightColumnHtml = [];
+
+        for (let i = 0; i < count; i++) {
+            const skeletonHtml = `
+                <article class="board-feed-card board-feed-card--skeleton">
+                    <div class="board-feed-card__link">
+                        <div class="board-feed-card__media media-1">
+                            <div class="media-img">
+                                <div class="board-skeleton-block"></div>
+                            </div>
+                        </div>
+
+                        <div class="board-feed-card__tag-bar">
+                            <div class="board-feed-card__badge-row">
+                                <span class="board-skeleton-badge"></span>
+                                <span class="board-skeleton-badge"></span>
+                                <span class="board-skeleton-badge"></span>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+            `;
+
+            if (i % 2 === 0) {
+                leftColumnHtml.push(skeletonHtml);
+            } else {
+                rightColumnHtml.push(skeletonHtml);
+            }
+        }
+
+        postColLeftEl.innerHTML = leftColumnHtml.join("");
+        postColRightEl.innerHTML = rightColumnHtml.join("");
+    }
+
     // ===== 게시글 렌더링 =====
     function renderPosts(posts) {
         if (!posts || posts.length === 0) {
-            postListEl.innerHTML = `<div class="board-empty">조건에 맞는 게시글이 없습니다.</div>`;
+            postColLeftEl.innerHTML = `<div class="board-empty">조건에 맞는 게시글이 없습니다.</div>`;
+            postColRightEl.innerHTML = "";
             return;
         }
 
-        postListEl.innerHTML = posts.map(post => `
+        postColLeftEl.innerHTML = "";
+        postColRightEl.innerHTML = "";
+
+        posts.forEach((post, index) => {
+            const wrapper = document.createElement("div");
+            wrapper.innerHTML = createPostCardHtml(post);
+
+            const cardEl = wrapper.firstElementChild;
+            if (!cardEl) return;
+
+            const leftHeight = postColLeftEl.offsetHeight;
+            const rightHeight = postColRightEl.offsetHeight;
+
+            if (leftHeight <= rightHeight) {
+                postColLeftEl.appendChild(cardEl);
+            } else {
+                postColRightEl.appendChild(cardEl);
+            }
+
+            setTimeout(() => {
+                cardEl.classList.add("show");
+            }, index * 40);
+        });
+    }
+
+    // ===== 게시글 카드 HTML 생성 =====
+    function createPostCardHtml(post) {
+        return `
             <article class="board-feed-card">
                 <a href="/board/${escapeAttr(post.postId)}" class="board-feed-card__link">
                     ${renderFeedMedia(post)}
@@ -113,7 +216,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                 ${escapeHtml(formatWeather(post.weatherStatus ?? post.weather ?? "-"))}
                             </span>
                             <span class="board-feed-card__badge">
-                               ${escapeHtml(formatStyle(post.styleType ?? post.style))}
+                                ${escapeHtml(formatStyle(post.styleType ?? post.style))}
                             </span>
                             <span class="board-feed-card__badge">
                                 ${escapeHtml(formatTpo(post.tpoType ?? post.tpo))}
@@ -137,10 +240,10 @@ document.addEventListener("DOMContentLoaded", () => {
                     </div>
                 </a>
             </article>
-        `).join("");
+        `;
     }
 
-    // ===== 카드 이미지 영역 =====
+    // ===== 카드 이미지 렌더링 =====
     function renderFeedMedia(post) {
         const previewItems = Array.isArray(post.previewItems) ? post.previewItems : [];
 
@@ -152,7 +255,6 @@ document.addEventListener("DOMContentLoaded", () => {
             }))
             .sort((a, b) => getSlotOrderIndex(a.slotKey) - getSlotOrderIndex(b.slotKey));
 
-        // 같은 슬롯 + 같은 이미지 중복 제거
         const uniqueItems = normalizedItems.filter((item, index, array) => {
             return index === array.findIndex(target =>
                 target.slotKey === item.slotKey && target.imageUrl === item.imageUrl
@@ -188,7 +290,7 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
     }
 
-    // ===== 단일 썸네일 =====
+    // ===== 단일 썸네일 렌더링 =====
     function renderThumb(imageUrl, altText, className, moreText = "") {
         if (!imageUrl) {
             return `<div class="${className} ${className}--empty"></div>`;
@@ -211,6 +313,7 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
     }
 
-    // ===== 초기 로딩 =====
+    // ===== 초기 실행 =====
+    updateSortUI();
     loadPosts();
 });

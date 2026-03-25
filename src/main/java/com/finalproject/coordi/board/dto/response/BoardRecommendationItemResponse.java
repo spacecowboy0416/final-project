@@ -8,13 +8,11 @@ public record BoardRecommendationItemResponse(
         String priority,     // essential / optional
         String productName,
         String brand,
-        Integer price,
         String imageUrl,
         String link,
         String color,
         String material,
         String fit,
-        String style,
-        String season
+        String style
 ) {
 }

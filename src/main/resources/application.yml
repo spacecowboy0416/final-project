@@ -161,15 +161,6 @@ sentry:
   traces-sample-rate: 1.0 # 추적할 Event의 비율 설정 - 1.0은 100% 추적
   exception-resolver-order: -2147483647 # Sentry가 예외를 가장 먼저 처리하도록 설정
 
-# 9. Logging 설정 통합
-logging:
-  level:
-    root: INFO
-    "[com.finalproject.coordi]": DEBUG
-    "[com.finalproject.coordi.closet.mapper]": TRACE
-    "[com.finalproject.coordi.recommend.mapper]": TRACE
-    "[com.finalproject.coordi.errorlog.mapper]": TRACE
-
 # JWT 관련 설정
 jwt:
   secret: ${JWT_SECRET}

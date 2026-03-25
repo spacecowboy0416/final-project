@@ -1,6 +1,7 @@
 package com.finalproject.coordi.recommendation.service.productSearch;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Positive;
 import java.util.List;
 
 /**
@@ -13,8 +14,16 @@ public interface ShoppingPort {
 
     record ShoppingSearchQuery(
         @NotBlank String searchKeyword,
-        int resultLimit
+        @Positive int resultLimit
     ) {
+        private static final int MIN_RESULT_LIMIT = 1;
+
+        public ShoppingSearchQuery {
+            // 검색어 공백 입력을 서비스 경계에서 정규화한다.
+            searchKeyword = searchKeyword == null ? "" : searchKeyword.trim();
+            // 최소 검색 개수 정책을 레코드에 캡슐화해 하드코딩 분산을 막는다.
+            resultLimit = Math.max(resultLimit, MIN_RESULT_LIMIT);
+        }
     }
 
     record SearchedProduct(
@@ -28,4 +37,3 @@ public interface ShoppingPort {
     ) {
     }
 }
-

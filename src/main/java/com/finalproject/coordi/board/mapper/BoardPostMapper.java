@@ -26,6 +26,7 @@ public interface BoardPostMapper {
             @Param("weather") String weather,
             @Param("style") String style,
             @Param("tpo") String tpo,
+            @Param("sort") String sort,
             @Param("offset") int offset,
             @Param("size") int size
     );
@@ -60,7 +61,7 @@ public interface BoardPostMapper {
     );
 
     // 삭제
-    int softDeleteBoardPost(@Param("postId") Long postId);
+	int deleteBoardPost(@Param("postId") Long postId);
 
     // recommendation 검증
     Long findRecommendationOwnerId(@Param("recId") Long recId);
