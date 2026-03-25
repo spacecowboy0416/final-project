@@ -150,7 +150,7 @@
                 <div>
                     <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 10px;">
                         <h4 style="margin: 0; font-size: 1.1rem; color: #111;">내가 쓴 게시글</h4>
-                        <a th:href="@{/board(filter='my')}" style="font-size: 0.8rem; color: #555; text-decoration: underline; font-weight: bold;">게시판에서 모아보기 &gt;</a>
+                        <a th:href="@{/board(mine='true')}" style="font-size: 0.8rem; color: #555; text-decoration: underline; font-weight: bold;">게시판에서 모아보기 &gt;</a>
                     </div>
                     
                     <table class="modal-board-table">
