@@ -1,0 +1,74 @@
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap');
+
+  /* 로고 전체 컨테이너 */
+  .corai-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: transparent;
+    user-select: none;
+  }
+
+  /* 텍스트 부분 */
+  .corai-text {
+    line-height: 1;
+  }
+
+  .corai-text-main {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 500;
+    font-size: 1.6rem;
+    color: #d0d0d0; /* 기본(라이트) 글자색 */
+    letter-spacing: -0.01em;
+  }
+
+  .corai-text-grad {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 1.6rem;
+    background: linear-gradient(90deg, #6c63ff, #3ecfcf);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.01em;
+  }
+</style>
+
+<div class="corai-logo">
+  <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="corai-grad-light" x1="0" y1="0" x2="28" y2="28" gradientUnits="userSpaceOnUse">
+        <stop stop-color="#6c63ff" />
+        <stop offset="1" stop-color="#3ecfcf" />
+      </linearGradient>
+    </defs>
+
+    <line x1="5" y1="9" x2="14" y2="5" stroke="url(#corai-grad-light)" stroke-width="0.9" opacity="0.35" />
+    <line x1="5" y1="9" x2="14" y2="14" stroke="url(#corai-grad-light)" stroke-width="0.9" opacity="0.35" />
+    <line x1="5" y1="9" x2="14" y2="23" stroke="url(#corai-grad-light)" stroke-width="0.9" opacity="0.35" />
+    <line x1="5" y1="19" x2="14" y2="5" stroke="url(#corai-grad-light)" stroke-width="0.9" opacity="0.35" />
+    <line x1="5" y1="19" x2="14" y2="14" stroke="url(#corai-grad-light)" stroke-width="0.9" opacity="0.35" />
+    <line x1="5" y1="19" x2="14" y2="23" stroke="url(#corai-grad-light)" stroke-width="0.9" opacity="0.35" />
+    <line x1="23" y1="9" x2="14" y2="5" stroke="url(#corai-grad-light)" stroke-width="0.9" opacity="0.35" />
+    <line x1="23" y1="9" x2="14" y2="14" stroke="url(#corai-grad-light)" stroke-width="0.9" opacity="0.35" />
+    <line x1="23" y1="9" x2="14" y2="23" stroke="url(#corai-grad-light)" stroke-width="0.9" opacity="0.35" />
+    <line x1="23" y1="19" x2="14" y2="5" stroke="url(#corai-grad-light)" stroke-width="0.9" opacity="0.35" />
+    <line x1="23" y1="19" x2="14" y2="14" stroke="url(#corai-grad-light)" stroke-width="0.9" opacity="0.35" />
+    <line x1="23" y1="19" x2="14" y2="23" stroke="url(#corai-grad-light)" stroke-width="0.9" opacity="0.35" />
+
+    <circle cx="5" cy="9" r="2" fill="url(#corai-grad-light)" opacity="0.5" />
+    <circle cx="5" cy="19" r="2" fill="url(#corai-grad-light)" opacity="0.5" />
+    <circle cx="23" cy="9" r="2" fill="url(#corai-grad-light)" opacity="0.5" />
+    <circle cx="23" cy="19" r="2" fill="url(#corai-grad-light)" opacity="0.5" />
+
+    <circle cx="14" cy="5" r="2" fill="url(#corai-grad-light)" opacity="0.8" />
+    <circle cx="14" cy="23" r="2" fill="url(#corai-grad-light)" opacity="0.8" />
+
+    <circle cx="14" cy="14" r="2.5" fill="url(#corai-grad-light)" />
+  </svg>
+
+  <div class="corai-text">
+    <span class="corai-text-main">cor</span><span class="corai-text-grad">ai</span>
+  </div>
+</div>
