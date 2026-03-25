@@ -608,3 +608,9 @@ DEALLOCATE PREPARE stmt_drop_rec_weather_fk;
 
 ALTER TABLE recommendation
   ADD COLUMN weather_status VARCHAR(40) NULL AFTER weather_id;
+
+-- =========================================================
+-- 2026-03-24, jieun, 게시글 소프트 삭제기능 삭제
+-- ========================================================= 
+ ALTER TABLE board_post
+  DROP COLUMN deleted_at;

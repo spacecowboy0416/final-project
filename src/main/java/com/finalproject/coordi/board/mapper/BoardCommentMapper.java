@@ -39,8 +39,8 @@ public interface BoardCommentMapper {
     // 댓글 소프트 삭제
     int softDeleteComment(@Param("commentId") Long commentId);
 
-    // 게시글에 달린 댓글 전체 소프트 삭제
-    int softDeleteCommentsByPostId(@Param("postId") Long postId);
+    // 게시글에 달린 댓글 전체 삭제
+    int deleteCommentsByPostId(@Param("postId") Long postId);
 
     // 게시글의 comment_count 증가
     int increaseCommentCount(@Param("postId") Long postId);

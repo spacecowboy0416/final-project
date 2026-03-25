@@ -18,10 +18,7 @@ public record BoardPostListItemResponse(
         Long recId,
         String styleType,
         String tpoType,
-        Long weatherId,
         String weatherStatus,
-        Double temp,
-        String placeName,
         List<BoardPostPreviewItemResponse> previewItems,
         int extraItemCount
 ) {

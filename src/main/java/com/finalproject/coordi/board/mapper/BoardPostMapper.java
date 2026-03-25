@@ -61,7 +61,7 @@ public interface BoardPostMapper {
     );
 
     // 삭제
-    int softDeleteBoardPost(@Param("postId") Long postId);
+	int deleteBoardPost(@Param("postId") Long postId);
 
     // recommendation 검증
     Long findRecommendationOwnerId(@Param("recId") Long recId);
