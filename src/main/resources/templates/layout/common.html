@@ -7,7 +7,7 @@
         <meta http-equiv="X-UA-Compatible" content="ie=edge">
         <meta name="referrer" content="no-referrer-when-downgrade">
 
-        <link rel="icon" th:href="@{/main/images/weather/partly_cloudy.png}">
+        <link class="logoicon" rel="icon" th:href="@{/main/images/corailogo.png}">
 
         <script src="https://browser.sentry-cdn.com/8.0.0/bundle.tracing.replay.min.js"
             crossorigin="anonymous"></script>
@@ -35,7 +35,7 @@
     <header th:fragment="headerFragment" class="site-header">
         <div class="header-container">
             <h1 class="logo">
-                <a th:href="@{/}">로고</a>
+                <a th:href="@{/}"><th:block th:replace="~{layout/logo}"></th:block></a>
             </h1>
             <ul class="nav-menu">
                 <li><a th:href="@{/recommend}">코디추천</a></li>
