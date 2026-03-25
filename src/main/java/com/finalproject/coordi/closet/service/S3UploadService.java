@@ -1,24 +1,27 @@
 package com.finalproject.coordi.closet.service;
 
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.web.multipart.MultipartFile;
-
 import java.io.IOException;
 import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.ObjectMetadata;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 @Slf4j
-//@Service
+@Service
 @RequiredArgsConstructor
 public class S3UploadService {
 
     private final AmazonS3 amazonS3;
 
-    // 환경 설정 파일(application.yml)에 명시된 목표 S3 버킷 명칭을 로드
-    @Value("${cloud.aws.s3.bucket}")
+    // 환경 설정 파일(application.yml)에 명시된 목표 S3 버킷 명칭을 로드 (경로 누락 방지 기본값 세팅)
+    @Value("${cloud.aws.s3.bucket:${AWS_S3_BUCKET:aws_bucket_name}}")
     private String bucket;
 
     // 전달받은 파일 객체를 AWS S3 저장소에 전송하고, 접근 가능한 퍼블릭 URL을 반환

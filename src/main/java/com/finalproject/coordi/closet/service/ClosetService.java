@@ -12,15 +12,15 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-import java.util.UUID;
 
-// 옷장 도메인 핵심 비즈니스 처리 서비스
+// 옷장 도메인 핵심 비즈니스 로직 처리 서비스
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class ClosetService {
 
     private final ClosetMapper closetMapper;
+    private final S3UploadService s3UploadService; // 실제 S3 업로드 서비스 의존성 주입
 
     // 사용자 닉네임 조회 기능
     public String getUserNickname(Long userId) {
@@ -33,12 +33,12 @@ public class ClosetService {
         return closetMapper.findProfileImageUrlByUserId(userId);
     }
 
-    // 사용자 프로필 정보 수정 제어
+    // 사용자 프로필 정보 수정 제어 로직 (실제 S3 업로드 연동)
     @Transactional
     public void updateUserProfile(Long userId, String nickname, MultipartFile profileImage) {
         String imageUrl = closetMapper.findProfileImageUrlByUserId(userId);
         if (profileImage != null && !profileImage.isEmpty()) {
-            imageUrl = uploadDummyImage(profileImage); 
+            imageUrl = s3UploadService.uploadImage(profileImage); 
         }
         closetMapper.updateUserProfile(userId, nickname, imageUrl);
     }
@@ -71,18 +71,17 @@ public class ClosetService {
                     .color(dto.getColor())
                     .season(dto.getSeason())
                     .build();
-            // 상품 본체 정보를 업데이트하여 해당 상품을 참조하는 세트 정보와 동기화 수행
             closetMapper.updateUserProduct(product);
         }
     }
 
-    // 코디 세트 제목 수정 제어
+    // 코디 세트 제목 수정 제어 로직
     @Transactional
     public void updateSavedCoordiTitle(Long recId, String newTitle, Long userId) {
         closetMapper.updateSavedCoordiTitle(recId, newTitle, userId);
     }
 
-    // AI 코디 추천 결과 데이터 영구 저장 제어
+    // AI 코디 추천 결과 데이터 영구 저장 제어 로직
     @Transactional
     public void saveRecommendation(SavedCoordiDto dto) {
         try {
@@ -94,7 +93,7 @@ public class ClosetService {
         }
     }
 
-    // 기존 저장된 코디 추천 결과의 상세 정보 수정 제어
+    // 기존 저장된 코디 추천 결과의 상세 정보 수정 제어 로직
     @Transactional
     public void updateRecommendation(SavedCoordiDto dto) {
         try {
@@ -104,12 +103,14 @@ public class ClosetService {
         }
     }
 
-    // 다중 이미지 기반 개별 아이템 등록 제어
+    // 다중 이미지 기반 개별 아이템 등록 제어 로직 (실제 S3 업로드 연동 완료)
     @Transactional
     public void addClosetItems(Long userId, ClosetItemDto itemDto, List<MultipartFile> imageFiles) {
         for (MultipartFile imageFile : imageFiles) {
             if (imageFile.isEmpty()) continue;
-            String imageUrl = uploadDummyImage(imageFile);
+            
+            // 더미 URL 대신 실제 S3 버킷에 업로드 후 반환된 진짜 URL 획득
+            String imageUrl = s3UploadService.uploadImage(imageFile);
 
             ProductDto newProduct = ProductDto.builder()
                     .source("USER_CUSTOM").categoryId(itemDto.getCategoryId()).name(itemDto.getName())
@@ -125,7 +126,7 @@ public class ClosetService {
         }
     }
 
-    // 수동 조합 세트 및 구성 아이템 일괄 등록 제어
+    // 수동 조합 세트 및 구성 아이템 일괄 등록 제어 로직 (실제 S3 업로드 연동 완료)
     @Transactional
     public void addManualSet(Long userId, ManualSetDto setDto, List<MultipartFile> imageFiles) {
         SavedCoordiDto coordiDto = new SavedCoordiDto();
@@ -139,7 +140,10 @@ public class ClosetService {
         for (int i = 0; i < imageFiles.size(); i++) {
             MultipartFile file = imageFiles.get(i);
             if (file.isEmpty()) continue;
-            String imageUrl = uploadDummyImage(file);
+            
+            // 더미 URL 대신 실제 S3 버킷에 업로드 후 반환된 진짜 URL 획득
+            String imageUrl = s3UploadService.uploadImage(file);
+            
             ProductDto newProduct = ProductDto.builder()
                     .source("USER_CUSTOM").categoryId(setDto.getSetCategoryIds().get(i)).name(setDto.getSetItemNames().get(i))
                     .brand((setDto.getSetBrands() != null && setDto.getSetBrands().size() > i) ? setDto.getSetBrands().get(i) : null)
@@ -154,7 +158,7 @@ public class ClosetService {
         }
     }
 
-    // 옷장 아이템 및 연관 상품 물리 삭제 제어
+    // 옷장 아이템 및 연관 상품 물리 삭제 제어 로직
     @Transactional
     public void removeClosetItem(Long itemId, Long userId) {
         Long productId = closetMapper.findProductIdByItemId(itemId, userId);
@@ -165,25 +169,17 @@ public class ClosetService {
         }
     }
 
-    // 코디 정보 및 수동 세트 연관 아이템 일괄 삭제 제어
+    // 코디 정보 및 수동 세트 연관 아이템 일괄 삭제 제어 로직
     @Transactional
     public void deleteSavedCoordi(Long recId, Long userId) {
         String inputMode = closetMapper.findInputModeByRecId(recId);
         List<Long> closetItemIds = closetMapper.findClosetItemIdsByRecId(recId);
         
-        // 추천 내역 및 아이템 매핑 정보 삭제 수행
         closetMapper.deleteRecItemsByRecId(recId);
         closetMapper.deleteRecommendationById(recId, userId);
         
-        // 수동 등록 세트인 경우 포함된 개별 아이템들까지 옷장에서 완전 파기
         if ("MANUAL_SET".equals(inputMode)) {
             for (Long itemId : closetItemIds) { if (itemId != null) removeClosetItem(itemId, userId); }
         }
-    }
-
-    // 가짜 이미지 저장 경로 생성 기능
-    private String uploadDummyImage(MultipartFile file) {
-        String fileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
-        return "https://final-s3-demo-bucket.s3.ap-northeast-2.amazonaws.com/closet/" + fileName;
     }
 }
