@@ -9,7 +9,6 @@ import java.util.Map;
 
 import org.springframework.stereotype.Component;
 
-import com.finalproject.coordi.main.dto.LocationResponse;
 import com.finalproject.coordi.main.dto.OpenWeatherForecastResponse;
 import com.finalproject.coordi.main.dto.OpenWeatherResponse;
 import com.finalproject.coordi.main.dto.WeatherContextDto;
