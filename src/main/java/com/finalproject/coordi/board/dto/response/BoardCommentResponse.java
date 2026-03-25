@@ -11,6 +11,7 @@ public record BoardCommentResponse(
         String content,
         LocalDateTime createdAt,
         LocalDateTime updatedAt,
-        boolean mine
+        boolean mine,
+        boolean deleted
 ) {
 }

@@ -15,4 +15,5 @@ public class BoardCommentRow {
     private String content;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private LocalDateTime deletedAt;
 }
