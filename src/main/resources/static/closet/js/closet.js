@@ -1,14 +1,12 @@
-// 전역 식별자 및 상태 관리 변수
+// 전역 식별자 상태 관리 변수
 let currentSetId = null;
 let currentItemId = null;
 
-// [개별 아이템] 상세 정보 및 수정 모달 제어
+// 개별 아이템 상세 정보 및 수정 모달 제어 로직
 function openItemDetailModal(element) {
-    // element가 DOM 객체인지 일반 데이터 객체인지 판별하여 식별자 추출
     const isElement = element instanceof HTMLElement;
     currentItemId = isElement ? element.getAttribute('data-id') : element.itemId;
     
-    // 모달 내 각 입력 필드에 데이터 바인딩 기능
     document.getElementById('itemEditId').value = currentItemId;
     document.getElementById('itemDetailImg').src = isElement ? element.getAttribute('data-img') : element.img;
     document.getElementById('itemEditName').value = isElement ? element.getAttribute('data-name') : element.name;
@@ -16,9 +14,7 @@ function openItemDetailModal(element) {
     document.getElementById('itemEditColor').value = (isElement ? element.getAttribute('data-color') : element.color) || '';
     document.getElementById('itemEditSeason').value = isElement ? element.getAttribute('data-season') : element.season;
 
-    // 파일 선택 입력값 초기화
     document.getElementById('itemEditImageInput').value = "";
-
     document.getElementById('itemDetailModal').style.display = 'flex';
 }
 
@@ -26,7 +22,7 @@ function closeItemDetailModal() {
     document.getElementById('itemDetailModal').style.display = 'none';
 }
 
-// [개별 아이템] 상세 모달 내 이미지 실시간 미리보기 기능
+// 개별 아이템 모달 내 이미지 실시간 미리보기 기능
 function previewEditImage(input) {
     if (input.files && input.files[0]) {
         const reader = new FileReader();
@@ -37,7 +33,7 @@ function previewEditImage(input) {
     }
 }
 
-// [개별 아이템] 삭제 처리 및 폼 전송 제어
+// 개별 아이템 삭제 확인 및 폼 전송 제어 로직
 function handleItemDelete() {
     showGlobalModal('아이템 삭제', '이 옷을 옷장에서 삭제하시겠습니까?', 'danger', () => {
         const form = document.createElement('form');
@@ -48,7 +44,7 @@ function handleItemDelete() {
     });
 }
 
-// [세트] 상세 정보 모달 제어 및 내부 아이템 수정 연결
+// 코디 세트 상세 정보 모달 제어 및 내부 아이템 수정 연결 로직
 function openSetDetailModal(element) {
     currentSetId = element.getAttribute('data-id');
     const title = element.getAttribute('data-title');
@@ -56,11 +52,9 @@ function openSetDetailModal(element) {
     document.getElementById('setEditId').value = currentSetId;
     document.getElementById('setEditTitle').value = title;
     
-    // 세트 내 포함된 아이템들을 수정 버튼과 함께 동적으로 생성 기능
     const container = document.getElementById('setItemsPreview');
     container.innerHTML = "";
     
-    // 원본 카드에서 아이템 정보 행들을 추출
     const items = element.querySelectorAll('.set-item-row');
     items.forEach(item => {
         const itemId = item.getAttribute('data-item-id');
@@ -79,7 +73,6 @@ function openSetDetailModal(element) {
             <button type="button" class="btn-profile-edit" style="padding:4px 8px; font-size:0.75rem;">사진/정보 수정</button>
         `;
         
-        // 세트 내 아이템의 수정 버튼 클릭 시 개별 수정 모달 호출 연동 (데이터 동기화)
         row.querySelector('button').onclick = () => {
             const targetInCloset = document.querySelector(`.item-card[data-id="${itemId}"]`);
             if (targetInCloset) {
@@ -99,7 +92,7 @@ function closeSetDetailModal() {
     document.getElementById('setDetailModal').style.display = 'none';
 }
 
-// [세트] 삭제 및 종속 아이템 동시 삭제 안내 제어
+// 코디 세트 삭제 및 종속 아이템 동시 파기 안내 제어 로직
 function handleSetDelete() {
     const title = document.getElementById('setEditTitle').value;
     closeSetDetailModal();
@@ -119,7 +112,7 @@ function handleSetDelete() {
     }, 150);
 }
 
-// [AI 코디] 상세 정보 조회 모달 제어
+// AI 코디 상세 정보 조회 모달 제어 로직
 function openCoordiModal(element) {
     currentSetId = element.getAttribute('data-id');
     document.getElementById('modalTitle').innerText = element.getAttribute('data-title');
@@ -133,7 +126,7 @@ function closeCoordiModal() {
     document.getElementById('coordiModal').style.display = 'none';
 }
 
-// [AI 코디] 삭제 확인 및 제어
+// AI 코디 삭제 확인 및 제어 로직
 function handleCoordiDelete() {
     showGlobalModal('코디 삭제', '저장된 AI 추천 코디를 삭제하시겠습니까?', 'danger', () => {
         const form = document.createElement('form');
@@ -144,7 +137,7 @@ function handleCoordiDelete() {
     });
 }
 
-// [AI 코디] 편집 및 공유 페이지 이동
+// AI 코디 편집 및 공유 페이지 이동 기능
 function editCoordi() {
     if(currentSetId) window.location.href = '/recommend?editId=' + currentSetId;
 }
@@ -153,7 +146,7 @@ function shareCoordi() {
     if(currentSetId) window.location.href = '/board/write?coordiId=' + currentSetId;
 }
 
-// [개인정보] 프로필 수정 및 탈퇴 제어
+// 개인정보 프로필 수정 및 탈퇴 제어 로직
 function openProfileEditModal() {
     document.getElementById('profileEditModal').style.display = 'flex';
 }
@@ -184,7 +177,7 @@ function confirmWithdraw() {
     }, 100); 
 }
 
-// [등록] 개별 옷 등록 모달 제어 및 초기화
+// 개별 옷 신규 등록 모달 제어 및 폼 초기화 로직
 function openAddItemModal() {
     document.getElementById('addItemModal').style.display = 'flex';
 }
@@ -196,7 +189,7 @@ function closeAddItemModal() {
     selectedFiles = [];
 }
 
-// [등록] 코디 세트 등록 모달 제어 및 초기화
+// 코디 세트 신규 등록 모달 제어 및 폼 초기화 로직
 function openAddSetModal() {
     document.getElementById('addSetModal').style.display = 'flex';
 }
@@ -208,7 +201,7 @@ function closeAddSetModal() {
     setFiles = [];
 }
 
-// [전역] 모달 외부 영역 클릭 시 자동 닫기 통합 제어 기능
+// 모달 외부 영역 클릭 시 자동 닫기 통합 제어 로직
 window.addEventListener('click', (e) => {
     const ids = ['coordiModal', 'setDetailModal', 'itemDetailModal', 'addItemModal', 'addSetModal', 'profileEditModal'];
     ids.forEach(id => {
@@ -217,14 +210,14 @@ window.addEventListener('click', (e) => {
     });
 });
 
-// [초기화] 페이지 로드 시 타원형 버튼 그룹 이벤트 바인딩
+// 페이지 로드 시 타원형 버튼 그룹 이벤트 초기 바인딩 로직
 document.addEventListener('DOMContentLoaded', () => {
     setupPillGroup('categoryPillGroup', 'selectedCategoryId', 'data-id');
     setupPillGroup('seasonPillGroup', 'selectedSeason', 'data-val');
     setupPillGroup('setSeasonPillGroup', 'setSelectedSeason', 'data-val');
 });
 
-// [유틸] 타원형 선택 버튼 그룹 제어 기능
+// 타원형 선택 버튼 그룹 활성화 제어 기능
 function setupPillGroup(groupId, hiddenInputId, dataAttributeName) {
     const group = document.getElementById(groupId);
     if(!group) return;
@@ -239,7 +232,7 @@ function setupPillGroup(groupId, hiddenInputId, dataAttributeName) {
     });
 }
 
-// [유틸] 개별 아이템 다중 이미지 업로드 관리 기능
+// 개별 아이템 다중 이미지 첨부 및 업로드 관리 기능
 let selectedFiles = [];
 const imageInput = document.getElementById('imageInput');
 if (imageInput) {
@@ -277,7 +270,7 @@ function updateFileInput() {
     input.files = dataTransfer.files;
 }
 
-// [유틸] 코디 세트 동적 아이템 입력 폼 관리 기능
+// 코디 세트 동적 아이템 입력 폼 및 이미지 데이터 관리 기능
 let setFiles = [];
 const setImageInput = document.getElementById('setImageInput');
 if (setImageInput) {
