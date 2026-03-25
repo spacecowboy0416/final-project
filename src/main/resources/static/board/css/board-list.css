@@ -133,6 +133,48 @@
     font-weight: 800;
 }
 
+.board-filter-toggle {
+    display: flex;
+    align-items: center;
+    flex: 0 0 auto;
+}
+
+.board-toggle-btn {
+    height: 38px;
+    padding: 0 14px;
+    border-radius: 14px;
+    border: 1px solid #dbe2ea;
+    background: #fff;
+    color: var(--text);
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+    transition:
+        border-color 0.16s ease,
+        background 0.16s ease,
+        color 0.16s ease,
+        box-shadow 0.16s ease,
+        transform 0.16s ease;
+}
+
+.board-toggle-btn:hover {
+    border-color: rgba(17, 17, 17, 0.18);
+    background: #f8fafc;
+}
+
+.board-toggle-btn.active {
+    border-color: #111;
+    background: #222;
+    color: #fff;
+    box-shadow: 0 8px 18px rgba(17, 17, 17, 0.14);
+}
+
+.board-toggle-btn:focus-visible {
+    outline: none;
+    border-color: rgba(17, 17, 17, 0.25);
+    box-shadow: 0 0 0 4px rgba(17, 17, 17, 0.06);
+}
+
 /* 피드 헤더 */
 .board-feed-section__header {
     display: flex;
@@ -376,36 +418,27 @@
 
 .board-feed-card__media.media-4 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: repeat(2, 1fr);
 }
 
-.board-feed-card__media.media-4 .media-img:nth-child(1),
-.board-feed-card__media.media-4 .media-img:nth-child(2) {
-    height: 170px;
-}
-
-.board-feed-card__media.media-4 .media-img:nth-child(3),
-.board-feed-card__media.media-4 .media-img:nth-child(4) {
-    height: 120px;
+.board-feed-card__media.media-4 .media-img {
+    height: 145px; 
 }
 
 .board-feed-card__media.media-5 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    grid-template-rows: repeat(3, auto);
 }
 
 .board-feed-card__media.media-5 .media-img:nth-child(1) {
     grid-column: 1 / 3;
-    height: 220px;
+    height: 200px;
 }
 
 .board-feed-card__media.media-5 .media-img:nth-child(2),
-.board-feed-card__media.media-5 .media-img:nth-child(3) {
-    height: 140px;
-}
-
+.board-feed-card__media.media-5 .media-img:nth-child(3),
 .board-feed-card__media.media-5 .media-img:nth-child(4),
 .board-feed-card__media.media-5 .media-img:nth-child(5) {
-    height: 120px;
+    height: 120px; 
 }
 
 .board-feed-card__media.media-6 {
@@ -445,6 +478,27 @@
     line-height: 1;
     backdrop-filter: blur(8px);
     box-shadow: 0 4px 10px rgba(15, 23, 42, 0.05);
+}
+
+.badge-private-top {
+    position: absolute;
+    top: 5px;
+    right: 12px;
+    z-index: 5;
+
+    padding: 5px 10px;
+    border-radius: 999px;
+
+    background: linear-gradient(180deg, #de6b6b 0%, #c95656 100%);
+    color: #fff;
+    border: 1px solid rgba(201, 86, 86, 0.28);
+
+    font-size: 11px;
+    font-weight: 800;
+
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.1),
+        0 6px 14px rgba(201, 86, 86, 0.18);
 }
 
 /* hover 정보 */
@@ -580,6 +634,10 @@
         width: 100%;
         justify-content: flex-end;
     }
+    
+    .board-filter-toggle {
+	    order: 4;
+	}
 
     .board-feed {
         grid-template-columns: 1fr;
@@ -633,6 +691,14 @@
         width: 100%;
         flex-direction: column;
     }
+    
+    .board-filter-toggle {
+	    width: 100%;
+	}
+	
+	.board-toggle-btn {
+	    width: 100%;
+	}
 
     .board-search-btn,
     .board-reset-btn {
@@ -684,30 +750,21 @@
     .board-feed-card__media.media-3 .media-img:nth-child(3) {
         height: 107px;
     }
-
-    .board-feed-card__media.media-4 .media-img:nth-child(1),
-    .board-feed-card__media.media-4 .media-img:nth-child(2) {
-        height: 130px;
-    }
-
-    .board-feed-card__media.media-4 .media-img:nth-child(3),
-    .board-feed-card__media.media-4 .media-img:nth-child(4) {
-        height: 95px;
-    }
-
-    .board-feed-card__media.media-5 .media-img:nth-child(1) {
-        height: 180px;
-    }
-
-    .board-feed-card__media.media-5 .media-img:nth-child(2),
-    .board-feed-card__media.media-5 .media-img:nth-child(3) {
-        height: 110px;
-    }
-
-    .board-feed-card__media.media-5 .media-img:nth-child(4),
-    .board-feed-card__media.media-5 .media-img:nth-child(5) {
-        height: 90px;
-    }
+	
+	.board-feed-card__media.media-4 .media-img {
+	    height: 110px;
+	}
+	
+	.board-feed-card__media.media-5 .media-img:nth-child(1) {
+	    height: 170px;
+	}
+	
+	.board-feed-card__media.media-5 .media-img:nth-child(2),
+	.board-feed-card__media.media-5 .media-img:nth-child(3),
+	.board-feed-card__media.media-5 .media-img:nth-child(4),
+	.board-feed-card__media.media-5 .media-img:nth-child(5) {
+	    height: 95px;
+	}
 
     .board-feed-card__media.media-6 {
         grid-template-columns: repeat(2, minmax(0, 1fr));

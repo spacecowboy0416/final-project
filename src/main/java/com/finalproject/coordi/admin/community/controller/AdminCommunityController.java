@@ -25,7 +25,7 @@ public class AdminCommunityController {
 
     // 관리자가 부적절한 게시물을 일시적으로 숨길 수 있도록, 게시글의 공개 상태를 변경함.
     @PatchMapping("/posts/{postId}/visibility")
-    public ResponseEntity<Void> updatePostVisibility(@PathVariable Long postId,
+    public ResponseEntity<Void> updatePostVisibility(@PathVariable("postId") Long postId,
             @RequestBody Map<String, Boolean> payload) {
         adminCommunityService.modifyPostVisibility(postId, payload.get("isPublic"));
         return ResponseEntity.ok().build();
@@ -33,7 +33,7 @@ public class AdminCommunityController {
 
     // 관리자가 스팸 등 불필요한 게시물을 시스템에서 영구적으로 제거할 수 있도록, 특정 게시글을 삭제함.
     @DeleteMapping("/posts/{postId}")
-    public ResponseEntity<Void> deletePost(@PathVariable Long postId) {
+    public ResponseEntity<Void> deletePost(@PathVariable("postId") Long postId) {
         adminCommunityService.removePost(postId);
         return ResponseEntity.noContent().build();
     }

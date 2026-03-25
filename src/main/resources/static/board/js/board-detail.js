@@ -54,9 +54,46 @@ document.addEventListener("DOMContentLoaded", () => {
     // ===== 게시글 상세 조회 =====
     async function loadDetail() {
         try {
-            postHeaderCardEl.innerHTML = `<div class="board-loading">게시글을 불러오는 중입니다...</div>`;
-            postUnifiedCardEl.innerHTML = "";
+			postHeaderCardEl.innerHTML = `
+			  <div class="board-detail-header-card board-detail-skeleton">
+			    <div class="skeleton skeleton-title"></div>
+			    <div class="skeleton skeleton-meta"></div>
+			    <div class="skeleton skeleton-content"></div>
+			  </div>
+			`;
+
+			postUnifiedCardEl.innerHTML = `
+			  <div class="board-detail-unified-card board-detail-skeleton">
+
+			    <!-- AI 설명 박스 -->
+			    <div class="skeleton skeleton-ai-box"></div>
+
+			    <!-- 구분선 -->
+			    <div class="board-detail-section-divider"></div>
+
+			    <!-- 섹션 바: 타이틀 + 칩 3개 -->
+			    <div class="board-detail-section-bar">
+			      <div class="skeleton skeleton-section-title"></div>
+			      <div class="board-detail-section-bar__right">
+			        <div class="skeleton skeleton-chip"></div>
+			        <div class="skeleton skeleton-chip"></div>
+			        <div class="skeleton skeleton-chip"></div>
+			      </div>
+			    </div>
+
+			    <!-- 아이템 2열 그리드 -->
+			    <div class="board-item-list">
+			      <div class="skeleton skeleton-item"></div>
+			      <div class="skeleton skeleton-item"></div>
+			      <div class="skeleton skeleton-item"></div>
+			      <div class="skeleton skeleton-item"></div>
+			    </div>
+
+			  </div>
+			`;
             postTopButtonsEl.innerHTML = "";
+			
+			const startTime = Date.now();
 
             const response = await fetch(`/api/board/posts/${currentPostId}`);
             if (!response.ok) {
@@ -64,6 +101,13 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             const post = await response.json();
+			
+			const elapsed = Date.now() - startTime;   
+			const minDelay = 400;                     
+
+			if (elapsed < minDelay) {                 
+			    await new Promise(resolve => setTimeout(resolve, minDelay - elapsed));
+			}
 
             renderTopButtons(post);
             renderHeaderCard(post);
@@ -118,6 +162,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                     <div class="board-detail-meta-date">
                         ${escapeHtml(formatDate(post.createdAt ?? post.createdDate ?? ""))}
+						${isEdited(post.createdAt, post.updatedAt) ? '(수정됨)' : ''}
                     </div>
                 </div>
 
@@ -230,7 +275,9 @@ document.addEventListener("DOMContentLoaded", () => {
                             <div class="board-comment-author-avatar">${escapeHtml(getInitial(nickname))}</div>
                             <div class="board-comment-author-meta">
                                 <p class="board-comment-author">${escapeHtml(nickname)}</p>
-                                <span class="board-comment-date">${escapeHtml(formatDate(comment.createdAt ?? comment.createdDate ?? ""))}</span>
+                                <span class="board-comment-date">
+									${escapeHtml(formatDate(comment.createdAt ?? comment.createdDate ?? ""))}
+									${comment.edited && !comment.deleted ? ' (수정됨)' : ''}</span>
                             </div>
                         </div>
 
@@ -255,6 +302,25 @@ document.addEventListener("DOMContentLoaded", () => {
             `;
         }).join("");
     }
+	
+	/**
+	 * 게시글/댓글 수정 여부 판단
+	 * - createdAt과 updatedAt이 다르면 수정된 것으로 판단
+	 * - Date 파싱이 안 되는 경우 문자열 비교로 fallback
+	 */
+	function isEdited(createdAt, updatedAt) {
+	    if (!createdAt || !updatedAt) return false;
+
+	    const created = new Date(createdAt).getTime();
+	    const updated = new Date(updatedAt).getTime();
+
+	    // 날짜 파싱 실패 시 문자열 비교
+	    if (Number.isNaN(created) || Number.isNaN(updated)) {
+	        return createdAt !== updatedAt;
+	    }
+
+	    return created !== updated;
+	}
 
     // ===== 게시글 버튼 이벤트 =====
     function bindPostActionEvents() {
@@ -269,26 +335,30 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (deletePostBtn) {
             deletePostBtn.addEventListener("click", async () => {
-                const confirmed = confirm("게시글을 삭제할까요?");
-                if (!confirmed) return;
+				showGlobalModal(
+				    "삭제 확인",
+				    "게시글을 삭제할까요?",
+				    "danger",
+				    async function () {
+				        try {
+				            const response = await fetch(`/api/board/posts/${currentPostId}`, {
+				                method: "DELETE"
+				            });
 
-                try {
-                    const response = await fetch(`/api/board/posts/${currentPostId}`, {
-                        method: "DELETE"
-                    });
+				            if (!response.ok) {
+				                throw new Error("게시글 삭제 실패");
+				            }
 
-                    if (redirectToLoginIfNeeded(response)) return;
+				            showGlobalModal("완료", "게시글이 삭제되었습니다.", "alert", function () {
+				                location.href = "/board";
+				            });
 
-                    if (!response.ok) {
-                        throw new Error("게시글 삭제 실패");
-                    }
-
-                    alert("게시글이 삭제되었습니다.");
-                    location.href = "/board";
-                } catch (error) {
-                    console.error(error);
-                    alert("게시글 삭제 중 오류가 발생했습니다.");
-                }
+				        } catch (error) {
+				            console.error(error);
+				            showGlobalModal("오류", "게시글 삭제 중 오류가 발생했습니다.", "alert");
+				        }
+				    }
+				);
             });
         }
     }
@@ -324,7 +394,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     const content = textareaEl.value.trim();
 
                     if (!content) {
-                        alert("댓글 내용을 입력해주세요.");
+						showGlobalModal("알림", "댓글 내용을 입력해주세요.", "alert");
                         textareaEl.focus();
                         return;
                     }
@@ -336,41 +406,41 @@ document.addEventListener("DOMContentLoaded", () => {
                             body: JSON.stringify({ content })
                         });
 
-                        if (redirectToLoginIfNeeded(response)) return;
-
                         if (!response.ok) {
                             throw new Error("댓글 수정 실패");
                         }
 
                         await loadDetail();
                     } catch (error) {
-                        console.error(error);
-                        alert("댓글 수정 중 오류가 발생했습니다.");
+						console.error(error);
+						showGlobalModal("오류", "댓글 수정 중 오류가 발생했습니다.", "alert");
                     }
                 });
             }
 
             if (deleteBtn) {
                 deleteBtn.addEventListener("click", async () => {
-                    const confirmed = confirm("댓글을 삭제할까요?");
-                    if (!confirmed) return;
+					showGlobalModal(
+					    "삭제 확인",
+					    "댓글을 삭제할까요?",
+					    "danger",
+					    async function () {
+					        try {
+					            const response = await fetch(`/api/board/posts/comments/${commentId}`, {
+					                method: "DELETE"
+					            });
 
-                    try {
-                        const response = await fetch(`/api/board/posts/comments/${commentId}`, {
-                            method: "DELETE"
-                        });
+					            if (!response.ok) {
+					                throw new Error("댓글 삭제 실패");
+					            }
 
-                        if (redirectToLoginIfNeeded(response)) return;
-
-                        if (!response.ok) {
-                            throw new Error("댓글 삭제 실패");
-                        }
-
-                        await loadDetail();
-                    } catch (error) {
-                        console.error(error);
-                        alert("댓글 삭제 중 오류가 발생했습니다.");
-                    }
+					            await loadDetail();
+					        } catch (error) {
+					            console.error(error);
+					            showGlobalModal("오류", "댓글 삭제 중 오류가 발생했습니다.", "alert");
+					        }
+					    }
+					);
                 });
             }
         });
@@ -381,7 +451,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const content = commentContentEl.value.trim();
 
         if (!content) {
-            alert("댓글 내용을 입력해주세요.");
+			showGlobalModal("알림", "댓글 내용을 입력해주세요.", "alert");
             commentContentEl.focus();
             return;
         }
@@ -393,7 +463,23 @@ document.addEventListener("DOMContentLoaded", () => {
                 body: JSON.stringify({ content })
             });
 
-            if (redirectToLoginIfNeeded(response)) return;
+			const contentType = response.headers.get("content-type") || "";
+
+			if (
+			    response.redirected ||
+			    response.url.includes("/login") ||
+			    !contentType.includes("application/json")
+			) {
+			    showGlobalModal(
+			        "로그인 필요",
+			        "해당 서비스는 로그인이 필요합니다. 로그인 페이지로 이동하시겠습니까?",
+			        "confirm",
+			        function () {
+			            location.href = "/login";
+			        }
+			    );
+			    return;
+			}
 
             if (!response.ok) {
                 throw new Error("댓글 등록에 실패했습니다.");
@@ -404,24 +490,8 @@ document.addEventListener("DOMContentLoaded", () => {
             await loadDetail();
         } catch (error) {
             console.error(error);
-            alert("댓글 등록 중 오류가 발생했습니다.");
+			showGlobalModal("오류", "댓글 등록 중 오류가 발생했습니다.", "alert");
         }
-    }
-
-    // ===== 로그인 리다이렉트 처리 =====
-    function redirectToLoginIfNeeded(response) {
-        const isLoginRedirect =
-            response.status === 401 ||
-            response.redirected ||
-            response.url.includes("/login");
-
-        if (isLoginRedirect) {
-            alert("로그인이 필요합니다.");
-            location.href = "/login";
-            return true;
-        }
-
-        return false;
     }
 
     // ===== 댓글 길이 표시 =====

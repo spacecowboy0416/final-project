@@ -20,6 +20,7 @@ public record BoardPostListItemResponse(
         String tpoType,
         String weatherStatus,
         List<BoardPostPreviewItemResponse> previewItems,
-        int extraItemCount
+        int extraItemCount,
+        boolean mine
 ) {
 }

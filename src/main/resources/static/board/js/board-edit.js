@@ -53,7 +53,7 @@ document.addEventListener("DOMContentLoaded", () => {
             renderSelectedCoordi(post);
         } catch (error) {
             console.error(error);
-            alert("게시글 정보를 불러오지 못했습니다.");
+            showGlobalModal("오류", "게시글 정보를 불러오지 못했습니다.");
 
             selectedCoordiPreviewEl.className = "board-selected-coordi__empty";
             selectedCoordiPreviewEl.textContent = "연결된 코디 정보를 불러오지 못했습니다.";
@@ -66,8 +66,9 @@ document.addEventListener("DOMContentLoaded", () => {
         const content = contentEl.value.trim();
 
         if (!title) {
-            alert("제목을 입력해주세요.");
-            titleEl.focus();
+			showGlobalModal("알림", "제목을 입력해주세요.", "alert", function() {
+			    titleEl.focus();
+			});
             return;
         }
 
@@ -89,7 +90,7 @@ document.addEventListener("DOMContentLoaded", () => {
             location.href = `/board/${postId}`;
         } catch (error) {
             console.error(error);
-            alert("게시글 수정 중 오류가 발생했습니다.");
+            showGlobalModal("오류", "게시글 수정 중 오류가 발생했습니다.");
         }
     }
 

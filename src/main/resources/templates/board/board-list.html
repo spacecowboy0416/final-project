@@ -21,7 +21,12 @@
                 <h1 class="board-hero__title">코디 공유 게시판</h1>
             </div>
 
-            <a href="/board/write" class="board-dark-btn board-write-btn">코디 공유하기</a>
+            <a href="/board/write"
+			   class="board-dark-btn board-write-btn"
+			   id="writePostBtn"
+			   th:data-logged-in="${#authorization.expression('isAuthenticated()')}">
+			    코디 공유하기
+			</a>
         </div>
 
         <p class="board-hero__desc">
@@ -79,6 +84,12 @@
                         <option value="camping">캠핑</option>
                     </select>
                 </div>
+                
+				<div class="board-filter-toggle">
+				    <button type="button" id="mineBtn" class="board-toggle-btn" aria-pressed="false">
+				        내 글만
+				    </button>
+				</div>
 
                 <div class="board-filter-actions">
                     <button type="button" class="board-dark-btn board-search-btn" id="searchBtn">검색</button>
@@ -116,6 +127,7 @@
 
 <footer th:replace="~{layout/common :: footerFragment}"></footer>
 
+<script th:src="@{/common/js/common.js}"></script>
 <script th:src="@{/board/js/board-common.js}"></script>
 <script th:src="@{/board/js/board-list.js}"></script>
 </body>
