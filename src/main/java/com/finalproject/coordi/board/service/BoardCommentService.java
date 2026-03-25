@@ -35,7 +35,7 @@ public class BoardCommentService {
         boardCommentMapper.increaseCommentCount(postId);
     }
 
-	 // 댓글 목록 조회
+	// 댓글 목록 조회
 	@Transactional(readOnly = true)
 	public List<BoardCommentResponse> getComments(Long postId, Long loginUserId) {
 	    Integer postExists = boardPostMapper.existsActivePost(postId);
@@ -103,20 +103,31 @@ public class BoardCommentService {
 
         boardCommentMapper.decreaseCommentCount(postId);
     }
-
- // comment VO -> Response DTO 변환
+    
+    // 게시글 삭제 시 연결된 댓글 전체 물리 삭제
+    @Transactional
+    public void deleteCommentsByPostId(Long postId) {
+        boardCommentMapper.deleteCommentsByPostId(postId);
+    }
+    
+    // comment VO -> Response DTO 변환
     private BoardCommentResponse toResponse(BoardCommentRow row, Long loginUserId) {
         boolean mine = row.getUserId() != null && row.getUserId().equals(loginUserId);
+        boolean deleted = row.getDeletedAt() != null;
+        
+        // 🔥 추가 (삭제된 댓글이면 문구 변경)
+        String content = deleted ? "삭제된 댓글입니다." : row.getContent();
 
         return new BoardCommentResponse(
                 row.getCommentId(),
                 row.getPostId(),
                 row.getUserId(),
                 row.getNickname(),
-                row.getContent(),
+                content,
                 row.getCreatedAt(),
                 row.getUpdatedAt(),
-                mine
+                mine,
+                deleted
         );
     }
 }
