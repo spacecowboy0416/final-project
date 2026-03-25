@@ -430,6 +430,19 @@
     background: #fff;
 }
 
+.board-comment-card.is-deleted {
+    opacity: 0.6;
+}
+
+.board-comment-card.is-deleted .board-comment-content {
+    color: #999;
+    font-style: italic;
+}
+
+.board-comment-card.is-deleted .board-comment-actions {
+    display: none;
+}
+
 .board-comment-header {
     display: flex;
     justify-content: space-between;

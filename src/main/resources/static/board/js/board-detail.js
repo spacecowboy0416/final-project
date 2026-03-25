@@ -212,17 +212,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
         commentListEl.innerHTML = comments.map(comment => {
             const canManageComment = Boolean(
-                comment.canEdit ||
-                comment.canDelete ||
-                comment.isAuthor ||
-                comment.mine
+				!comment.deleted && (
+				    comment.canEdit ||
+				    comment.canDelete ||
+				    comment.isAuthor ||
+				    comment.mine
+				)
             );
 
             const commentId = comment.commentId ?? comment.id;
             const nickname = comment.nickname ?? "익명";
 
             return `
-                <div class="board-comment-card" data-comment-id="${escapeAttr(commentId)}">
+                <div class="board-comment-card ${comment.deleted ? 'is-deleted' : ''}" data-comment-id="${escapeAttr(commentId)}">
                     <div class="board-comment-header">
                         <div class="board-comment-author-wrap">
                             <div class="board-comment-author-avatar">${escapeHtml(getInitial(nickname))}</div>
