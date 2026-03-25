@@ -142,14 +142,11 @@
 
         return `${yyyy}.${mm}.${dd} ${hh}:${mi}`;
     }
-
-    // ===== 온도 표시 =====
-    function formatDegree(value) {
-        if (value === null || value === undefined || value === "") {
-            return "-";
-        }
-        return `${escapeHtml(String(value))}°`;
-    }
+	
+	// ===== 텍스트 안전 처리 =====
+	function safeText(value) {
+	    return value && value.trim() ? value : "-";
+	}
 
     // ===== 댓글/작성자 이니셜 =====
     function getInitial(name) {
@@ -185,11 +182,11 @@
         sortItemsBySlotOrder,
         formatSlotLabel,
         formatDate,
-        formatDegree,
         getInitial,
         escapeHtml,
         escapeAttr,
 		formatStyle,
-		formatTpo
+		formatTpo,
+		safeText
     };
 })();

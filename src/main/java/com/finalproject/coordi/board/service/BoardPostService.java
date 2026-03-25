@@ -26,7 +26,6 @@ import com.finalproject.coordi.closet.dto.CoordiItemDto;
 import com.finalproject.coordi.closet.dto.SavedCoordiDto;
 import com.finalproject.coordi.closet.service.ClosetService;
 import com.finalproject.coordi.exception.board.BoardForbiddenException;
-import com.finalproject.coordi.exception.board.BoardPostAlreadyDeletedException;
 import com.finalproject.coordi.exception.board.BoardPostNotFoundException;
 import com.finalproject.coordi.exception.board.RecommendationNotFoundException;
 import com.finalproject.coordi.exception.board.RecommendationNotSavedException;
@@ -153,11 +152,13 @@ public class BoardPostService {
             throw new BoardForbiddenException();
         }
 
-        boardCommentMapper.softDeleteCommentsByPostId(postId);
+        // 게시글 삭제 시 연결된 댓글은 물리 삭제
+        boardCommentMapper.deleteCommentsByPostId(postId);
 
-        int deleted = boardPostMapper.softDeleteBoardPost(postId);
+        // 게시글 물리 삭제
+        int deleted = boardPostMapper.deleteBoardPost(postId);
         if (deleted == 0) {
-            throw new BoardPostAlreadyDeletedException();
+            throw new BoardPostNotFoundException();
         }
     }
 
@@ -348,10 +349,7 @@ public class BoardPostService {
                 row.getRecId(),
                 row.getStyleType(),
                 row.getTpoType(),
-                row.getWeatherId(),
                 row.getWeatherStatus(),
-                row.getTemp(),
-                row.getPlaceName(),
                 previewBundle.previewItems(),
                 previewBundle.extraItemCount()
         );
@@ -493,14 +491,12 @@ public class BoardPostService {
                 row.getPriority(),
                 row.getProductName(),
                 row.getBrand(),
-                row.getPrice(),
                 row.getImageUrl(),
                 row.getLink(),
                 row.getColor(),
                 row.getMaterial(),
                 row.getFit(),
-                row.getStyle(),
-                row.getSeason()
+                row.getStyle()
         );
     }
 
@@ -544,13 +540,7 @@ public class BoardPostService {
                 row.getStyleType(),
                 row.getTpoType(),
                 row.getAiExplanation(),
-                row.getWeatherId(),
                 row.getWeatherStatus(),
-                row.getTemp(),
-                row.getFeelsLike(),
-                row.getHumidity(),
-                row.getWindSpeed(),
-                row.getPlaceName(),
                 mine,
                 items,
                 comments

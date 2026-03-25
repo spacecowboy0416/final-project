@@ -20,13 +20,8 @@ public record BoardPostDetailResponse(
         String styleType,
         String tpoType,
         String aiExplanation,
-        Long weatherId,
         String weatherStatus,
-        Double temp,
-        Double feelsLike,
-        Integer humidity,
-        Double windSpeed,
-        String placeName,
+
         boolean mine,
         List<BoardRecommendationItemResponse> items,
         List<BoardCommentResponse> comments

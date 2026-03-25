@@ -117,16 +117,15 @@
     </update>
 
     <!-- ========================= -->
-    <!-- 게시글의 댓글 전체 소프트 삭제 -->
+    <!-- 게시글의 댓글 전체 삭제 -->
     <!-- ========================= -->
     <!--
-        - 게시글 삭제 시 연결된 댓글도 함께 deleted_at 처리
+        - 게시글 삭제 시 연결된 댓글 전체 삭제
     -->
-    <update id="softDeleteCommentsByPostId">
+    <update id="deleteCommentsByPostId">
         UPDATE board_comment
         SET deleted_at = CURRENT_TIMESTAMP
         WHERE post_id = #{postId}
-          AND deleted_at IS NULL
     </update>
 
     <!-- ========================= -->
@@ -139,7 +138,6 @@
         UPDATE board_post
         SET comment_count = comment_count + 1
         WHERE post_id = #{postId}
-          AND deleted_at IS NULL
     </update>
 
     <!-- ========================= -->
@@ -157,7 +155,6 @@
                 ELSE 0
             END
         WHERE post_id = #{postId}
-          AND deleted_at IS NULL
     </update>
 
 </mapper>
