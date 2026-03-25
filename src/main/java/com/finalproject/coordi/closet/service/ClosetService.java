@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -21,18 +21,32 @@ public class ClosetService {
     private final ClosetMapper closetMapper;
     private final S3UploadService s3UploadService;
 
-    // 사용자 닉네임 조회
+    // 사용자 닉네임 조회 기능
     public String getUserNickname(Long userId) {
         String nickname = closetMapper.findNicknameByUserId(userId);
         return nickname != null ? nickname : "회원" + userId;
     }
 
-    // 사용자 프로필 사진 경로 조회
+    // 사용자 프로필 사진 경로 조회 기능
     public String getUserProfileImageUrl(Long userId) {
         return closetMapper.findProfileImageUrlByUserId(userId);
     }
 
-    // 프로필 정보 수정 및 S3 연동
+    // 내가 작성한 게시글 및 페이징 정보 조회 기능 (모달 내부 표시용)
+    public Map<String, Object> getMyBoardData(Long userId, int page, int size) {
+        int offset = (page - 1) * size;
+        List<Map<String, Object>> posts = closetMapper.findMyPosts(userId, offset, size);
+        int totalPosts = closetMapper.countMyPosts(userId);
+        int totalPages = (int) Math.ceil((double) totalPosts / size);
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("posts", posts);
+        result.put("currentPage", page);
+        result.put("totalPages", totalPages);
+        return result;
+    }
+
+    // 사용자 프로필 정보 수정 제어 로직
     @Transactional
     public void updateUserProfile(Long userId, String nickname, MultipartFile profileImage) {
         String imageUrl = closetMapper.findProfileImageUrlByUserId(userId);
@@ -42,59 +56,72 @@ public class ClosetService {
         closetMapper.updateUserProfile(userId, nickname, imageUrl);
     }
 
-    // 회원 탈퇴 및 모든 활동 기록 물리 삭제 (참조 무결성 준수 순서)
+    // 회원 탈퇴 및 모든 활동 기록 물리 삭제 (참조 무결성 준수 역순 삭제)
     @Transactional
     public void withdrawUser(Long userId) {
-        // 1. 코디 구성품 삭제 (최하위 자식)
+        // 1. 댓글 및 게시글 삭제 (외래키 참조 관계의 최하단)
+        closetMapper.deleteAllCommentsByUserId(userId);
+        closetMapper.deleteAllPostsByUserId(userId);
+        
+        // 2. 코디 구성품 삭제
         closetMapper.deleteAllRecItemsByUserId(userId);
-        // 2. 코디 내역 삭제
+        // 3. 코디 내역 삭제
         closetMapper.deleteAllRecommendationsByUserId(userId);
-        // 3. 옷장이 지워지기 전 커스텀 상품 ID 목록 킵
+        // 4. 옷장이 지워지기 전 커스텀 상품 ID 목록 킵
         List<Long> productIds = closetMapper.findCustomProductIdsByUserId(userId);
-        // 4. 옷장 데이터 삭제
+        // 5. 옷장 데이터 삭제
         closetMapper.deleteAllClosetItemsByUserId(userId);
-        // 5. 유저 전용 상품 정보 최종 삭제
+        // 6. 유저 전용 상품 정보 최종 삭제
         if (productIds != null && !productIds.isEmpty()) {
             closetMapper.deleteProductsByIds(productIds);
         }
-        // 6. 최상위 부모 유저 삭제
+        // 7. 최상위 부모 유저 삭제
         closetMapper.deleteUserById(userId);
     }
 
-    // 옷장 데이터 조회
+    // 저장된 전체 코디 내역 조회 기능
     public List<SavedCoordiDto> getSavedCoordis(Long userId) {
         return closetMapper.findSavedCoordis(userId);
     }
 
+    // 옷장 개별 아이템 리스트 조회 기능
     public List<ClosetItemDto> getUserCloset(Long userId) {
         return closetMapper.findItemsByUserId(userId);
     }
 
-    // 아이템 정보 및 이미지 수정 (파일이 있을 경우 S3 업로드 후 경로 교체)
+    // [핵심 보완] 개별 아이템 정보 및 이미지 수정 (데이터 유실 방지 로직 적용)
     @Transactional
     public void updateClosetItem(ClosetItemDto dto, Long userId, MultipartFile imageFile) {
         Long productId = closetMapper.findProductIdByItemId(dto.getItemId(), userId);
         if (productId != null) {
-            String imageUrl = dto.getImageUrl();
+            // 1. DB에서 기존 이미지 URL을 긁어와 기본값으로 세팅
+            String finalImageUrl = closetMapper.findProductImageUrlById(productId);
+            
+            // 2. 새 이미지가 업로드된 경우에만 S3에 올리고 URL 교체
             if (imageFile != null && !imageFile.isEmpty()) {
-                imageUrl = s3UploadService.uploadImage(imageFile);
+                finalImageUrl = s3UploadService.uploadImage(imageFile);
             }
 
             ProductDto product = ProductDto.builder()
-                    .productId(productId).name(dto.getName()).brand(dto.getBrand())
-                    .color(dto.getColor()).season(dto.getSeason()).imageUrl(imageUrl).build();
+                    .productId(productId)
+                    .name(dto.getName())
+                    .brand(dto.getBrand())
+                    .color(dto.getColor())
+                    .season(dto.getSeason())
+                    .imageUrl(finalImageUrl) // 보존되거나 갱신된 안전한 URL 반영
+                    .build();
             
             closetMapper.updateUserProduct(product);
         }
     }
 
-    // 코디 제목 단독 수정
+    // 코디 세트 제목 수정 제어 로직
     @Transactional
     public void updateSavedCoordiTitle(Long recId, String newTitle, Long userId) {
         closetMapper.updateSavedCoordiTitle(recId, newTitle, userId);
     }
 
-    // AI 추천 결과 저장
+    // AI 코디 추천 결과 데이터 영구 저장 제어 로직
     @Transactional
     public void saveRecommendation(SavedCoordiDto dto) {
         if (dto.getInputMode() == null) dto.setInputMode("TEXT");
@@ -108,7 +135,7 @@ public class ClosetService {
         closetMapper.updateSavedCoordi(dto);
     }
 
-    // 개별 옷 신규 등록 (다중 이미지)
+    // 다중 이미지 기반 개별 아이템 등록 제어 로직
     @Transactional
     public void addClosetItems(Long userId, ClosetItemDto itemDto, List<MultipartFile> imageFiles) {
         for (MultipartFile imageFile : imageFiles) {
@@ -125,7 +152,7 @@ public class ClosetService {
         }
     }
 
-    // 수동 세트 등록 로직
+    // 수동 조합 세트 및 구성 아이템 일괄 등록 제어 로직
     @Transactional
     public void addManualSet(Long userId, ManualSetDto setDto, List<MultipartFile> imageFiles) {
         SavedCoordiDto coordiDto = new SavedCoordiDto();
@@ -154,7 +181,7 @@ public class ClosetService {
         }
     }
 
-    // 개별 아이템 삭제
+    // 옷장 아이템 및 연관 상품 물리 삭제 제어 로직
     @Transactional
     public void removeClosetItem(Long itemId, Long userId) {
         Long productId = closetMapper.findProductIdByItemId(itemId, userId);
@@ -165,7 +192,7 @@ public class ClosetService {
         }
     }
 
-    // 세트 삭제
+    // 코디 정보 및 수동 세트 연관 아이템 일괄 삭제 제어 로직
     @Transactional
     public void deleteSavedCoordi(Long recId, Long userId) {
         String inputMode = closetMapper.findInputModeByRecId(recId);

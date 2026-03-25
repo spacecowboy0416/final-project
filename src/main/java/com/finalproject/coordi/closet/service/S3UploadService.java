@@ -20,7 +20,8 @@ public class S3UploadService {
 
     private final AmazonS3 amazonS3;
 
-    @Value("${cloud.aws.s3.bucket}")
+    // application-secret.yml에 있는 키를 직접 참조하여 뎁스 최소화
+    @Value("${AWS_S3_BUCKET}")
     private String bucket;
 
     public String uploadImage(MultipartFile file) {

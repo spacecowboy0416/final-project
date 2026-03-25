@@ -22,7 +22,7 @@
                 </div>
             </div>
             <div class="profile-actions">
-                <button type="button" class="btn-profile-edit" onclick="openProfileEditModal()">정보 수정</button>
+                <button type="button" class="btn-profile-edit" onclick="openProfileModal()">프로필 보기</button>
             </div>
         </div>
 
@@ -120,6 +120,65 @@
             </div>
         </div>
     </main>
+
+    <div id="profileModal" class="modal-overlay">
+        <div class="closet-modal-content" style="max-width: 600px;">
+            <div class="closet-modal-header">
+                <h3 style="margin: 0; font-size: 1.2rem;">나의 프로필</h3>
+                <span class="closet-modal-close" onclick="closeProfileModal()">&times;</span>
+            </div>
+            
+            <div class="closet-modal-body profile-modal-grid">
+                <form th:action="@{/closet/profile/edit}" method="post" enctype="multipart/form-data">
+                    <div style="display: flex; gap: 20px; align-items: center; background: #f8f9fa; padding: 20px; border-radius: 12px; border: 1px solid #eee;">
+                        <div class="profile-upload-avatar" onclick="document.getElementById('profileImageInput').click()" style="flex-shrink: 0; cursor: pointer; width: 80px; height: 80px; border-radius: 50%; border: 2px dashed #ccc; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #fff;">
+                            <img id="profilePreview" th:src="${profileImageUrl != null ? profileImageUrl : ''}" style="width: 100%; height: 100%; object-fit: cover;" th:styleappend="${profileImageUrl == null ? 'display:none;' : ''}" alt="프로필">
+                            <span id="profilePlaceholder" style="font-size: 1.2rem; color: #aaa;" th:styleappend="${profileImageUrl != null ? 'display:none;' : ''}">+</span>
+                        </div>
+                        <input type="file" name="profileImage" id="profileImageInput" accept="image/*" style="display: none;" onchange="previewProfileImage(this)">
+                        
+                        <div style="flex-grow: 1;">
+                            <label style="font-size: 0.8rem; font-weight: bold; color: #666; margin-bottom: 5px; display: block;">닉네임 변경</label>
+                            <div style="display: flex; gap: 10px;">
+                                <input type="text" name="nickname" th:value="${nickname}" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;" required>
+                                <button type="submit" class="btn-black-pill" style="padding: 10px 20px;">저장</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+
+                <div>
+                    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 10px;">
+                        <h4 style="margin: 0; font-size: 1.1rem; color: #111;">내가 쓴 게시글</h4>
+                        <a th:href="@{/board(filter='my')}" style="font-size: 0.8rem; color: #555; text-decoration: underline; font-weight: bold;">게시판에서 모아보기 &gt;</a>
+                    </div>
+                    
+                    <table class="modal-board-table">
+                        <tbody>
+                            <tr th:each="post : ${myPosts}" th:onclick="|location.href='/board/' + ${post.postId}|">
+                                <td class="modal-post-title" th:text="${post.title}">제목</td>
+                                <td class="modal-post-date" th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd')}">날짜</td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(myPosts)}">
+                                <td colspan="2" style="text-align: center; color: #999; padding: 20px;">작성한 게시글이 없습니다.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="modal-pagination" th:if="${totalPages > 0}">
+                        <a th:if="${currentPage > 1}" th:href="@{/closet(page=${currentPage - 1}, openProfile=true)}" class="modal-page-link">&lt;</a>
+                        <th:block th:each="i : ${#numbers.sequence(1, totalPages)}">
+                            <a th:href="@{/closet(page=${i}, openProfile=true)}" th:text="${i}" th:classappend="${i == currentPage} ? 'active' : ''" class="modal-page-link"></a>
+                        </th:block>
+                        <a th:if="${currentPage < totalPages}" th:href="@{/closet(page=${currentPage + 1}, openProfile=true)}" class="modal-page-link">&gt;</a>
+                    </div>
+                </div>
+            </div>
+            <div class="closet-modal-footer" style="justify-content: flex-end;">
+                <button type="button" class="btn-profile-withdraw" onclick="confirmWithdraw()">회원 탈퇴하기</button>
+            </div>
+        </div>
+    </div>
 
     <div id="coordiModal" class="modal-overlay">
         <div class="closet-modal-content">
@@ -306,36 +365,10 @@
         </form>
     </div>
 
-    <div id="profileEditModal" class="modal-overlay">
-        <form th:action="@{/closet/profile/edit}" method="post" enctype="multipart/form-data" class="closet-modal-content">
-            <div class="closet-modal-header">
-                <h3 style="margin: 0; font-size: 1.2rem;">개인정보 수정</h3>
-                <span class="closet-modal-close" onclick="closeProfileEditModal()">&times;</span>
-            </div>
-            <div class="closet-modal-body">
-                <div class="form-group" style="text-align: center; margin-bottom: 30px;">
-                    <label class="closet-label">프로필 사진</label>
-                    <div class="profile-upload-avatar" onclick="document.getElementById('profileImageInput').click()" style="cursor: pointer; width: 100px; height: 100px; margin: 0 auto; border-radius: 50%; border: 2px dashed #ddd; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #f8f9fa;">
-                        <img id="profilePreview" th:src="${profileImageUrl != null ? profileImageUrl : ''}" style="width: 100%; height: 100%; object-fit: cover;" th:styleappend="${profileImageUrl == null ? 'display:none;' : ''}" alt="프로필">
-                        <span id="profilePlaceholder" style="font-size: 1.5rem; color: #aaa;" th:styleappend="${profileImageUrl != null ? 'display:none;' : ''}">+</span>
-                    </div>
-                    <input type="file" name="profileImage" id="profileImageInput" accept="image/*" style="display: none;" onchange="previewProfileImage(this)">
-                </div>
-                <div class="form-group">
-                    <label class="closet-label">변경할 닉네임</label>
-                    <input type="text" name="nickname" class="closet-input" th:value="${nickname}" required>
-                </div>
-            </div>
-            <div class="closet-modal-footer" style="flex-direction: column; gap: 15px;">
-                <button type="submit" class="btn-closet primary full-width">수정 완료</button>
-                <button type="button" class="btn-profile-withdraw" onclick="confirmWithdraw()">회원 탈퇴</button>
-            </div>
-        </form>
-    </div>
-
     <form id="withdrawForm" th:action="@{/closet/profile/withdraw}" method="post" style="display:none;"></form>
 
     <footer th:replace="~{layout/common :: footerFragment}"></footer>
+    
     <script th:src="@{/closet/js/closet.js}"></script>
 </body>
 </html>

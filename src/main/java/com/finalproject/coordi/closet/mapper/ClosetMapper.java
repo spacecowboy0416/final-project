@@ -6,6 +6,7 @@ import com.finalproject.coordi.closet.dto.SavedCoordiDto;
 import com.finalproject.coordi.recommendation.dto.persistent.ProductDto;
 import org.apache.ibatis.annotations.*;
 import java.util.List;
+import java.util.Map;
 
 @Mapper
 public interface ClosetMapper {
@@ -21,6 +22,14 @@ public interface ClosetMapper {
     // [회원 관리] 유저 정보 수정 (닉네임, 프로필 사진)
     @Update("UPDATE users SET nickname = #{nickname}, profile_image_url = #{profileImageUrl} WHERE user_id = #{userId}")
     void updateUserProfile(@Param("userId") Long userId, @Param("nickname") String nickname, @Param("profileImageUrl") String profileImageUrl);
+
+    // [탈퇴 관리] 댓글 데이터 일괄 삭제
+    @Delete("DELETE FROM board_comment WHERE user_id = #{userId}")
+    void deleteAllCommentsByUserId(@Param("userId") Long userId);
+
+    // [탈퇴 관리] 게시글 데이터 일괄 삭제
+    @Delete("DELETE FROM board_post WHERE user_id = #{userId}")
+    void deleteAllPostsByUserId(@Param("userId") Long userId);
 
     // [탈퇴 관리] 유저 관련 코디 아이템 일괄 삭제
     @Delete("DELETE ri FROM recommendation_item ri JOIN recommendation r ON ri.rec_id = r.rec_id WHERE r.user_id = #{userId}")
@@ -50,6 +59,16 @@ public interface ClosetMapper {
     // [회원 관리] 유저 정보 최종 물리 삭제
     @Delete("DELETE FROM users WHERE user_id = #{userId}")
     void deleteUserById(@Param("userId") Long userId);
+
+    // [게시판 관리] 내가 작성한 게시글 목록 조회 (페이징 적용)
+    @Select("SELECT post_id as postId, title, view_count as viewCount, comment_count as commentCount, created_at as createdAt " +
+            "FROM board_post WHERE user_id = #{userId} " +
+            "ORDER BY created_at DESC LIMIT #{offset}, #{size}")
+    List<Map<String, Object>> findMyPosts(@Param("userId") Long userId, @Param("offset") int offset, @Param("size") int size);
+
+    // [게시판 관리] 내가 작성한 게시글 총 개수 조회
+    @Select("SELECT COUNT(*) FROM board_post WHERE user_id = #{userId}")
+    int countMyPosts(@Param("userId") Long userId);
 
     // [저장 관리] 전체 코디 목록 조회
     @Select("SELECT rec_id as recId, user_id as userId, weather_id as weatherId, " +
@@ -107,13 +126,17 @@ public interface ClosetMapper {
             "ORDER BY c.created_at DESC")
     List<ClosetItemDto> findItemsByUserId(Long userId);
 
+    // [상품 관리] 기존 이미지 URL 안전 조회를 위한 실무용 쿼리 (데이터 유실 방지)
+    @Select("SELECT image_url FROM product WHERE product_id = #{productId}")
+    String findProductImageUrlById(@Param("productId") Long productId);
+
     // [상품 관리] 개별 상품 정보 저장
     @Insert("INSERT INTO product (source, category_id, name, brand, image_url, color, material, fit, style, season) " +
             "VALUES ('USER_CUSTOM', #{categoryId}, #{name}, #{brand}, #{imageUrl}, #{color}, #{material}, #{fit}, #{style}, #{season})")
     @Options(useGeneratedKeys = true, keyProperty = "productId")
     void insertUserProduct(ProductDto product);
 
-    // [상품 관리] 상품 정보 및 이미지 URL 수정 (이미지 변경 핵심 쿼리)
+    // [상품 관리] 상품 정보 및 이미지 URL 수정
     @Update("UPDATE product SET name = #{name}, brand = #{brand}, color = #{color}, season = #{season}, image_url = #{imageUrl} " +
             "WHERE product_id = #{productId}")
     void updateUserProduct(ProductDto product);

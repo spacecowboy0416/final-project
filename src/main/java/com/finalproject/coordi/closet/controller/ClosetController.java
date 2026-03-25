@@ -1,6 +1,7 @@
 package com.finalproject.coordi.closet.controller;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import jakarta.servlet.http.Cookie;
@@ -29,7 +30,7 @@ public class ClosetController {
 
     private final ClosetService closetService;
 
-    // 유저 식별자 추출 공통 로직
+    // 현재 요청 유저 식별자 추출 공통 메서드
     private Long getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getPrincipal())) {
@@ -39,10 +40,11 @@ public class ClosetController {
         return Long.parseLong(user.getUsername()); 
     }
 
-    // 옷장 메인 대시보드 렌더링
+    // 옷장 메인 화면 데이터 바인딩 및 렌더링 기능 (페이징 데이터 추가)
     @GetMapping
-    public String myCloset(Model model) {
+    public String myCloset(Model model, @RequestParam(value = "page", defaultValue = "1") int page) {
         Long currentUserId = getCurrentUserId();
+        
         List<SavedCoordiDto> allCoordis = closetService.getSavedCoordis(currentUserId);
         
         List<SavedCoordiDto> aiCoordis = allCoordis.stream()
@@ -50,16 +52,26 @@ public class ClosetController {
         List<SavedCoordiDto> manualSets = allCoordis.stream()
                 .filter(c -> "MANUAL_SET".equals(c.getInputMode())).collect(Collectors.toList());
         
+        // 1. 프로필 정보 
         model.addAttribute("userId", currentUserId);
         model.addAttribute("nickname", closetService.getUserNickname(currentUserId)); 
         model.addAttribute("profileImageUrl", closetService.getUserProfileImageUrl(currentUserId)); 
+        
+        // 2. 옷장 데이터
         model.addAttribute("savedCoordis", aiCoordis);
         model.addAttribute("manualSets", manualSets);
         model.addAttribute("items", closetService.getUserCloset(currentUserId));
+        
+        // 3. 내가 쓴 게시글 데이터 (프로필 모달창 표시용, 페이징 포함)
+        Map<String, Object> boardData = closetService.getMyBoardData(currentUserId, page, 5);
+        model.addAttribute("myPosts", boardData.get("posts"));
+        model.addAttribute("currentPage", boardData.get("currentPage"));
+        model.addAttribute("totalPages", boardData.get("totalPages"));
+
         return "closet/closet-main";
     }
 
-    // 신규 아이템 등록 제어
+    // 옷장 개별 아이템 신규 등록 제어
     @PostMapping("/add")
     public String addItem(@ModelAttribute ClosetItemDto itemDto, 
                           @RequestParam("imageFiles") List<MultipartFile> imageFiles) {
@@ -67,7 +79,7 @@ public class ClosetController {
         return "redirect:/closet";
     }
 
-    // 아이템 정보 및 이미지 수정 제어 (컴파일 에러 해결 완료)
+    // 개별 아이템 정보 및 이미지 수정 제어
     @PostMapping("/update")
     public String updateItem(@ModelAttribute ClosetItemDto itemDto,
                              @RequestParam(value = "imageFile", required = false) MultipartFile imageFile) {
@@ -75,7 +87,7 @@ public class ClosetController {
         return "redirect:/closet";
     }
 
-    // 수동 조합 세트 등록 제어
+    // 수동 조합 코디 세트 등록 제어
     @PostMapping("/add-set")
     public String addSet(@ModelAttribute ManualSetDto setDto, 
                          @RequestParam("imageFiles") List<MultipartFile> imageFiles) {
@@ -83,28 +95,28 @@ public class ClosetController {
         return "redirect:/closet";
     }
 
-    // 코디 제목 수정 제어
+    // 코디 세트 제목 수정 제어
     @PostMapping("/set/update")
     public String updateSetTitle(@RequestParam("recId") Long recId, @RequestParam("inputText") String inputText) {
         closetService.updateSavedCoordiTitle(recId, inputText, getCurrentUserId());
         return "redirect:/closet";
     }
 
-    // 개별 아이템 삭제 제어
+    // 옷장 개별 아이템 삭제 제어
     @PostMapping("/delete/{itemId}")
     public String deleteItem(@PathVariable("itemId") Long itemId) {
         closetService.removeClosetItem(itemId, getCurrentUserId());
         return "redirect:/closet";
     }
 
-    // 세트 삭제 제어
+    // 코디 세트 및 추천 내역 삭제 제어
     @PostMapping("/delete-set/{recId}")
     public String deleteSet(@PathVariable("recId") Long recId) {
         closetService.deleteSavedCoordi(recId, getCurrentUserId());
         return "redirect:/closet";
     }
 
-    // 프로필 편집 제어
+    // 프로필 정보(닉네임, 사진) 수정 제어
     @PostMapping("/profile/edit")
     public String editProfile(@RequestParam("nickname") String nickname,
                               @RequestParam(value = "profileImage", required = false) MultipartFile profileImage) {
@@ -112,7 +124,7 @@ public class ClosetController {
         return "redirect:/closet";
     }
 
-    // 회원 탈퇴 제어 (인증 세션 종료 포함)
+    // 회원 탈퇴 및 인증 세션 파기 제어
     @PostMapping("/profile/withdraw")
     public String withdraw(HttpServletRequest request, HttpServletResponse response) {
         closetService.withdrawUser(getCurrentUserId());
