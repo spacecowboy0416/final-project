@@ -17,9 +17,7 @@ import com.finalproject.coordi.board.dto.response.BoardPostPreviewItemResponse;
 import com.finalproject.coordi.board.dto.response.BoardRecommendationItemResponse;
 import com.finalproject.coordi.board.dto.response.BoardSavedCoordiItemResponse;
 import com.finalproject.coordi.board.dto.response.BoardSavedCoordiResponse;
-import com.finalproject.coordi.board.mapper.BoardCommentMapper;
 import com.finalproject.coordi.board.mapper.BoardPostMapper;
-import com.finalproject.coordi.board.vo.BoardCommentRow;
 import com.finalproject.coordi.board.vo.BoardPostRow;
 import com.finalproject.coordi.board.vo.BoardRecommendationItemRow;
 import com.finalproject.coordi.closet.dto.CoordiItemDto;
@@ -39,7 +37,7 @@ public class BoardPostService {
     private static final int MAX_PREVIEW_ITEM_COUNT = 6;
 
     private final BoardPostMapper boardPostMapper;
-    private final BoardCommentMapper boardCommentMapper;
+    private final BoardCommentService boardCommentService;
 
     // closet 쪽 저장 코디를 게시판 작성 화면에서 재사용
     private final ClosetService closetService;
@@ -105,10 +103,7 @@ public class BoardPostService {
                 .map(this::toRecommendationItemResponse)
                 .toList();
 
-        List<BoardCommentResponse> comments = boardCommentMapper.findCommentsByPostId(postId)
-                .stream()
-                .map(commentRow -> toCommentResponse(commentRow, loginUserId))
-                .toList();
+        List<BoardCommentResponse> comments = boardCommentService.getComments(postId, loginUserId);
 
         return toDetailResponse(row, items, comments, loginUserId);
     }
@@ -153,7 +148,7 @@ public class BoardPostService {
         }
 
         // 게시글 삭제 시 연결된 댓글은 물리 삭제
-        boardCommentMapper.deleteCommentsByPostId(postId);
+        boardCommentService.deleteCommentsByPostId(postId);
 
         // 게시글 물리 삭제
         int deleted = boardPostMapper.deleteBoardPost(postId);
@@ -497,22 +492,6 @@ public class BoardPostService {
                 row.getMaterial(),
                 row.getFit(),
                 row.getStyle()
-        );
-    }
-
-    // comment VO -> Response DTO 변환
-    private BoardCommentResponse toCommentResponse(BoardCommentRow row, Long loginUserId) {
-        boolean mine = row.getUserId() != null && row.getUserId().equals(loginUserId);
-
-        return new BoardCommentResponse(
-                row.getCommentId(),
-                row.getPostId(),
-                row.getUserId(),
-                row.getNickname(),
-                row.getContent(),
-                row.getCreatedAt(),
-                row.getUpdatedAt(),
-                mine
         );
     }
 

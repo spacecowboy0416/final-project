@@ -29,7 +29,6 @@
     <!-- ========================= -->
     <!--
         - 게시글 상세 페이지에서 사용
-        - 삭제되지 않은 댓글만 조회
         - 작성자 nickname 포함
     -->
     <select id="findCommentsByPostId" resultType="BoardCommentRow">
@@ -40,11 +39,11 @@
             u.nickname,
             bc.content,
             bc.created_at,
-            bc.updated_at
+            bc.updated_at,
+            bc.deleted_at
         FROM board_comment bc
         JOIN users u ON u.user_id = bc.user_id
         WHERE bc.post_id = #{postId}
-          AND bc.deleted_at IS NULL
         ORDER BY bc.created_at ASC
     </select>
 
@@ -120,13 +119,12 @@
     <!-- 게시글의 댓글 전체 삭제 -->
     <!-- ========================= -->
     <!--
-        - 게시글 삭제 시 연결된 댓글 전체 삭제
+        - 게시글 삭제 시 연결된 댓글 전체 물리 삭제
     -->
-    <update id="deleteCommentsByPostId">
-        UPDATE board_comment
-        SET deleted_at = CURRENT_TIMESTAMP
-        WHERE post_id = #{postId}
-    </update>
+	<delete id="deleteCommentsByPostId">
+	    DELETE FROM board_comment
+	    WHERE post_id = #{postId}
+	</delete>
 
     <!-- ========================= -->
     <!-- 댓글 수 증가 -->

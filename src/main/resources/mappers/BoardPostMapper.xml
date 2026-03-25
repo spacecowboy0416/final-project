@@ -143,14 +143,15 @@
           ON p.product_id = ri.product_id
         WHERE ri.rec_id = #{recId}
         ORDER BY
-            CASE
-                WHEN ri.slot_key = 'tops' THEN 1
-                WHEN ri.slot_key = 'bottoms' THEN 2
-                WHEN ri.slot_key = 'shoes' THEN 3
-                WHEN ri.slot_key = 'outerwear' THEN 4
-                WHEN ri.slot_key = 'accessories' THEN 5
-                ELSE 6
-            END,
+			CASE ri.slot_key
+			    WHEN 'headwear' THEN 0   -- 🔥 추가
+			    WHEN 'tops' THEN 1
+			    WHEN 'bottoms' THEN 2
+			    WHEN 'outerwear' THEN 3
+			    WHEN 'shoes' THEN 4
+			    WHEN 'accessories' THEN 5
+			    ELSE 6
+			END,
             CASE
                 WHEN ri.priority = 'essential' THEN 1
                 ELSE 2
@@ -181,10 +182,10 @@
     <!-- ========================= -->
     <!-- 삭제 -->
     <!-- ========================= -->
-    <update id="deleteBoardPost">
+	<delete id="deleteBoardPost">
 	    DELETE FROM board_post
 	    WHERE post_id = #{postId}
-    </update>
+	</delete>
 
     <!-- ========================= -->
     <!-- 게시글 작성자 조회 -->
@@ -257,13 +258,14 @@
             ON p.product_id = ri.product_id
         WHERE bp.post_id = #{postId}
         ORDER BY
-            CASE ri.slot_key
-                WHEN 'tops' THEN 1
-                WHEN 'bottoms' THEN 2
-                WHEN 'outerwear' THEN 3
-                WHEN 'shoes' THEN 4
-                WHEN 'accessories' THEN 5
-                ELSE 6
+			CASE ri.slot_key
+			    WHEN 'headwear' THEN 0 
+			    WHEN 'tops' THEN 1
+			    WHEN 'bottoms' THEN 2
+			    WHEN 'outerwear' THEN 3
+			    WHEN 'shoes' THEN 4
+			    WHEN 'accessories' THEN 5
+			    ELSE 6
             END,
             ri.rec_item_id ASC
     </select>
