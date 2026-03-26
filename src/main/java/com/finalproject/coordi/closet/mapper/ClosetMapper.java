@@ -181,4 +181,12 @@ public interface ClosetMapper {
     @Insert("INSERT INTO recommendation_item (rec_id, slot_key, source_type, closet_item_id, product_id) " +
             "VALUES (#{recId}, #{slotKey}, #{sourceType}, #{closetItemId}, #{productId})")
     void insertRecommendationItem(@Param("recId") Long recId, @Param("slotKey") String slotKey, @Param("sourceType") String sourceType, @Param("closetItemId") Long closetItemId, @Param("productId") Long productId);
+
+    // [삭제 관리] 참조 무결성 방어 - 해당 코디가 공유된 게시판의 댓글 선행 삭제
+    @Delete("DELETE FROM board_comment WHERE post_id IN (SELECT post_id FROM board_post WHERE rec_id = #{recId})")
+    void deleteBoardCommentsByRecId(@Param("recId") Long recId);
+
+    // [삭제 관리] 참조 무결성 방어 - 해당 코디가 공유된 게시판 게시글 선행 삭제
+    @Delete("DELETE FROM board_post WHERE rec_id = #{recId}")
+    void deleteBoardPostsByRecId(@Param("recId") Long recId);
 }
