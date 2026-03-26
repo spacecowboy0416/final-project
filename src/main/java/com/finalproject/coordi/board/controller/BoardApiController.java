@@ -2,6 +2,8 @@ package com.finalproject.coordi.board.controller;
 
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -55,10 +57,13 @@ public class BoardApiController {
             @RequestParam(name = "style", required = false) String style,
             @RequestParam(name = "tpo", required = false) String tpo,
             @RequestParam(name = "sort", defaultValue = "latest") String sort,
+            @RequestParam(name = "mine", defaultValue = "false") boolean mine,  
             @RequestParam(name = "page", defaultValue = "0") int page,
-            @RequestParam(name = "size", defaultValue = "12") int size
+            @RequestParam(name = "size", defaultValue = "12") int size,
+            @LoginUser UsersDto loginUser
     ) {
-        return boardPostService.getPostList(weather, style, tpo, sort, page, size);
+    	Long loginUserId = (loginUser != null) ? loginUser.getUserId() : null;
+        return boardPostService.getPostList(weather, style, tpo, sort, mine, page, size, loginUserId);
     }
 
     // 게시글 상세 조회
@@ -92,12 +97,17 @@ public class BoardApiController {
 
     // 댓글 작성
     @PostMapping("/{postId}/comments")
-    public void createComment(
+    public ResponseEntity<Void> createComment(
             @PathVariable("postId") Long postId,
             @LoginUser UsersDto loginUser,
             @RequestBody @Valid BoardCommentCreateRequest request
     ) {
+        if (loginUser == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
         boardCommentService.createComment(postId, loginUser.getUserId(), request);
+        return ResponseEntity.ok().build();
     }
 
     // 댓글 목록 조회

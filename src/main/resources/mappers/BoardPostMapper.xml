@@ -50,7 +50,10 @@
         JOIN users u ON u.user_id = bp.user_id
         JOIN recommendation r ON r.rec_id = bp.rec_id
         WHERE bp.post_id = #{postId}
-          AND bp.is_public = TRUE
+		AND (
+		      bp.is_public = TRUE
+		      OR bp.user_id = #{loginUserId}
+		)
     </select>
 
     <!-- ========================= -->
@@ -79,7 +82,15 @@
           ON u.user_id = bp.user_id
         JOIN recommendation r
           ON r.rec_id = bp.rec_id
-        WHERE bp.is_public = TRUE
+          
+		<choose>
+		    <when test="mine">
+		        WHERE bp.user_id = #{loginUserId}
+		    </when>
+		    <otherwise>
+		        WHERE bp.is_public = TRUE
+		    </otherwise>
+		</choose>
 
         <if test="weather != null and weather != ''">
             AND LOWER(r.weather_status) = LOWER(#{weather})
@@ -113,7 +124,14 @@
         FROM board_post bp
         JOIN recommendation r ON r.rec_id = bp.rec_id
 
-        WHERE bp.is_public = TRUE
+		<choose>
+		    <when test="mine">
+		        WHERE bp.user_id = #{loginUserId}
+		    </when>
+		    <otherwise>
+		        WHERE bp.is_public = TRUE
+		    </otherwise>
+		</choose>
 
         <if test="weather != null and weather != ''">
             AND LOWER(r.weather_status) = LOWER(#{weather})

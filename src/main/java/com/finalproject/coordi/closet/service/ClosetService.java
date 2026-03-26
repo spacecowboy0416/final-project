@@ -89,15 +89,13 @@ public class ClosetService {
         return closetMapper.findItemsByUserId(userId);
     }
 
-    // [핵심 보완] 개별 아이템 정보 및 이미지 수정 (데이터 유실 방지 로직 적용)
+    // 개별 아이템 정보 및 이미지 수정 제어 로직
     @Transactional
     public void updateClosetItem(ClosetItemDto dto, Long userId, MultipartFile imageFile) {
         Long productId = closetMapper.findProductIdByItemId(dto.getItemId(), userId);
         if (productId != null) {
-            // 1. DB에서 기존 이미지 URL을 긁어와 기본값으로 세팅
             String finalImageUrl = closetMapper.findProductImageUrlById(productId);
             
-            // 2. 새 이미지가 업로드된 경우에만 S3에 올리고 URL 교체
             if (imageFile != null && !imageFile.isEmpty()) {
                 finalImageUrl = s3UploadService.uploadImage(imageFile);
             }
@@ -108,7 +106,7 @@ public class ClosetService {
                     .brand(dto.getBrand())
                     .color(dto.getColor())
                     .season(dto.getSeason())
-                    .imageUrl(finalImageUrl) // 보존되거나 갱신된 안전한 URL 반영
+                    .imageUrl(finalImageUrl)
                     .build();
             
             closetMapper.updateUserProduct(product);
@@ -181,7 +179,7 @@ public class ClosetService {
         }
     }
 
-    // 옷장 아이템 및 연관 상품 물리 삭제 제어 로직
+    // 옷장 개별 아이템 및 연관 상품 물리 삭제 제어 로직
     @Transactional
     public void removeClosetItem(Long itemId, Long userId) {
         Long productId = closetMapper.findProductIdByItemId(itemId, userId);
@@ -197,10 +195,16 @@ public class ClosetService {
     public void deleteSavedCoordi(Long recId, Long userId) {
         String inputMode = closetMapper.findInputModeByRecId(recId);
         List<Long> closetItemIds = closetMapper.findClosetItemIdsByRecId(recId);
+
+        closetMapper.deleteBoardCommentsByRecId(recId);
+        closetMapper.deleteBoardPostsByRecId(recId);
         closetMapper.deleteRecItemsByRecId(recId);
         closetMapper.deleteRecommendationById(recId, userId);
+        
         if ("MANUAL_SET".equals(inputMode)) {
-            for (Long itemId : closetItemIds) { if (itemId != null) removeClosetItem(itemId, userId); }
+            for (Long itemId : closetItemIds) { 
+                if (itemId != null) removeClosetItem(itemId, userId); 
+            }
         }
     }
 }

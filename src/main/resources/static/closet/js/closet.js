@@ -2,7 +2,7 @@
 let currentSetId = null;
 let currentItemId = null;
 
-// [추가] 페이지 진입 시, 파라미터에 openProfile이 있다면 자동으로 프로필 모달을 띄움 (페이징 UX 유지용)
+// 프로필 모달 뷰 자동 오픈 기능
 document.addEventListener("DOMContentLoaded", () => {
     const params = new URLSearchParams(window.location.search);
     if (params.has('openProfile')) {
@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
-// 프로필 모달 열기/닫기 함수
+// 프로필 모달 제어 함수
 function openProfileModal() {
     document.getElementById('profileModal').style.display = 'flex';
 }
@@ -18,7 +18,7 @@ function closeProfileModal() {
     document.getElementById('profileModal').style.display = 'none';
 }
 
-// 개별 아이템 상세 정보 및 수정 모달 제어 로직
+// 개별 아이템 상세 정보 모달 제어 로직
 function openItemDetailModal(element) {
     const isElement = element instanceof HTMLElement;
     currentItemId = isElement ? element.getAttribute('data-id') : element.itemId;
@@ -49,7 +49,7 @@ function previewEditImage(input) {
     }
 }
 
-// 개별 아이템 삭제 확인 및 폼 전송 제어 로직
+// 개별 아이템 삭제 폼 전송 제어 로직
 function handleItemDelete() {
     showGlobalModal('아이템 삭제', '이 옷을 옷장에서 삭제하시겠습니까?', 'danger', () => {
         const form = document.createElement('form');
@@ -60,7 +60,7 @@ function handleItemDelete() {
     });
 }
 
-// 코디 세트 상세 정보 모달 제어 및 내부 아이템 수정 연결 로직
+// 코디 세트 상세 정보 모달 및 내부 아이템 연결 로직
 function openSetDetailModal(element) {
     currentSetId = element.getAttribute('data-id');
     const title = element.getAttribute('data-title');
@@ -76,17 +76,28 @@ function openSetDetailModal(element) {
         const itemId = item.getAttribute('data-item-id');
         const name = item.getAttribute('data-name');
         const img = item.getAttribute('data-img');
+        const brand = item.getAttribute('data-brand') || '';
+        const color = item.getAttribute('data-color') || '';
+        const category = item.getAttribute('data-category') || '';
+        
+        let descText = '';
+        if(category) descText += `[${category}] `;
+        if(brand) descText += `${brand} `;
+        if(color) descText += `${color}`;
         
         const row = document.createElement('div');
         row.className = 'set-item-row';
         row.style.justifyContent = 'space-between';
         row.style.marginBottom = '10px';
         row.innerHTML = `
-            <div style="display:flex; align-items:center; gap:10px;">
+            <div style="display:flex; align-items:center; gap:10px; overflow:hidden;">
                 <img src="${img}" class="set-item-img">
-                <span class="set-item-name">${name}</span>
+                <div style="display:flex; flex-direction:column; text-align:left;">
+                    <span class="set-item-name">${name}</span>
+                    <span style="font-size:0.75rem; color:#888; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${descText}</span>
+                </div>
             </div>
-            <button type="button" class="btn-profile-edit" style="padding:4px 8px; font-size:0.75rem;">사진/정보 수정</button>
+            <button type="button" class="btn-profile-edit" style="padding:4px 8px; font-size:0.75rem; flex-shrink:0;">사진/정보 수정</button>
         `;
         
         row.querySelector('button').onclick = () => {
@@ -108,7 +119,7 @@ function closeSetDetailModal() {
     document.getElementById('setDetailModal').style.display = 'none';
 }
 
-// 코디 세트 삭제 및 종속 아이템 동시 파기 안내 제어 로직
+// 코디 세트 삭제 폼 전송 제어 로직
 function handleSetDelete() {
     const title = document.getElementById('setEditTitle').value;
     closeSetDetailModal();
@@ -142,7 +153,7 @@ function closeCoordiModal() {
     document.getElementById('coordiModal').style.display = 'none';
 }
 
-// AI 코디 삭제 확인 및 제어 로직
+// AI 코디 삭제 폼 전송 제어 로직
 function handleCoordiDelete() {
     showGlobalModal('코디 삭제', '저장된 AI 추천 코디를 삭제하시겠습니까?', 'danger', () => {
         const form = document.createElement('form');
@@ -153,7 +164,7 @@ function handleCoordiDelete() {
     });
 }
 
-// AI 코디 편집 및 공유 페이지 이동 기능
+// AI 코디 공유 페이지 이동 제어 기능
 function editCoordi() {
     if(currentSetId) window.location.href = '/recommend?editId=' + currentSetId;
 }
@@ -162,7 +173,7 @@ function shareCoordi() {
     if(currentSetId) window.location.href = '/board/write?coordiId=' + currentSetId;
 }
 
-// 프로필 이미지 미리보기 기능
+// 프로필 이미지 미리보기 처리 기능
 function previewProfileImage(input) {
     if (input.files && input.files[0]) {
         const reader = new FileReader();
@@ -176,7 +187,7 @@ function previewProfileImage(input) {
     }
 }
 
-// 회원 탈퇴 제어 로직
+// 회원 탈퇴 폼 전송 제어 로직
 function confirmWithdraw() {
     closeProfileModal();
     setTimeout(() => {
@@ -186,7 +197,7 @@ function confirmWithdraw() {
     }, 100); 
 }
 
-// 개별 옷 신규 등록 모달 제어 및 폼 초기화 로직
+// 개별 옷 신규 등록 모달 초기화 로직
 function openAddItemModal() {
     document.getElementById('addItemModal').style.display = 'flex';
 }
@@ -198,7 +209,7 @@ function closeAddItemModal() {
     selectedFiles = [];
 }
 
-// 코디 세트 신규 등록 모달 제어 및 폼 초기화 로직
+// 코디 세트 신규 등록 모달 초기화 로직
 function openAddSetModal() {
     document.getElementById('addSetModal').style.display = 'flex';
 }
@@ -210,7 +221,7 @@ function closeAddSetModal() {
     setFiles = [];
 }
 
-// 모달 외부 영역 클릭 시 자동 닫기 통합 제어 로직
+// 모달 외부 영역 클릭 제어 로직
 window.addEventListener('click', (e) => {
     const ids = ['coordiModal', 'setDetailModal', 'itemDetailModal', 'addItemModal', 'addSetModal', 'profileModal'];
     ids.forEach(id => {
@@ -219,14 +230,14 @@ window.addEventListener('click', (e) => {
     });
 });
 
-// 페이지 로드 시 타원형 버튼 그룹 이벤트 초기 바인딩 로직
+// 타원형 버튼 그룹 초기 바인딩 처리
 document.addEventListener('DOMContentLoaded', () => {
     setupPillGroup('categoryPillGroup', 'selectedCategoryId', 'data-id');
     setupPillGroup('seasonPillGroup', 'selectedSeason', 'data-val');
     setupPillGroup('setSeasonPillGroup', 'setSelectedSeason', 'data-val');
 });
 
-// 타원형 선택 버튼 그룹 활성화 제어 기능
+// 타원형 선택 버튼 그룹 데이터 활성화 기능
 function setupPillGroup(groupId, hiddenInputId, dataAttributeName) {
     const group = document.getElementById(groupId);
     if(!group) return;
@@ -254,19 +265,23 @@ if (imageInput) {
         }
         files.forEach(file => {
             selectedFiles.push(file);
+            
+            const div = document.createElement('div');
+            div.className = 'image-preview-item';
+            div.innerHTML = `<img class="image-preview-img"><button type="button" class="image-remove-btn">&times;</button>`;
+            container.appendChild(div);
+            
             const reader = new FileReader();
             reader.onload = event => {
-                const div = document.createElement('div');
-                div.className = 'image-preview-item';
-                div.innerHTML = `<img src="${event.target.result}" class="image-preview-img"><button type="button" class="image-remove-btn">&times;</button>`;
-                div.querySelector('.image-remove-btn').onclick = () => {
-                    div.remove();
-                    const index = selectedFiles.indexOf(file);
-                    if (index > -1) { selectedFiles.splice(index, 1); updateFileInput(); }
-                };
-                container.appendChild(div);
+                div.querySelector('.image-preview-img').src = event.target.result;
             };
             reader.readAsDataURL(file);
+            
+            div.querySelector('.image-remove-btn').onclick = () => {
+                div.remove();
+                const index = selectedFiles.indexOf(file);
+                if (index > -1) { selectedFiles.splice(index, 1); updateFileInput(); }
+            };
         });
         updateFileInput();
     });
@@ -286,35 +301,40 @@ if (setImageInput) {
     setImageInput.addEventListener('change', function(e) {
         const container = document.getElementById('setPreviewContainer');
         const files = Array.from(e.target.files);
+        
         files.forEach(file => {
             setFiles.push(file);
+            
+            const div = document.createElement('div');
+            div.className = 'set-dynamic-item';
+            div.innerHTML = `
+                <img class="set-dynamic-preview">
+                <div class="set-dynamic-inputs">
+                    <input type="text" name="setItemNames" class="set-dynamic-input" placeholder="상품명 (필수)" required>
+                    <select name="setCategoryIds" class="set-dynamic-select">
+                        <option value="1">상의</option><option value="2">하의</option><option value="3">아우터</option>
+                        <option value="4">신발</option><option value="5">가방</option><option value="6">모자</option><option value="7">기타</option>
+                    </select>
+                    <div class="form-row-2" style="margin-top: 5px;">
+                        <input type="text" name="setBrands" class="set-dynamic-input" placeholder="브랜드">
+                        <input type="text" name="setColors" class="set-dynamic-input" placeholder="색상">
+                    </div>
+                </div>
+                <button type="button" class="image-remove-btn">&times;</button>
+            `;
+            container.appendChild(div);
+
             const reader = new FileReader();
             reader.onload = event => {
-                const div = document.createElement('div');
-                div.className = 'set-dynamic-item';
-                div.innerHTML = `
-                    <img src="${event.target.result}" class="set-dynamic-preview">
-                    <div class="set-dynamic-inputs">
-                        <input type="text" name="setItemNames" class="set-dynamic-input" placeholder="상품명 (필수)" required>
-                        <select name="setCategoryIds" class="set-dynamic-select">
-                            <option value="1">상의</option><option value="2">하의</option><option value="3">아우터</option>
-                            <option value="4">신발</option><option value="5">가방</option><option value="6">모자</option><option value="7">기타</option>
-                        </select>
-                        <div class="form-row-2" style="margin-top: 5px;">
-                            <input type="text" name="setBrands" class="set-dynamic-input" placeholder="브랜드">
-                            <input type="text" name="setColors" class="set-dynamic-input" placeholder="색상">
-                        </div>
-                    </div>
-                    <button type="button" class="image-remove-btn">&times;</button>
-                `;
-                div.querySelector('.image-remove-btn').onclick = () => {
-                    div.remove();
-                    const index = setFiles.indexOf(file);
-                    if (index > -1) { setFiles.splice(index, 1); updateSetFileInput(); }
-                };
-                container.appendChild(div);
+                div.querySelector('.set-dynamic-preview').src = event.target.result;
             };
             reader.readAsDataURL(file);
+            
+            div.querySelector('.image-remove-btn').onclick = () => {
+                div.remove();
+                const index = setFiles.indexOf(file);
+                if (index > -1) { setFiles.splice(index, 1); updateSetFileInput(); }
+            };
         });
         updateSetFileInput();
     });

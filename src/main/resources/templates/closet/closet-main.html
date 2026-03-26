@@ -71,9 +71,19 @@
                     <div class="set-item-row" th:each="cItem : ${set.coordiItems}"
                          th:data-item-id="${cItem.closetItemId}"
                          th:data-name="${cItem.name}"
-                         th:data-img="${cItem.imageUrl}">
+                         th:data-img="${cItem.imageUrl}"
+                         th:data-brand="${cItem.brand != null ? cItem.brand : ''}"
+                         th:data-color="${cItem.color != null ? cItem.color : ''}"
+                         th:data-category="${cItem.categoryName != null ? cItem.categoryName : ''}">
                         <img th:src="${cItem.imageUrl}" class="set-item-img" alt="세트 이미지">
-                        <span class="set-item-name" th:text="${cItem.name}">상품명</span>
+                        <div style="display:flex; flex-direction:column; text-align:left; overflow:hidden;">
+                            <span class="set-item-name" th:text="${cItem.name}">상품명</span>
+                            <span style="font-size:0.75rem; color:#888; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                                <span th:if="${cItem.categoryName != null}" th:text="${'[' + cItem.categoryName + '] '}"></span>
+                                <span th:if="${cItem.brand != null and cItem.brand != ''}" th:text="${cItem.brand + ' '}"></span>
+                                <span th:if="${cItem.color != null and cItem.color != ''}" th:text="${cItem.color}"></span>
+                            </span>
+                        </div>
                     </div>
                 </div>
                 <div class="btn-delete-item" style="margin-top: 15px; border-color: #eee; color: #999; pointer-events: none;">상세보기</div>
@@ -150,7 +160,7 @@
                 <div>
                     <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 10px;">
                         <h4 style="margin: 0; font-size: 1.1rem; color: #111;">내가 쓴 게시글</h4>
-                        <a th:href="@{/board(filter='my')}" style="font-size: 0.8rem; color: #555; text-decoration: underline; font-weight: bold;">게시판에서 모아보기 &gt;</a>
+                        <a th:href="@{/board(mine='true')}" style="font-size: 0.8rem; color: #555; text-decoration: underline; font-weight: bold;">게시판에서 모아보기 &gt;</a>
                     </div>
                     
                     <table class="modal-board-table">
@@ -294,6 +304,17 @@
                 <div class="form-group">
                     <label class="closet-label">옷 이름 (필수)</label>
                     <input type="text" name="name" class="closet-input" placeholder="예: 셔츠" required>
+                </div>
+                
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label class="closet-label">브랜드</label>
+                        <input type="text" name="brand" class="closet-input" placeholder="예: 나이키">
+                    </div>
+                    <div class="form-group">
+                        <label class="closet-label">색상</label>
+                        <input type="text" name="color" class="closet-input" placeholder="예: 블랙">
+                    </div>
                 </div>
 
                 <div class="form-group">
