@@ -59,7 +59,7 @@ public class BoardApiController {
             @RequestParam(name = "sort", defaultValue = "latest") String sort,
             @RequestParam(name = "mine", defaultValue = "false") boolean mine,  
             @RequestParam(name = "page", defaultValue = "0") int page,
-            @RequestParam(name = "size", defaultValue = "12") int size,
+            @RequestParam(name = "size", defaultValue = "30") int size,
             @LoginUser UsersDto loginUser
     ) {
     	Long loginUserId = (loginUser != null) ? loginUser.getUserId() : null;
