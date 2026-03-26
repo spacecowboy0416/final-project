@@ -76,7 +76,7 @@ public class SecurityConfig {
                         ).permitAll()
 
                         // 기타 모든 요청 퍼블릭 허용 (개발 완료 시 .authenticated() 전환 필요)
-                        .anyRequest().authenticated())
+                        .anyRequest().permitAll())
 
                 // OAuth2 소셜 로그인 파이프라인 구성 로직
                 .oauth2Login(oauth2 -> oauth2

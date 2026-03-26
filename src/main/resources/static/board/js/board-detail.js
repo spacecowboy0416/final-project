@@ -455,6 +455,18 @@ document.addEventListener("DOMContentLoaded", () => {
 			    );
 			    return;
 			}
+			
+			if (response.redirected || response.url.includes("/login")) {
+			    showGlobalModal(
+			        "로그인 필요",
+			        "해당 서비스는 로그인이 필요합니다. 로그인 페이지로 이동하시겠습니까?",
+			        "confirm",
+			        function () {
+			            location.href = "/login";
+			        }
+			    );
+			    return;
+			}
 
             if (!response.ok) {
                 throw new Error("댓글 등록에 실패했습니다.");
