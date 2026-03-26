@@ -181,7 +181,7 @@ public class ClosetService {
         }
     }
 
-    // 옷장 아이템 및 연관 상품 물리 삭제 제어 로직
+    // 옷장 개별 아이템 및 연관 상품 물리 삭제 제어 로직
     @Transactional
     public void removeClosetItem(Long itemId, Long userId) {
         Long productId = closetMapper.findProductIdByItemId(itemId, userId);
@@ -197,10 +197,17 @@ public class ClosetService {
     public void deleteSavedCoordi(Long recId, Long userId) {
         String inputMode = closetMapper.findInputModeByRecId(recId);
         List<Long> closetItemIds = closetMapper.findClosetItemIdsByRecId(recId);
+
+        // 외래키 제약조건 위배 방지: 게시판 연관 데이터(댓글->게시글) 선행 삭제
+        closetMapper.deleteBoardCommentsByRecId(recId);
+        closetMapper.deleteBoardPostsByRecId(recId);
         closetMapper.deleteRecItemsByRecId(recId);
         closetMapper.deleteRecommendationById(recId, userId);
+        
         if ("MANUAL_SET".equals(inputMode)) {
-            for (Long itemId : closetItemIds) { if (itemId != null) removeClosetItem(itemId, userId); }
+            for (Long itemId : closetItemIds) { 
+                if (itemId != null) removeClosetItem(itemId, userId); 
+            }
         }
     }
 }
