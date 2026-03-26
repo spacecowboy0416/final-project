@@ -155,6 +155,8 @@ document.addEventListener("DOMContentLoaded", () => {
 	        if (tpoEl.value) params.append("tpo", tpoEl.value);
 	        if (mineOnly) params.append("mine", "true");
 	        params.append("sort", currentSort);
+			params.append("page", "0");
+			params.append("size", "20");
 
 	        const requestUrl = `/api/board/posts?${params.toString()}`;
 	        let response = await fetch(requestUrl);
