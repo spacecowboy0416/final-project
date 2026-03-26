@@ -156,7 +156,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	        if (mineOnly) params.append("mine", "true");
 	        params.append("sort", currentSort);
 			params.append("page", "0");
-			params.append("size", "20");
+			params.append("size", "100");
 
 	        const requestUrl = `/api/board/posts?${params.toString()}`;
 	        let response = await fetch(requestUrl);
