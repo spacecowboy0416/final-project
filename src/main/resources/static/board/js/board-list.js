@@ -159,7 +159,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	        const requestUrl = `/api/board/posts?${params.toString()}`;
 	        let response = await fetch(requestUrl);
 
-	        // ===== 비로그인 + 내 글만 조회 시 =====
+	        // ===== 비로그인 + 내 게시글 조회 시 =====
 	        if (response.status === 401) {
 	            // 내 글 필터 해제
 	            mineOnly = false;

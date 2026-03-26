@@ -21,7 +21,8 @@ public record BoardPostDetailResponse(
         String tpoType,
         String aiExplanation,
         String weatherStatus,
-
+        
+        boolean edited, 
         boolean mine,
         List<BoardRecommendationItemResponse> items,
         List<BoardCommentResponse> comments

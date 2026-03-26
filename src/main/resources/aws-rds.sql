@@ -614,3 +614,9 @@ ALTER TABLE recommendation
 -- ========================================================= 
  ALTER TABLE board_post
   DROP COLUMN deleted_at;
+  
+-- =========================================================
+-- 2026-03-26, jieun, 조회수 증가 시 updated_at 변경됨으로 인해 수정
+-- =========================================================   
+ALTER TABLE board_post
+  MODIFY updated_at DATETIME DEFAULT CURRENT_TIMESTAMP;

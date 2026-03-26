@@ -1,5 +1,6 @@
 package com.finalproject.coordi.board.service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -340,7 +341,8 @@ public class BoardPostService {
         PreviewItemBundle previewBundle = buildPreviewItemBundle(row.getRecId());
         
         boolean mine = row.getUserId() != null && row.getUserId().equals(loginUserId);
-
+        boolean edited = isEdited(row.getCreatedAt(), row.getUpdatedAt());
+        
         return new BoardPostListItemResponse(
                 row.getPostId(),
                 row.getUserId(),
@@ -357,7 +359,8 @@ public class BoardPostService {
                 row.getWeatherStatus(),
                 previewBundle.previewItems(),
                 previewBundle.extraItemCount(),
-                mine 
+                mine,
+                edited
         );
     }
 
@@ -514,7 +517,8 @@ public class BoardPostService {
             Long loginUserId
     ) {
         boolean mine = row.getUserId() != null && row.getUserId().equals(loginUserId);
-
+        boolean edited = isEdited(row.getCreatedAt(), row.getUpdatedAt());
+        
         return new BoardPostDetailResponse(
                 row.getPostId(),
                 row.getUserId(),
@@ -531,6 +535,7 @@ public class BoardPostService {
                 row.getTpoType(),
                 row.getAiExplanation(),
                 row.getWeatherStatus(),
+                edited,
                 mine,
                 items,
                 comments
@@ -542,5 +547,15 @@ public class BoardPostService {
             List<BoardPostPreviewItemResponse> previewItems,
             int extraItemCount
     ) {
+    }
+    
+    //
+    private boolean isEdited(LocalDateTime createdAt, LocalDateTime updatedAt) {
+        if (createdAt == null || updatedAt == null) {
+            return false;
+        }
+
+        // 최초 등록 시점의 미세한 시간차는 수정으로 보지 않기
+        return updatedAt.isAfter(createdAt.plusSeconds(1));
     }
 }

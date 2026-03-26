@@ -162,7 +162,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                     <div class="board-detail-meta-date">
                         ${escapeHtml(formatDate(post.createdAt ?? post.createdDate ?? ""))}
-						${isEdited(post.createdAt, post.updatedAt) ? '(수정됨)' : ''}
+						${post.edited ? '(수정됨)' : ''}
                     </div>
                 </div>
 
@@ -302,25 +302,6 @@ document.addEventListener("DOMContentLoaded", () => {
             `;
         }).join("");
     }
-	
-	/**
-	 * 게시글/댓글 수정 여부 판단
-	 * - createdAt과 updatedAt이 다르면 수정된 것으로 판단
-	 * - Date 파싱이 안 되는 경우 문자열 비교로 fallback
-	 */
-	function isEdited(createdAt, updatedAt) {
-	    if (!createdAt || !updatedAt) return false;
-
-	    const created = new Date(createdAt).getTime();
-	    const updated = new Date(updatedAt).getTime();
-
-	    // 날짜 파싱 실패 시 문자열 비교
-	    if (Number.isNaN(created) || Number.isNaN(updated)) {
-	        return createdAt !== updatedAt;
-	    }
-
-	    return created !== updated;
-	}
 
     // ===== 게시글 버튼 이벤트 =====
     function bindPostActionEvents() {

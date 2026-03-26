@@ -21,6 +21,7 @@ public record BoardPostListItemResponse(
         String weatherStatus,
         List<BoardPostPreviewItemResponse> previewItems,
         int extraItemCount,
-        boolean mine
+        boolean mine,
+        boolean edited
 ) {
 }
