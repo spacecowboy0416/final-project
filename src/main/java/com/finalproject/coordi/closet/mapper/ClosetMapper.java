@@ -85,16 +85,22 @@ public interface ClosetMapper {
     })
     List<SavedCoordiDto> findSavedCoordis(Long userId);
 
-    // [저장 관리] 특정 코디 상세 구성품 조회
+    // [저장 관리] 특정 코디 상세 구성품 조회 (카테고리, 브랜드, 색상 조인 및 순서 보장 로직 추가)
     @Select("SELECT ri.rec_item_id as recItemId, ri.slot_key as slotKey, ri.source_type as sourceType, " +
             "ri.closet_item_id as closetItemId, ri.product_id as productId, " +
             "COALESCE(p1.image_url, p2.image_url) as imageUrl, " +
-            "COALESCE(p1.name, p2.name) as name " +
+            "COALESCE(p1.name, p2.name) as name, " +
+            "COALESCE(p1.brand, p2.brand) as brand, " +
+            "COALESCE(p1.color, p2.color) as color, " +
+            "COALESCE(c1.name, c2.name) as categoryName " +
             "FROM recommendation_item ri " +
             "LEFT JOIN product p1 ON ri.product_id = p1.product_id " +
+            "LEFT JOIN category c1 ON p1.category_id = c1.category_id " +
             "LEFT JOIN closet_item ci ON ri.closet_item_id = ci.item_id " +
             "LEFT JOIN product p2 ON ci.product_id = p2.product_id " +
-            "WHERE ri.rec_id = #{recId}")
+            "LEFT JOIN category c2 ON p2.category_id = c2.category_id " +
+            "WHERE ri.rec_id = #{recId} " +
+            "ORDER BY ri.rec_item_id ASC")
     List<CoordiItemDto> findItemsByRecId(Long recId);
 
     // [코디 관리] 코디 기본 정보 저장
