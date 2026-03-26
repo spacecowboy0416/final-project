@@ -211,13 +211,14 @@ document.addEventListener("DOMContentLoaded", () => {
         const content = contentEl.value.trim();
 
         if (!recId || recId <= 0) {
-            alert("저장한 코디를 먼저 불러와 선택해주세요.");
+            showGlobalModal("알림", "저장한 코디를 먼저 불러와 선택해주세요.");
             return;
         }
 
         if (!title) {
-            alert("제목을 입력해주세요.");
-            titleEl.focus();
+			showGlobalModal("알림", "제목을 입력해주세요.", "alert", function() {
+			    titleEl.focus();
+			});
             return;
         }
 
@@ -243,7 +244,7 @@ document.addEventListener("DOMContentLoaded", () => {
             location.href = `/board/${result.postId}`;
         } catch (error) {
             console.error(error);
-            alert("게시글 등록 중 오류가 발생했습니다.");
+            showGlobalModal("오류", "게시글 등록 중 오류가 발생했습니다.");
         }
     }
 

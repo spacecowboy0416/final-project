@@ -54,6 +54,7 @@
 /* ===== 제목 카드 ===== */
 .board-detail-header-card {
     padding: 28px 30px;
+    width: 100%;    
 }
 
 .board-detail-header-top {
@@ -124,6 +125,11 @@
     color: #374151;
     white-space: pre-wrap;
     word-break: break-word;
+}
+
+.board-detail-edited {
+    color: var(--text-muted);
+    font-weight: 600;
 }
 
 /* ===== 통합 카드 ===== */
@@ -201,6 +207,76 @@
     font-size: 12px;
     font-weight: 700;
     color: #2f3540;
+}
+
+/* ===== 스켈레톤 ===== */
+.board-detail-skeleton .skeleton {
+    background: linear-gradient(
+        90deg,
+        #f0f0f0 25%,
+        #e6e6e6 37%,
+        #f0f0f0 63%
+    );
+    background-size: 400% 100%;
+    animation: skeleton-loading 1.2s ease infinite;
+    border-radius: 10px;
+}
+
+@keyframes skeleton-loading {
+    0% { background-position: 100% 50%; }
+    100% { background-position: 0 50%; }
+}
+
+/* 헤더 */
+.skeleton-title {
+    width: 100%;
+    height: 90px;
+}
+
+.skeleton-meta {
+    width: 180px;
+    max-width: 100%;
+    margin-bottom: 10px;
+    
+}
+
+.skeleton-content {
+    width: 100%;
+    height: 50px;
+}
+
+/* 통합 카드 스켈레톤 */
+.skeleton-ai-box {
+    width: 100%;
+    height: 80px;
+    border-radius: 18px;
+}
+
+.skeleton-section-title {
+    width: 120px;
+    height: 32px;
+}
+
+.skeleton-chip {
+    width: 72px;
+    height: 32px;
+    border-radius: 999px;
+}
+
+.skeleton-item {
+    width: 100%;
+    height: 200px;
+    border-radius: 18px;
+}
+
+/* ===== 스켈레톤 레이아웃 고정 ===== */
+.board-detail-skeleton {
+    width: 100%;
+}
+
+.board-detail-header-card.board-detail-skeleton,
+.board-detail-unified-card.board-detail-skeleton {
+    width: 100%;
 }
 
 /* ===== 코디 아이템 ===== */

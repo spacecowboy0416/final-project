@@ -20,6 +20,18 @@ document.addEventListener("DOMContentLoaded", () => {
     const styleEl = document.getElementById("style");
     const tpoEl = document.getElementById("tpo");
     const sortButtons = document.querySelectorAll(".board-sort-btn");
+	
+	const mineBtn = document.getElementById("mineBtn");
+	let mineOnly = false;
+	
+	// ⭐ URL 파라미터로 초기 상태 세팅
+	const urlParams = new URLSearchParams(window.location.search);
+	mineOnly = urlParams.get("mine") === "true";
+
+	if (mineOnly) {
+	    mineBtn.classList.add("active");
+	    mineBtn.setAttribute("aria-pressed", "true");
+	}
 
     // ===== 버튼 / 출력 영역 =====
     const searchBtn = document.getElementById("searchBtn");
@@ -28,14 +40,33 @@ document.addEventListener("DOMContentLoaded", () => {
     const postColLeftEl = document.getElementById("postColLeft");
     const postColRightEl = document.getElementById("postColRight");
     const postCountTextEl = document.getElementById("postCountText");
-
+	const writePostBtn = document.getElementById("writePostBtn");
     let currentSort = "latest";
+	
+	//
+	if (writePostBtn) {
+	    writePostBtn.addEventListener("click", (e) => {
+	        if (writePostBtn.dataset.loggedIn !== "true") {
+	            e.preventDefault();
+
+	            showGlobalModal(
+	                '로그인 필요',
+	                '해당 서비스는 로그인이 필요합니다. 로그인 페이지로 이동하시겠습니까?',
+	                'confirm',
+	                function () {
+	                    window.location.href = '/login';
+	                }
+	            );
+	        }
+	    });
+	}
 
     // ===== 필수 요소 체크 =====
     if (
         !weatherEl ||
         !styleEl ||
         !tpoEl ||
+		!mineBtn ||
         !searchBtn ||
         !resetBtn ||
         !postListEl ||
@@ -56,6 +87,10 @@ document.addEventListener("DOMContentLoaded", () => {
         styleEl.value = "";
         tpoEl.value = "";
         currentSort = "latest";
+		
+		mineOnly = false; 
+		mineBtn.classList.remove("active"); 
+		mineBtn.setAttribute("aria-pressed", "false");
 
         updateSortUI();
         loadPosts();
@@ -79,51 +114,123 @@ document.addEventListener("DOMContentLoaded", () => {
             btn.classList.toggle("active", btn.dataset.sort === currentSort);
         });
     }
+	
+	// 내 글 보기 토글
+	mineBtn.addEventListener("click", () => {
+	    mineOnly = !mineOnly;
+
+	    mineBtn.classList.toggle("active", mineOnly);
+	    mineBtn.setAttribute("aria-pressed", String(mineOnly));
+
+	    const params = new URLSearchParams(window.location.search);
+
+	    if (mineOnly) {
+	        params.set("mine", "true");
+	    } else {
+	        params.delete("mine");
+	    }
+
+	    const newQuery = params.toString();
+	    const newUrl = newQuery
+	        ? `${window.location.pathname}?${newQuery}`
+	        : window.location.pathname;
+
+	    window.history.replaceState({}, "", newUrl);
+
+	    loadPosts();
+	});
 
     // ===== 게시글 목록 조회 =====
-    async function loadPosts() {
-        const startTime = Date.now();
+	async function loadPosts() {
+	    const startTime = Date.now();
 
-        try {
-            renderSkeletonCards();
+	    try {
+	        renderSkeletonCards();
 
-            const params = new URLSearchParams();
+	        // ===== 1차 요청 파라미터 구성 =====
+	        const params = new URLSearchParams();
 
-            if (weatherEl.value) params.append("weather", weatherEl.value);
-            if (styleEl.value) params.append("style", styleEl.value);
-            if (tpoEl.value) params.append("tpo", tpoEl.value);
-            params.append("sort", currentSort);
+	        if (weatherEl.value) params.append("weather", weatherEl.value);
+	        if (styleEl.value) params.append("style", styleEl.value);
+	        if (tpoEl.value) params.append("tpo", tpoEl.value);
+	        if (mineOnly) params.append("mine", "true");
+	        params.append("sort", currentSort);
 
-            const requestUrl = `/api/board/posts?${params.toString()}`;
-            const response = await fetch(requestUrl);
+	        const requestUrl = `/api/board/posts?${params.toString()}`;
+	        let response = await fetch(requestUrl);
 
-            if (!response.ok) {
-                throw new Error(`목록 조회 실패: ${response.status}`);
-            }
+	        // ===== 비로그인 + 내 게시글 조회 시 =====
+	        if (response.status === 401) {
+	            // 내 글 필터 해제
+	            mineOnly = false;
+	            mineBtn.classList.remove("active");
+	            mineBtn.setAttribute("aria-pressed", "false");
 
-            const data = await response.json();
-            const posts = extractPostList(data);
+	            // URL의 mine 파라미터도 제거
+	            const cleanParams = new URLSearchParams(window.location.search);
+	            cleanParams.delete("mine");
 
-            // 스켈레톤이 너무 짧게 번쩍이지 않도록 최소 시간 유지
-            const elapsed = Date.now() - startTime;
-            const delay = Math.max(400 - elapsed, 0);
-            await new Promise(resolve => setTimeout(resolve, delay));
+	            const newQuery = cleanParams.toString();
+	            const newUrl = newQuery
+	                ? `${window.location.pathname}?${newQuery}`
+	                : window.location.pathname;
 
-            renderPosts(posts);
-            postCountTextEl.textContent = `총 ${posts.length}개의 게시글`;
-        } catch (error) {
-            console.error("게시글 목록 API 실패", error);
+	            window.history.replaceState({}, "", newUrl);
 
-            postColLeftEl.innerHTML = `
-                <div class="board-error">
-                    게시글을 불러오지 못했습니다 😢<br>
-                    잠시 후 다시 시도해주세요.
-                </div>
-            `;
-            postColRightEl.innerHTML = "";
-            postCountTextEl.textContent = "총 0개의 게시글";
-        }
-    }
+	            // 로그인 모달 중복 방지
+	            const modal = document.getElementById("globalModal");
+	            if (!(modal && modal.style.display === "flex")) {
+	                showGlobalModal(
+	                    "로그인 필요",
+	                    "해당 서비스는 로그인이 필요합니다. 로그인 페이지로 이동하시겠습니까?",
+	                    "confirm",
+	                    function () {
+	                        window.location.href = "/login";
+	                    }
+	                );
+	            }
+
+	            // ===== mine 제거한 일반 목록으로 재조회 =====
+	            const retryParams = new URLSearchParams();
+
+	            if (weatherEl.value) retryParams.append("weather", weatherEl.value);
+	            if (styleEl.value) retryParams.append("style", styleEl.value);
+	            if (tpoEl.value) retryParams.append("tpo", tpoEl.value);
+	            retryParams.append("sort", currentSort);
+
+	            const retryUrl = `/api/board/posts?${retryParams.toString()}`;
+	            response = await fetch(retryUrl);
+
+	            if (!response.ok) {
+	                throw new Error(`목록 재조회 실패: ${response.status}`);
+	            }
+	        } else if (!response.ok) {
+	            throw new Error(`목록 조회 실패: ${response.status}`);
+	        }
+
+	        const data = await response.json();
+	        const posts = extractPostList(data);
+
+	        // 스켈레톤 최소 노출 시간 유지
+	        const elapsed = Date.now() - startTime;
+	        const delay = Math.max(400 - elapsed, 0);
+	        await new Promise(resolve => setTimeout(resolve, delay));
+
+	        renderPosts(posts);
+	        postCountTextEl.textContent = `총 ${posts.length}개의 게시글`;
+	    } catch (error) {
+	        console.error("게시글 목록 API 실패", error);
+
+	        postColLeftEl.innerHTML = `
+	            <div class="board-error">
+	                게시글을 불러오지 못했습니다 😢<br>
+	                잠시 후 다시 시도해주세요.
+	            </div>
+	        `;
+	        postColRightEl.innerHTML = "";
+	        postCountTextEl.textContent = "총 0개의 게시글";
+	    }
+	}
 
     // ===== 응답 데이터 정규화 =====
     function extractPostList(data) {
@@ -221,6 +328,8 @@ document.addEventListener("DOMContentLoaded", () => {
                             <span class="board-feed-card__badge">
                                 ${escapeHtml(formatTpo(post.tpoType ?? post.tpo))}
                             </span>
+							
+							${!post.isPublic ? '<span class="badge-private-top">비공개</span>' : ''}
                         </div>
                     </div>
 

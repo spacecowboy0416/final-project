@@ -12,6 +12,7 @@ public record BoardCommentResponse(
         LocalDateTime createdAt,
         LocalDateTime updatedAt,
         boolean mine,
-        boolean deleted
+        boolean deleted,
+        boolean edited
 ) {
 }

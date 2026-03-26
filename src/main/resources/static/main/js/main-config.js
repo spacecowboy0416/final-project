@@ -1,5 +1,5 @@
 window.CoordiConfig = {
-  DEV_WEATHER_PREVIEW: true, // 미리보기 버튼, false로 숨김가능
+  DEV_WEATHER_PREVIEW: false, // 미리보기 버튼, false로 숨김가능
   
   // 위치 권한 실패 시 사용할 기본 위치
   DEFAULT_LOCATION: {

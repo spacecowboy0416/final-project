@@ -1,5 +1,6 @@
 package com.finalproject.coordi.board.service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,6 +28,7 @@ import com.finalproject.coordi.exception.board.BoardForbiddenException;
 import com.finalproject.coordi.exception.board.BoardPostNotFoundException;
 import com.finalproject.coordi.exception.board.RecommendationNotFoundException;
 import com.finalproject.coordi.exception.board.RecommendationNotSavedException;
+import com.finalproject.coordi.exception.board.BoardLoginRequiredException;
 
 import lombok.RequiredArgsConstructor;
 
@@ -72,15 +74,22 @@ public class BoardPostService {
 
     // 게시판 목록 조회
     @Transactional(readOnly = true)
-    public BoardPostListResponse getPostList(String weather, String style, String tpo, String sort, int page, int size) {
+    public BoardPostListResponse getPostList(String weather, String style, String tpo, 
+    		String sort, boolean mine, int page, int size, Long loginUserId) {
+    	
+    	if (mine && loginUserId == null) {
+    	    throw new BoardLoginRequiredException();
+    	}
+    	
         int offset = page * size;
 
-        List<BoardPostListItemResponse> posts = boardPostMapper.findBoardPostList(weather, style, tpo, sort, offset, size)
+        List<BoardPostListItemResponse> posts = boardPostMapper
+        		.findBoardPostList(weather, style, tpo, sort, offset, size, mine, loginUserId)
                 .stream()
-                .map(this::toListItemResponse)
+                .map(row -> toListItemResponse(row, loginUserId))
                 .toList();
 
-        int total = boardPostMapper.countBoardPostList(weather, style, tpo);
+        int total = boardPostMapper.countBoardPostList(weather, style, tpo, mine, loginUserId);
         boolean hasNext = total > offset + size;
 
         return new BoardPostListResponse(posts, page, size, hasNext);
@@ -93,7 +102,7 @@ public class BoardPostService {
 
         boardPostMapper.increaseViewCount(postId);
 
-        BoardPostRow row = boardPostMapper.findBoardPostDetailById(postId);
+        BoardPostRow row = boardPostMapper.findBoardPostDetailById(postId, loginUserId);
         if (row == null) {
             throw new BoardPostNotFoundException();
         }
@@ -324,13 +333,16 @@ public class BoardPostService {
     }
 
     // 목록 VO -> Response DTO 변환
-    private BoardPostListItemResponse toListItemResponse(BoardPostRow row) {
+    private BoardPostListItemResponse toListItemResponse(BoardPostRow row, Long loginUserId) {
         String preview = row.getContent() == null
                 ? ""
                 : (row.getContent().length() > 80 ? row.getContent().substring(0, 80) + "..." : row.getContent());
 
         PreviewItemBundle previewBundle = buildPreviewItemBundle(row.getRecId());
-
+        
+        boolean mine = row.getUserId() != null && row.getUserId().equals(loginUserId);
+        boolean edited = isEdited(row.getCreatedAt(), row.getUpdatedAt());
+        
         return new BoardPostListItemResponse(
                 row.getPostId(),
                 row.getUserId(),
@@ -346,7 +358,9 @@ public class BoardPostService {
                 row.getTpoType(),
                 row.getWeatherStatus(),
                 previewBundle.previewItems(),
-                previewBundle.extraItemCount()
+                previewBundle.extraItemCount(),
+                mine,
+                edited
         );
     }
 
@@ -503,7 +517,8 @@ public class BoardPostService {
             Long loginUserId
     ) {
         boolean mine = row.getUserId() != null && row.getUserId().equals(loginUserId);
-
+        boolean edited = isEdited(row.getCreatedAt(), row.getUpdatedAt());
+        
         return new BoardPostDetailResponse(
                 row.getPostId(),
                 row.getUserId(),
@@ -520,6 +535,7 @@ public class BoardPostService {
                 row.getTpoType(),
                 row.getAiExplanation(),
                 row.getWeatherStatus(),
+                edited,
                 mine,
                 items,
                 comments
@@ -531,5 +547,15 @@ public class BoardPostService {
             List<BoardPostPreviewItemResponse> previewItems,
             int extraItemCount
     ) {
+    }
+    
+    //
+    private boolean isEdited(LocalDateTime createdAt, LocalDateTime updatedAt) {
+        if (createdAt == null || updatedAt == null) {
+            return false;
+        }
+
+        // 최초 등록 시점의 미세한 시간차는 수정으로 보지 않기
+        return updatedAt.isAfter(createdAt.plusSeconds(1));
     }
 }

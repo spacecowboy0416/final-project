@@ -19,7 +19,10 @@ public interface BoardPostMapper {
     String findWeatherStatusByRecId(@Param("recId") Long recId);
 
     // 게시글 상세 조회
-    BoardPostRow findBoardPostDetailById(@Param("postId") Long postId);
+    BoardPostRow findBoardPostDetailById(
+            @Param("postId") Long postId,
+            @Param("loginUserId") Long loginUserId
+    );
 
     // 게시글 목록 조회
     List<BoardPostRow> findBoardPostList(
@@ -28,14 +31,18 @@ public interface BoardPostMapper {
             @Param("tpo") String tpo,
             @Param("sort") String sort,
             @Param("offset") int offset,
-            @Param("size") int size
+            @Param("size") int size,
+            @Param("mine") boolean mine,
+            @Param("loginUserId") Long loginUserId
     );
 
     // 게시글 총 개수
     int countBoardPostList(
             @Param("weather") String weather,
             @Param("style") String style,
-            @Param("tpo") String tpo
+            @Param("tpo") String tpo,
+            @Param("mine") boolean mine,
+            @Param("loginUserId") Long loginUserId
     );
 
     // 게시글 목록 카드용 미리보기 아이템 조회

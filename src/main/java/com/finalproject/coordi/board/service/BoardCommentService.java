@@ -114,6 +114,9 @@ public class BoardCommentService {
     private BoardCommentResponse toResponse(BoardCommentRow row, Long loginUserId) {
         boolean mine = row.getUserId() != null && row.getUserId().equals(loginUserId);
         boolean deleted = row.getDeletedAt() != null;
+        boolean edited = row.getUpdatedAt() != null
+                && row.getCreatedAt() != null
+                && !row.getUpdatedAt().equals(row.getCreatedAt());
         
         // 🔥 추가 (삭제된 댓글이면 문구 변경)
         String content = deleted ? "삭제된 댓글입니다." : row.getContent();
@@ -127,7 +130,8 @@ public class BoardCommentService {
                 row.getCreatedAt(),
                 row.getUpdatedAt(),
                 mine,
-                deleted
+                deleted,
+                edited
         );
     }
 }
