@@ -444,13 +444,19 @@ document.addEventListener("DOMContentLoaded", () => {
                 body: JSON.stringify({ content })
             });
 
-			const contentType = response.headers.get("content-type") || "";
-
-			if (
-			    response.redirected ||
-			    response.url.includes("/login") ||
-			    !contentType.includes("application/json")
-			) {
+			if (response.status === 401) {
+			    showGlobalModal(
+			        "로그인 필요",
+			        "해당 서비스는 로그인이 필요합니다. 로그인 페이지로 이동하시겠습니까?",
+			        "confirm",
+			        function () {
+			            location.href = "/login";
+			        }
+			    );
+			    return;
+			}
+			
+			if (response.redirected || response.url.includes("/login")) {
 			    showGlobalModal(
 			        "로그인 필요",
 			        "해당 서비스는 로그인이 필요합니다. 로그인 페이지로 이동하시겠습니까?",
